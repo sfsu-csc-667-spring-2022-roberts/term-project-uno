@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="/css/views/login.css" />
+    <link rel="stylesheet" type="text/css" href="/css/partials/navbar.css" />
+    <title>{{title}}</title>
+  </head>
+  <body>
+    {{> navbar}}
+    <form>
+      <main>
+        <input type="text" placeholder="Username" name="username" required>
+        <input type="text" placeholder="Password" name="password" required>
+        <button type="submit">Login</button>
+        <span>
+          Haven't registered? <a href="/register">Click here</a>
+        </span>
+      </main>
+    </form>
+  </body>
+</html>

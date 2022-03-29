@@ -1,17 +1,17 @@
-var express = require('express');
-var router = express.Router();
-const db = require('../db/index.js');
+const express = require('express');
+const router = express.Router();
 
-/* GET home page. */
-router.get("/", (request, response) => {
-  db.any(`INSERT INTO test_table ("testString") VALUES ('Hello at ${Date.now()}')`)
-  .then( _ => db.any(`SELECT * FROM test_table`) )
-  .then( results => response.json( results ) )
-  .catch( error => {
-    console.log( error )
-    response.json({ error })
-  })
+router.get('/', (req, res) => {
+  res.render('home', {layout: false, title: 'Home'});
 });
 
- module.exports = router;
+router.get('/login', (req, res) => {
+  res.render('login', {layout: false, title: 'Login'});
+});
+
+router.get('/register', (req, res) => {
+  res.render('register', {layout: false, title: 'Register'});
+});
+
+module.exports = router;
  

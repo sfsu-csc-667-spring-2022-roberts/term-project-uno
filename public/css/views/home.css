@@ -1,0 +1,30 @@
+body {
+  font: 14px 'Lucida Grande', Helvetica, Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+}
+main {
+  margin-top: 5rem;
+}
+#menu {
+  display: flex;
+  flex-direction: column;
+  list-style-type: none;
+  justify-content: center;
+  padding: 0;
+}
+#menu li {
+  padding-bottom: 0.5rem;
+}
+#menu a {
+  display: block;
+  background: red;
+  text-decoration: none;
+  color: white;
+  padding: 0.25rem;
+  border-radius: 0.25rem;
+}
