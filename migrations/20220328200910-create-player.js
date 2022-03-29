@@ -9,7 +9,12 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       turnIndex: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        validate: {
+          min: 0,
+          max: 9
+        }
       }
     });
   },

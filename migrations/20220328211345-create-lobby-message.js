@@ -3,9 +3,10 @@ module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.createTable('LobbyMessages', {
       message: {
-        type: Sequelize.TEXT
+        type: Sequelize.TEXT,
+        notEmpty: true
       },
-      timestamp: {
+      createdAt: {
         allowNull: false,
         type: Sequelize.DATE
       }

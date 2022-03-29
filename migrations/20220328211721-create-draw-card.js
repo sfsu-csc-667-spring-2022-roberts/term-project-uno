@@ -3,7 +3,12 @@ module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.createTable('DrawCards', {
       order: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        validate: {
+          min: 0,
+          max: 111
+        },
+        allowNull: false
       }
     });
   },

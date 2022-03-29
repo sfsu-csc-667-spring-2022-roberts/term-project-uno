@@ -9,16 +9,24 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       currentColor: {
-        type: Sequelize.ENUM('blue', 'red', 'green', 'yellow')
+        type: Sequelize.ENUM('blue', 'red', 'green', 'yellow'),
+        allowNull: false
       },
       turnIndex: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        validate: {
+          min: 0,
+          max: 9
+        }
       },
       playerOrderReversed: {
-        type: Sequelize.BOOLEAN
+        type: Sequelize.BOOLEAN,
+        allowNull: false
       },
       active: {
-        type: Sequelize.BOOLEAN
+        type: Sequelize.BOOLEAN,
+        allowNull: false
       }
     });
   },
