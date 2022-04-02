@@ -3,6 +3,17 @@
   <li class="dropdown">
     <div id="nav-profile-pic"></div>
     <ul id="profile-dropdown" class="dropdown-menu">
+      {{#if loggedIn}}
+      <li>
+        <a href="#" class="menu-item">Profile</a>
+      </li>
+      <li>
+        <a href="/settings" class="menu-item">Settings</a>
+      </li>
+      <li>
+        <button id="logout" class="menu-item">Logout</button>
+      </li>
+      {{else}}
       <li>
         <a href="/login" class="menu-item">
           Login
@@ -13,24 +24,8 @@
           Register
         </a>
       </li>
+      {{/if}}
     </ul>
   </li>
-  <script>
-    document.getElementById("nav-profile-pic").addEventListener("click", (event) => {
-      const element = document.querySelector("#profile-dropdown");
-      const removeClickListener = () => {
-        document.removeEventListener("click", outsideClickListener);
-      }
-      const outsideClickListener = (e) => {
-        if (!element.contains(e.target) && element.classList.contains("dropdown-menu-visible")) {
-          element.setAttribute("class", "dropdown-menu");
-          removeClickListener();
-        }
-      }
-      
-      event.stopPropagation();
-      document.addEventListener("click", outsideClickListener);
-      element.setAttribute("class", "dropdown-menu-visible");
-    });
-  </script>
+  <script src="/js/partials/navbar.js" type="module"></script>
 </nav>
