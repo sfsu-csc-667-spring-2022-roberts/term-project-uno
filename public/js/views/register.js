@@ -44,7 +44,6 @@ document.getElementById('confirmPassword').addEventListener('input', (event) => 
   if (value != document.getElementById('password').value) {
     confirmError.innerHTML = 'Password and confirm password must match';
     confirmError.className = 'error-message';
-    valid = false;
   } else {
     confirmError.className = 'hidden';
   }
