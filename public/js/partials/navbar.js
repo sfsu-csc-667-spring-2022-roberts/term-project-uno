@@ -21,13 +21,13 @@ if (logout) {
   logout.addEventListener('click', (event) => {
     const url = window.location.protocol + '//' + window.location.host;
     fetch(url + '/api/users/logout', {
-      method: 'DELETE',
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       }
     })
     .then(async (res) => {
-      window.location.href = url;
+      window.location.href = url + '/login';
     })
     .catch((err) => {
       console.error(err);

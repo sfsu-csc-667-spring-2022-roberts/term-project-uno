@@ -57,7 +57,7 @@ router.post('/login', async (req, res) => {
   })
 });
 
-router.delete('/logout', authenticate, async(req, res) => {
+router.post('/logout', authenticate, async(req, res) => {
   res.cookie('token', '', { httpOnly: true, maxAge: 1});
   return res.json();
 });
