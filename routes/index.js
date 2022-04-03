@@ -69,5 +69,11 @@ router.get('/:username', verifyToken, async (req, res, next) => {
   });
 });
 
+// /games/:id(\\d+) <-- use this after the lobby page is created
+router.get('/games/:id(\\d+)', (req, res) => {
+  res.render('game', {layout: false, title: `Game ${req.params.id}`});
+});
+
+
 module.exports = router;
  
