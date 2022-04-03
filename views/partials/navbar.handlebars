@@ -5,7 +5,11 @@
     <ul id="profile-dropdown" class="dropdown-menu">
       {{#if authenticated}}
       <li>
+        {{#if user}}
+        <a href="/{{user.username}}" class="menu-item">Profile</a>
+        {{else}}
         <a href="#" class="menu-item">Profile</a>
+        {{/if}}
       </li>
       <li>
         <a href="/settings" class="menu-item">Settings</a>

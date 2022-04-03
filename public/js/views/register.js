@@ -59,7 +59,12 @@ registerForm.addEventListener('submit', (event) => {
   event.preventDefault();
   event.stopPropagation();
 
+  const error = document.getElementById('error');
   const serializedData = serializeForm(registerForm);
+
+  error.innerHTML = ''
+  error.className = 'hidden';
+
   if(validateSerializedData(serializedData)){
     const url = window.location.protocol + '//' + window.location.host;
     fetch(url + '/api/users/', {
@@ -78,7 +83,11 @@ registerForm.addEventListener('submit', (event) => {
           const nameError = document.getElementById('name-error');
           nameError.innerHTML = data.message;
           nameError.className = 'error-message';
-        } else console.log(data);
+        } else if (res.status === 400) {
+          error.innerHTML = `Please make sure that your username 
+            and/or password are valid OR use a different username`;
+          error.className = 'error-message';
+        }
       }
     })
     .catch((err) => {

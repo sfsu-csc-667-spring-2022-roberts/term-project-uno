@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="/css/views/profile.css" />
+    <link rel="stylesheet" type="text/css" href="/css/partials/navbar.css" />
+    <title>{{title}}</title>
+  </head>
+  <body>
+    {{> navbar}}
+    <main>
+      {{#if requestedUser}}
+      <section id="profile-picture-container">
+        <div id="profile-picture"></div>
+      </section>
+      <section id="profile-info-container">
+        <h1>{{requestedUser.username}}</h1>
+        <p>Games played: {{requestedUser.gamesPlayed}}</p>
+        <p>Games won: {{requestedUser.gamesWon}}</p>
+        <span>
+          Joined <time id="joined">{{requestedUser.createdAt}}</time>
+        </span>
+      </section>
+      {{else}}
+      Something went wrong!
+      {{/if}}
+    </main> 
+  </body>
+  <script src="/js/views/profile.js" type="module"></script>
+</html>

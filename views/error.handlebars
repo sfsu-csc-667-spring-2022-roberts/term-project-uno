@@ -12,11 +12,19 @@
     {{#equals status 404}}
     {{> navbar}}
     <main>
+      {{#if message}}
+      {{message}}
+      {{else}}
       Uh oh... This page doesn't exist!
+      {{/if}}
     </main>
     {{else}}
     <main>
-      A server error occured
+      {{#if message}}
+      {{message}}
+      {{else}}
+      A server error occured!
+      {{/if}}
     </main>
     {{/equals}}
   </body>

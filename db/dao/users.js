@@ -57,7 +57,21 @@ async function findUserById(id) {
     WHERE id = $6`,
     ['pictureUrl', 'gamesWon', 'gamesPlayed', 'createdAt', 'Users', id])
   .then((results) => {
-    return Promise.resolve(results);
+    if (results && results.length === 1) return Promise.resolve(results[0]);
+    else return Promise.resolve(null);
+  })
+  .catch((e) => Promise.reject(e));
+}
+
+async function findUserByName(username) {
+  return db.query(`
+    SELECT id, username, $1:name, $2:name, $3:name, $4:name 
+    FROM $5:name 
+    WHERE username = $6`,
+    ['pictureUrl', 'gamesWon', 'gamesPlayed', 'createdAt', 'Users', username])
+  .then((results) => {
+    if (results && results.length === 1) return Promise.resolve(results[0]);
+    else return Promise.resolve(null);
   })
   .catch((e) => Promise.reject(e));
 }
@@ -67,4 +81,5 @@ module.exports = {
   create,
   authenticate,
   findUserById,
+  findUserByName,
 };

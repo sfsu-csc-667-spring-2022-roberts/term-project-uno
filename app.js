@@ -6,6 +6,7 @@ const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const { create } = require('express-handlebars');
 
+const IndexError = require('./helpers/error/IndexError');
 const { verifyToken } = require('./lib/utils/token');
 const testRouter = require('./routes/test');
 const indexRouter = require('./routes/index');
@@ -55,11 +56,23 @@ app.use(async (err, req, res, next) => {
 
   // render the error page
   res.status(err.status || 500);
-  res.render('error', { 
-    layout: false, 
-    status: err.status || 500, 
-    authenticated: req.user != undefined 
-  });
+  if (err instanceof IndexError) {
+    res.render('error', { 
+      layout: false, 
+      status: err.status || 500,
+      message: err.message,
+      authenticated: req.user != undefined,
+      user: req.user
+    });
+  } else {
+    res.render('error', { 
+      layout: false, 
+      status: err.status || 500, 
+      authenticated: req.user != undefined,
+      user: req.user
+    });
+  }
+
 
   if (!err.status || err.status === 500) {
     console.error(err);

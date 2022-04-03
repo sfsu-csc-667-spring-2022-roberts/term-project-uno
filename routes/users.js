@@ -2,7 +2,7 @@ const express = require('express');
 const UserDao = require('../db/dao/users');
 const UserError = require('../helpers/error/UserError');
 const { generateToken, authenticate } = require('../lib/utils/token');
-const { registerValidation, loginValidation } = require('../lib/validation/users');
+const { validateRegister, validateLogin } = require('../lib/validation/users');
 
 
 const router = express.Router();
@@ -15,7 +15,7 @@ router.get('/', authenticate, async (req, res) => {
 
 /* User registration */
 router.post('/', async (req, res) => {
-  const { error } = registerValidation(req.body);
+  const { error } = validateRegister(req.body);
   if (error) return res.status(400).json({ message: error.details[0].message });
 
   const { username, password, confirmPassword } = req.body;
@@ -42,7 +42,7 @@ router.post('/', async (req, res) => {
 });
 
 router.post('/login', async (req, res) => {
-  const { error } = loginValidation(req.body);
+  const { error } = validateLogin(req.body);
   if (error) return res.status(400).json({ message: error.details[0].message });
 
   const { username, password } = req.body;
