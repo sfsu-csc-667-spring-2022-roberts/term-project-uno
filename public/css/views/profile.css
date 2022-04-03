@@ -1,0 +1,40 @@
+body {
+    font: 14px 'Lucida Grande', Helvetica, Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+}
+
+main {
+    margin-top: 5rem;
+    border: 1px solid black;
+    display: flex;
+    flex-direction: row;
+    width: 500px;
+    height: 220px;
+}
+
+.profile-pic {
+    height: 200px;
+    width: 200px;
+    background: white;
+    border-radius: 100%;
+    cursor: pointer;
+    overflow: hidden;
+    box-shadow: rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px;
+    align-self: center;
+  }
+
+.statistic-headers, .statistic-values {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+}
+
+label {
+    width: 100px;
+    text-align: center;
+}

@@ -1,0 +1,49 @@
+body {
+    font: 14px 'Lucida Grande', Helvetica, Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+}
+
+main {
+    margin-top: 5rem;
+    border: 1px solid black;
+    display: flex;
+    flex-direction: column;
+    width: 80%;
+    height: 80%;
+}
+
+input {
+    width: 90%
+}
+
+.search-container {
+    display: flex;
+    justify-content: center;
+}
+
+.lobby-list-container {
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.header-container, .lobby-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    border: 1px solid black;
+}
+
+.lobby-container {
+    min-height: 50px;
+    align-items: center;
+}
+.lobby-name-header, .lobby-name {
+    width: 70%;
+    padding-left: 100px;
+}
