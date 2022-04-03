@@ -11,22 +11,24 @@
   <body>
     {{> navbar}}
     <main>
-      {{#if requestedUser}}
-      <section id="profile-picture-container">
-        <div id="profile-picture"></div>
-      </section>
-      <section id="profile-info-container">
-        <h1>{{requestedUser.username}}</h1>
-        <p>Games played: {{requestedUser.gamesPlayed}}</p>
-        <p>Games won: {{requestedUser.gamesWon}}</p>
-        <span>
-          Joined <time id="joined">{{requestedUser.createdAt}}</time>
-        </span>
-      </section>
-      {{else}}
-      Something went wrong!
-      {{/if}}
-    </main> 
+      <div class="profile-pic"></div>
+      <div class="profile-info-container">
+          <h1>{{requestedUser.username}}</h1>
+          <div class="statistic-headers">
+              <label>Games Played</label>
+              <label>Games Won</label>
+              <label>Win Percentage</label>
+          </div>
+          <div class="statistic-values">
+              <label>{{requestedUser.gamesPlayed}}</label>
+              <label>{{requestedUser.gamesWon}}</label>
+              <label id="winRatio">0%</label>
+          </div>
+          <div>
+            Joined <time id="joined">{{requestedUser.createdAt}}</time>
+          </div>
+      </div>
+    </main>
   </body>
   <script src="/js/views/profile.js" type="module"></script>
 </html>

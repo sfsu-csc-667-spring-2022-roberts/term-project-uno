@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="/css/views/user-settings.css" />
+    <link rel="stylesheet" type="text/css" href="/css/partials/navbar.css" />
+    <title>{{title}}</title>
+  </head>
+  <body>
+    {{> navbar}}
+    <main>
+    <div class="pic-settings-container" onclick={uploadFile()}>
+        <img class="profile-pic"></img>
+        <div class="hover-info-container">
+            <p>Click to Edit</p>
+            <input type="file" accept="image/*" id="file-upload" class="file-upload" ></input>
+        </div>
+    </div>
+    <div class="profile-info-container">
+        <h1>Username</h1>
+        <form>
+          <h2>Change Username</h1>
+          <input type="text" placeholder="Username" required>
+          <button type="submit">Save</button>
+        </form>
+        <form>
+          <h2>Change Password</h1>
+          <input type="text" placeholder="Old Password" required>
+          <input type="text" placeholder="New Password" required>
+          <button type="submit">Save</button>
+        </form>
+    </div>
+    </main>
+  </body>
+</html>
+
+<script>
+  function uploadFile() {
+    document.getElementById("file-upload").click();
+  }
+</script>

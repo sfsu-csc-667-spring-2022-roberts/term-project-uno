@@ -24,6 +24,25 @@ router.get('/register', verifyToken, async (req, res) => {
   res.render('register', {layout: false, title: 'Register', authenticated, user: req.user});
 });
 
+router.get('/settings', verifyToken, (req, res) => {
+  const authenticated = req.user != undefined;
+
+  res.render('settings', {layout: false, title: 'User Settings', authenticated, user: req.user});
+});
+
+
+router.get('/create-lobby', (req,res) => {
+  const authenticated = req.user != undefined;
+
+  res.render('create-lobby', {layout: false, title: 'Create Lobby', authenticated, user: req.user});
+});
+
+router.get('/find-lobby', (req,res) => {
+  const authenticated = req.user != undefined;
+
+  res.render('find-lobby', {layout: false, title: 'Find Lobby', authenticated, user: req.user});
+});
+
 /* Users' profile pages */
 router.get('/:username', verifyToken, async (req, res, next) => {
   const { error } = validateUsername(req.params);
