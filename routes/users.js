@@ -7,6 +7,12 @@ const { registerValidation, loginValidation } = require('../lib/validation/users
 
 const router = express.Router();
 
+/* Get authenticated user info */
+router.get('/', authenticate, async (req, res) => {
+  if (req.user) res.json({ user: req.user });
+  else res.status(401).json();
+});
+
 /* User registration */
 router.post('/', async (req, res) => {
   const { error } = registerValidation(req.body);

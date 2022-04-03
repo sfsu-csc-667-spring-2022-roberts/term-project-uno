@@ -10,6 +10,13 @@
   </head>
   <body>
     {{> navbar}}
+    <header>
+      {{#if user}}
+        Logged in as {{user.username}}
+      {{else}}
+        You are not logged in
+      {{/if}}
+    </header>
     <main>
       <ul id="menu">
         <li>

@@ -1,9 +1,11 @@
 const db = require('../index');
 const bcrypt = require('bcrypt');
-const { promise } = require('bcrypt/promises');
 
 async function usernameExists(username) {
-  return db.query('SELECT id FROM $1:name WHERE username = $2', ['Users', username])
+  return db.query(`
+    SELECT id 
+    FROM $1:name 
+    WHERE username = $2`, ['Users', username])
   .then((results) => {
     return Promise.resolve(results && results.length === 0);
   })
@@ -14,7 +16,10 @@ async function create(username, password) {
   return bcrypt.hash(password, 8)
   .then((hashedPassword) => {
     console.log(hashedPassword);
-    return db.any('INSERT INTO $1:name(username, password) VALUES($2, $3) RETURNING id', ['Users', username, hashedPassword]);
+    return db.any(`
+      INSERT INTO $1:name(username, password) 
+      VALUES($2, $3) 
+      RETURNING id`, ['Users', username, hashedPassword]);
   })
   .then((results) => {
     console.log(results);
@@ -28,7 +33,10 @@ async function create(username, password) {
 
 async function authenticate(username, password) {
   let userId;
-  return db.query('SELECT id, username, password FROM $1:name WHERE username = $2', ['Users', username])
+  return db.query(`
+    SELECT id, username, password 
+    FROM $1:name 
+    WHERE username = $2`, ['Users', username])
   .then((results) => {
     if (results && results.length === 1) {
       userId = results[0].id;
@@ -43,7 +51,11 @@ async function authenticate(username, password) {
 }
 
 async function findUserById(id) {
-  return db.query('SELECT * FROM $1:name WHERE id = $2', ['Users', id])
+  return db.query(`
+    SELECT id, username, $1:name, $2:name, $3:name, $4:name 
+    FROM $5:name 
+    WHERE id = $6`,
+    ['pictureUrl', 'gamesWon', 'gamesPlayed', 'createdAt', 'Users', id])
   .then((results) => {
     return Promise.resolve(results);
   })
