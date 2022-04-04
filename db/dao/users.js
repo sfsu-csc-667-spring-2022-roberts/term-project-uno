@@ -15,14 +15,12 @@ async function usernameExists(username) {
 async function create(username, password) {
   return bcrypt.hash(password, 8)
   .then((hashedPassword) => {
-    console.log(hashedPassword);
     return db.any(`
       INSERT INTO $1:name(username, password) 
       VALUES($2, $3) 
       RETURNING id`, ['Users', username, hashedPassword]);
   })
   .then((results) => {
-    console.log(results);
     if (results && results.length === 1) {
       const userId = results[0].id;
       return Promise.resolve(userId);

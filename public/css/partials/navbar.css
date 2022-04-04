@@ -52,9 +52,11 @@
 .dropdown-menu {
   position: absolute;
   visibility: hidden;
+  z-index: 5;
 }
 
 .dropdown-menu-visible {
+  z-index: 5;
   position: absolute;
   padding-left: 0;
   opacity: 1;
