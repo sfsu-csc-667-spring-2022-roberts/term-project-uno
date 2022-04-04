@@ -1,186 +1,186 @@
 body {
-    font: 14px 'Lucida Grande', Helvetica, Arial, sans-serif;
-    width: 100vw;
-    height: 100vh;
-    margin: 0;
-  }
+  font: 14px 'Lucida Grande', Helvetica, Arial, sans-serif;
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+}
 
 .cards-container {
-    border: 1px solid black;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  border: 1px solid black;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 #draw-and-play-cards-container {
-    display: flex;
-    justify-content: center;
-    gap: 150px;
-    position: absolute;
-    top: 55%;
-    left: 50%;
-    margin-left: -105px;
+  display: flex;
+  justify-content: center;
+  gap: 150px;
+  position: absolute;
+  top: 55%;
+  left: 50%;
+  margin-left: -105px;
 }
 
 #draw-deck {
-    display: grid;
-    position: relative;
-    grid-template-columns: 1;
-    grid-template-rows: 1;
+  display: grid;
+  position: relative;
+  grid-template-columns: 1;
+  grid-template-rows: 1;
 }
 
 #played-deck {
-    display: grid;
-    position: relative;
-    grid-template-columns: 1;
-    grid-template-rows: 1;
-    margin-top: -18px;
+  display: grid;
+  position: relative;
+  grid-template-columns: 1;
+  grid-template-rows: 1;
+  margin-top: -18px;
 }
 
 .draw-play-deck-item {
-    position: absolute !important;
-    top: 0px;
-    left: 0px;
+  position: absolute !important;
+  top: 0px;
+  left: 0px;
 }
 
 #main-player-deck-flex {
-    display: flex;
-    width: 100%;
-    justify-content: center;
-    align-content: center;
-    position: absolute;
-    bottom: 0;
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  align-content: center;
+  position: absolute;
+  bottom: 0;
 }
 
 #main-player-deck-grid {
-    display: grid;
-    width: 100%;
-    grid-template-columns: repeat(9, 60px);
-    grid-auto-rows: 1fr;
-    justify-content: center;
-    align-content: center;
-    position: absolute;
-    bottom: 0;
+  display: grid;
+  width: 100%;
+  grid-template-columns: repeat(9, 60px);
+  grid-auto-rows: 1fr;
+  justify-content: center;
+  align-content: center;
+  position: absolute;
+  bottom: 0;
 }
 
 #players-left, #players-right, #players-top {
-    display: flex;
-    align-items: center;
-    position: absolute;
-    justify-content: center;
+  display: flex;
+  align-items: center;
+  position: absolute;
+  justify-content: center;
 }
 
 #players-left, #players-right {
-    flex-direction: column;
-    height: 85%;
+  flex-direction: column;
+  height: 85%;
 }
 #players-left {
-    left: 0;
-    bottom: 10px;
+  left: 0;
+  bottom: 10px;
 }
 
 #players-right {
-    top: 171px;
-    right: 0;
+  top: 171px;
+  right: 0;
 }
 
 #players-top {
-    top: 64px;
-    height: 80px;
-    width: 80%;
-    left: 9%;    
+  top: 64px;
+  height: 80px;
+  width: 80%;
+  left: 9%;    
 }
 
 .players-top-item, .players-left-item, .players-right-item {
-    display: flex;
-    margin: auto;
-    z-index: -1;
+  display: flex;
+  margin: auto;
+  z-index: -1;
 }
 
 .players-top-item {
-    flex-direction: column;
-    gap: 100px;
+  flex-direction: column;
+  gap: 100px;
 }
 
 .players-left-item {
-    gap: 20px;
+  gap: 20px;
 }
 
 .players-right-item {
-    flex-direction: row-reverse;
-    gap: 20px;
+  flex-direction: row-reverse;
+  gap: 20px;
 }
 
 .players-top-deck, .players-right-deck, .players-left-deck {
-    display: grid;
-    align-self: center;
-    width: 100px;
-    grid-template-columns: repeat(7, 1fr);
-    grid-auto-rows: 1fr;
+  display: grid;
+  align-self: center;
+  width: 100px;
+  grid-template-columns: repeat(7, 1fr);
+  grid-auto-rows: 1fr;
 }
 
 .players-top-deck {
-    margin-left: calc(50% - 8px);
-    margin-right: auto;
-    margin-top: -30px;
-    -webkit-transform:rotate(180deg);
-    transform: rotate(180deg);
+  margin-left: calc(50% - 8px);
+  margin-right: auto;
+  margin-top: -30px;
+  -webkit-transform:rotate(180deg);
+  transform: rotate(180deg);
 }
 
 .players-right-deck {
-    margin-right: -60px;
-    -webkit-transform:rotate(270deg);
-    transform: rotate(270deg);
+  margin-right: -60px;
+  -webkit-transform:rotate(270deg);
+  transform: rotate(270deg);
 }
 
 .players-left-deck {
-    margin-left: -60px;
-    -webkit-transform:rotate(-270deg);
-    transform: rotate(-270deg);
+  margin-left: -60px;
+  -webkit-transform:rotate(-270deg);
+  transform: rotate(-270deg);
 }
 
 .player-avatar-div, .player-avatar-div-right, .player-avatar-div-left{
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-    align-self: center;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  align-self: center;
 
 }
 .player-avatar-div {
-    margin-left: 12px;
+  margin-left: 12px;
 }
 .player-avatar-div-left {
-    margin-top: 70px;
-    width: 200px;
-    margin-left: auto;
-    margin-right: auto;
-    z-index: 2;
+  margin-top: 70px;
+  width: 200px;
+  margin-left: auto;
+  margin-right: auto;
+  z-index: 2;
 }
 
 .player-avatar-div-right {
-    width: 200px !important;
-    margin-top: -55px;
-    margin-left: auto;
-    margin-right: auto;
-    z-index: 2;
+  width: 200px !important;
+  margin-top: -55px;
+  margin-left: auto;
+  margin-right: auto;
+  z-index: 2;
 }
 
 .player-avatar {
-    width: 50px;
-    height: 50px;
-    align-self: center;
-    border-radius: 50%;
-    object-fit: fill;
-    box-shadow:0 0 5px #aaaaaa;
+  width: 50px;
+  height: 50px;
+  align-self: center;
+  border-radius: 50%;
+  object-fit: fill;
+  box-shadow:0 0 5px #aaaaaa;
 }
 .player-username {
-    text-align: center;
-    font-weight: 800;
-    width: fit-content;
-    align-self: center;
-    border-radius: 8px;
-    padding: .40rem;
-    background-color: #1980ff80;
-    text-shadow: 5px 5px 5px #1981ff;
-    color: rgb(255, 255, 255);
+  text-align: center;
+  font-weight: 800;
+  width: fit-content;
+  align-self: center;
+  border-radius: 8px;
+  padding: .40rem;
+  background-color: #1980ff80;
+  text-shadow: 5px 5px 5px #1981ff;
+  color: rgb(255, 255, 255);
 }
