@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="/css/views/create-lobby.css" />
+    <link rel="stylesheet" type="text/css" href="/css/partials/navbar.css" />
+    <title>{{title}}</title>
+  </head>
+  <body>
+    {{> navbar}}
+    <form>
+      <main>
+        <h2>Create Lobby</h2>
+        <input type="text" placeholder="Lobby Name" id="lobby-name-input" name="lobby-name" required>
+        <input type="range" min="2" max="10" value="1" id="num-players-slider" oninput="this.nextElementSibling.value = this.value">
+        <output id="num-players-output" class="num-players-output">2</output>
+        <div id="private-container" class="private-container">
+          <div>
+            <input type="checkbox" id="private-checkbox" onclick={private()}>
+            <label for="private-checkbox">Private</label>
+          </div>
+        </div>
+        <button type="Submit">Create</button>
+      </main>
+    </form>
+  </body>
+</html>
+
+<script>
+  function private() {
+    if(document.getElementById("private-checkbox").checked == true) {
+      let passwordInput = document.createElement('input');
+      passwordInput.id = 'password-input';
+      passwordInput.class = 'password-input';
+      passwordInput.placeholder = "Password";
+      passwordInput.required = true;
+      document.getElementById("private-container").appendChild(passwordInput);
+    }
+    else {
+      document.getElementById("private-container").removeChild(document.getElementById("password-input"));
+    }
+  }
+</script>

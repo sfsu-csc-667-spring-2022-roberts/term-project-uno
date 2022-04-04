@@ -10,13 +10,20 @@
   </head>
   <body>
     {{> navbar}}
+    <header>
+      {{#if user}}
+        Logged in as {{user.username}}
+      {{else}}
+        You are not logged in
+      {{/if}}
+    </header>
     <main>
       <ul id="menu">
         <li>
-          <a href="/create-game">Create Game</a>
+          <a href="/create-lobby">Create Lobby</a>
         </li>
         <li>
-          <a href="/join-game">Join Game</a>
+          <a href="/find-lobby">Find Lobby</a>
         </li>
       </ul>
     </main>

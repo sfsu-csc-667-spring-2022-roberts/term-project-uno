@@ -1,0 +1,40 @@
+body {
+    font: 14px 'Lucida Grande', Helvetica, Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+}
+
+main {
+    margin-top: 5rem;
+    border: 1px solid black;
+    display: flex;
+    flex-direction: column;
+    height: 70%;
+    width: 150%;
+    justify-content: space-between;
+}
+
+button, input[type="submit"], input[type="reset"] {
+    font-size: large;
+    cursor: pointer;
+    border: none;
+  }
+
+button {
+    width: 50%;
+    margin-right: auto;
+    margin-left: auto;
+}
+
+.num-players-output, h2 {
+    align-self: center;
+}
+
+.private-container {
+    display: flex;
+    flex-direction: column;
+}

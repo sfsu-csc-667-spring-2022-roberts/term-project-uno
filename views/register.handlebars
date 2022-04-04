@@ -10,11 +10,44 @@
   </head>
   <body>
     {{> navbar}}
-    <form>
+    <form id="registerForm">
       <main>
-        <input type="text" placeholder="Username" name="username" required>
-        <input type="text" placeholder="Password" name="password" required>
-        <input type="text" placeholder="Confirm Password" name="confirm-password" required>
+        <section class="input">
+          <p class="error-message hidden" id="error"></p>
+        </section>
+        <section class="input">
+          <label for="username">Username</label>
+          <input 
+            type="text" 
+            placeholder="Username" 
+            id="username" 
+            name="username" 
+            aria-describedby="name-error" 
+            required>
+          <p class="error-message hidden" id="name-error"></p>
+        </section>
+        <section class="input">
+          <label for="password">Password</label>
+          <input 
+            type="password" 
+            placeholder="Password" 
+            id="password" 
+            name="password" 
+            aria-describedby="password-error"
+            required>
+          <p class="error-message hidden" id="password-error"></p>
+        </section>
+        <section class="input">
+          <label for="confirmPassword">Confirm Password</label>
+          <input 
+            type="password" 
+            placeholder="Confirm Password" 
+            id="confirmPassword" 
+            name="confirmPassword" 
+            aria-describedby="confirm-password-error"
+            required>
+          <p class="error-message hidden" id="confirm-password-error"></p>
+        </section>
         <button type="submit">Register</button>
         <span>
           Already registered? <a href="/login">Login here</a>
@@ -22,4 +55,5 @@
       </main>
     </form>
   </body>
+  <script src="/js/views/register.js" type="module"></script>
 </html>

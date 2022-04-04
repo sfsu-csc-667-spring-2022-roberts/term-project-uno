@@ -7,6 +7,7 @@
   background: #1981ff;
   box-sizing: border-box;
 }
+
 #nav-profile-pic {
   height: 32px;
   width: 32px;
@@ -18,27 +19,44 @@
   overflow: hidden;
   box-shadow: rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px;
 }
+
 #logo {
   color: #ffec19;
   font-weight: bold;
   font-size: 1.5rem;
   text-decoration: none;
 }
+
+#logout{
+  background: inherit;
+  display: block;
+  color: white;
+  cursor: pointer;
+  outline: inherit;
+  border: none;
+}
+
 .dropdown {
   list-style: none;
 }
+
 .dropdown li {
   transition: background 0.15s ease-in-out;
 }
+
 .dropdown li:hover {
   cursor: pointer;
   background: red;
 }
+
 .dropdown-menu {
   position: absolute;
   visibility: hidden;
+  z-index: 5;
 }
+
 .dropdown-menu-visible {
+  z-index: 5;
   position: absolute;
   padding-left: 0;
   opacity: 1;
@@ -46,12 +64,14 @@
   background: #0062d9;
   box-shadow: rgba(17, 17, 26, 0.1) 0px 4px 16px, rgba(17, 17, 26, 0.05) 0px 8px 32px;
 }
+
 .dropdown-menu-visible li a {
   text-decoration: none;
   padding-right: 1rem;
   padding-top: 0.25rem;
   padding-bottom: 0.25rem;
 }
+
 .menu-item {
   display: flex;
   justify-content: space-between;
