@@ -360,13 +360,26 @@ const buildGameBoard = async () => {
         default: return null;
     }
 }
+console.log(parseInt(window.location.pathname.split('/')[2]))
+
+let gameState = {}
+const getGameState = async () => {
+    
+    fetch(`/api/games/${parseInt(window.location.pathname.split('/')[2])}`)
+    .then(response => response.json())
+    .then(data => {
+        console.log(data)
+    })
+    .catch(err => console.log(err));
+}
 
 
 document.body.onload = () => {
-    console.log("page loaded");
-    buildGameBoard();
-    getDrawDeck();
-    getPlayedDeck();
-    getMainPlayerDeck();
-    fetchMessages();
+    // buildGameBoard();
+    // getDrawDeck();
+    // getPlayedDeck();
+    // getMainPlayerDeck();
+    // fetchMessages();
+    getGameState();
+
 }
