@@ -10,14 +10,8 @@
   </head>
   <body>
     {{> navbar}}
-    <header>
-      {{#if user}}
-        Logged in as {{user.username}}
-      {{else}}
-        You are not logged in
-      {{/if}}
-    </header>
     <main>
+      {{#if user}}
       <ul id="menu">
         <li>
           <a href="/create-lobby">Create Lobby</a>
@@ -26,6 +20,9 @@
           <a href="/find-lobby">Find Lobby</a>
         </li>
       </ul>
+      {{else}}
+      Hi
+      {{/if}}
     </main>
   </body>
 </html>

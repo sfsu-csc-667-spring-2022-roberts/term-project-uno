@@ -1,4 +1,5 @@
 body {
+  background: #252527;
   font: 14px 'Lucida Grande', Helvetica, Arial, sans-serif;
   display: flex;
   flex-direction: column;
@@ -20,15 +21,26 @@ button, input[type="submit"], input[type="reset"] {
   border: none;
 }
 
-main {
+form {
   display: flex;
   flex-direction: column;
-  margin-top: 5rem;
   width: 15rem;
+  height: 23.86rem;
+  margin-top: 5rem;
+  padding: 0.5rem;
+  border: 0.5rem solid white;
+  border-radius: 0.75rem;
 }
 
-main > * {
+form > * {
   margin-bottom: 0.5rem;
+}
+
+main {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  justify-content: center;
 }
 
 .hidden {
@@ -46,4 +58,8 @@ main > * {
 .input {
   display: flex;
   flex-direction: column;
+}
+
+.input input {
+  padding: 0.5rem;
 }

@@ -10,13 +10,12 @@
   </head>
   <body>
     {{> navbar}}
-    <form id="registerForm">
-      <main>
+    <main>
+      <form id="registerForm">
         <section class="input">
           <p class="error-message hidden" id="error"></p>
         </section>
         <section class="input">
-          <label for="username">Username</label>
           <input 
             type="text" 
             placeholder="Username" 
@@ -27,7 +26,6 @@
           <p class="error-message hidden" id="name-error"></p>
         </section>
         <section class="input">
-          <label for="password">Password</label>
           <input 
             type="password" 
             placeholder="Password" 
@@ -38,7 +36,6 @@
           <p class="error-message hidden" id="password-error"></p>
         </section>
         <section class="input">
-          <label for="confirmPassword">Confirm Password</label>
           <input 
             type="password" 
             placeholder="Confirm Password" 
@@ -52,8 +49,8 @@
         <span>
           Already registered? <a href="/login">Login here</a>
         </span>
-      </main>
-    </form>
+      </form>
+    </main>
   </body>
   <script src="/js/views/register.js" type="module"></script>
 </html>

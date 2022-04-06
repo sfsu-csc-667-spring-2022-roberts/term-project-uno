@@ -1,16 +1,19 @@
 #nav-container {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   width: 100%;
-  padding: 1rem 20%;
-  background: #1981ff;
+  padding: 0.5rem 6.5%;
+  background: #0063B3;
   box-sizing: border-box;
 }
 
+#nav-container a {
+  text-decoration: none;
+}
+
 #nav-profile-pic {
-  height: 32px;
-  width: 32px;
+  height: 2.5rem;
+  width: 2.5rem;
   background: white;
   border-radius: 100%;
   padding: 0;
@@ -21,10 +24,23 @@
 }
 
 #logo {
+  background: #C72A18;
   color: #ffec19;
+  border-radius: 100%;
+  text-align: center;
+  overflow: visible;
+  -webkit-transform:rotate(-8deg);
+  transform: rotate(-8deg);
+  margin: 0;
+}
+
+#logo div {
   font-weight: bold;
-  font-size: 1.5rem;
-  text-decoration: none;
+  font-size: 3rem;
+  text-transform: uppercase;
+  letter-spacing: 0.01rem;
+  -webkit-transform:rotate(-4deg);
+  transform: rotate(-4deg);
 }
 
 #logout{
@@ -36,17 +52,20 @@
   border: none;
 }
 
-.dropdown {
+#dropdown {
   list-style: none;
 }
 
-.dropdown li {
-  transition: background 0.15s ease-in-out;
+#nav-links {
+  display: flex;
+  list-style: none;
+  margin-right: 2.5%;
+  margin-left: auto;
 }
 
-.dropdown li:hover {
-  cursor: pointer;
-  background: red;
+#search-user {
+  padding: 0.5rem;
+  margin-right: 2.5%;
 }
 
 .dropdown-menu {
@@ -61,7 +80,7 @@
   padding-left: 0;
   opacity: 1;
   list-style: none;
-  background: #0062d9;
+  background: #0063B3;
   box-shadow: rgba(17, 17, 26, 0.1) 0px 4px 16px, rgba(17, 17, 26, 0.05) 0px 8px 32px;
 }
 
@@ -78,4 +97,10 @@
   padding-left: 1rem;
   font-size: 1.1rem;
   color: white;
+}
+
+.nav-link {
+  color: white;
+  font-size: 1rem;
+  padding: 2rem;
 }

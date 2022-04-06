@@ -1,6 +1,20 @@
 <nav id="nav-container">
-  <a id="logo" href="/">Team UNO</a>
-  <li class="dropdown">
+  <a id="logo" href="/">
+    <div id="logo-letters">UNO</div>
+  </a>
+  <ul id="nav-links">
+    <li>
+      <a href="/" class="nav-link">Home</a>
+    </li>
+    <li>
+      <a href="/find-lobby" class="nav-link">Lobbies</a>
+    </li>
+    <li>
+      <a href="/leaderboard" class="nav-link">Leaderboard</a>
+    </li>
+  </ul>
+  <input id="search-user" type="text" placeholder="Search Users">
+  <li id="dropdown">
     <div id="nav-profile-pic"></div>
     <ul id="profile-dropdown" class="dropdown-menu">
       {{#if authenticated}}
