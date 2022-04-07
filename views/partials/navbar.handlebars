@@ -15,16 +15,18 @@
     </li>
   </ul>
   <input id="search-user" type="text" placeholder="Search Users">
-  {{#if authenticated}}
+  {{#if user}}
   <li id="dropdown">
-    <div id="nav-profile-pic"></div>
+    <div id="nav-profile-pic">
+      {{#if user.pictureUrl}}
+      <img src="{{user.pictureUrl}}">
+      {{else}}
+      <img src="https://bethesdadentalhealth.com/wp-content/uploads/2016/10/profile-icon-png-898.png">
+      {{/if}}
+    </div>
     <ul id="profile-dropdown" class="dropdown-menu">
       <li>
-        {{#if user}}
         <a href="/{{user.username}}" class="menu-item">Profile</a>
-        {{else}}
-        <a href="#" class="menu-item">Profile</a>
-        {{/if}}
       </li>
       <li>
         <a href="/settings" class="menu-item">Settings</a>

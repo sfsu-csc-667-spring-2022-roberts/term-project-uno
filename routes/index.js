@@ -31,13 +31,13 @@ router.get('/settings', verifyToken, (req, res) => {
 });
 
 
-router.get('/create-lobby', (req,res) => {
+router.get('/create-lobby', verifyToken, (req,res) => {
   const authenticated = req.user != undefined;
 
   res.render('create-lobby', {layout: false, title: 'Create Lobby', authenticated, user: req.user});
 });
 
-router.get('/find-lobby', (req,res) => {
+router.get('/find-lobby', verifyToken, (req,res) => {
   const authenticated = req.user != undefined;
 
   res.render('find-lobby', {layout: false, title: 'Find Lobby', authenticated, user: req.user});
