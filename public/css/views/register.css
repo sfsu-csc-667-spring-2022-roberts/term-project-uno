@@ -57,8 +57,9 @@ main {
 }
 
 #registerForm button {
-  background: #C72A18;
+  background: #ee161f;
   color: white;
+  font-weight: bold;
   border: none;
   padding: 0.5rem;
   border-radius: 0.5rem;
@@ -68,12 +69,12 @@ main {
 
 #registerForm header {
   display: flex;
-  background: #C72A18;
+  background: #ee161f;
   margin: 0;
   height: 4rem;
   justify-content: center;
   align-items: center;
-  border-bottom: 0.2rem solid #ab2415;
+  border-bottom: 0.2rem solid #d6151d;
 }
 
 #registerForm header h2 {

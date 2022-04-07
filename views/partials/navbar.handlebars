@@ -15,10 +15,10 @@
     </li>
   </ul>
   <input id="search-user" type="text" placeholder="Search Users">
+  {{#if authenticated}}
   <li id="dropdown">
     <div id="nav-profile-pic"></div>
     <ul id="profile-dropdown" class="dropdown-menu">
-      {{#if authenticated}}
       <li>
         {{#if user}}
         <a href="/{{user.username}}" class="menu-item">Profile</a>
@@ -32,19 +32,17 @@
       <li>
         <button id="logout" class="menu-item">Logout</button>
       </li>
-      {{else}}
-      <li>
-        <a href="/login" class="menu-item">
-          Login
-        </a>
-      </li>
-      <li>
-        <a href="/register" class="menu-item">
-          Register
-        </a>
-      </li>
-      {{/if}}
     </ul>
   </li>
+  {{else}}
+  <ul id="unauthenticated-links">
+    <li>
+      <a href="/login" class="nav-link">Login</a>
+    </li>
+    <li>
+      <a href="/register" class="nav-link">Sign Up</a>
+    </li>
+  </ul>
+  {{/if}}
   <script src="/js/partials/navbar.js" type="module"></script>
 </nav>

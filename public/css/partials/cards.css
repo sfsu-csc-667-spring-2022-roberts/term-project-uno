@@ -61,8 +61,8 @@
     transform: rotate(30deg);
     border-top: 11px !important;
     border-bottom: 11px !important;
-    border: 17px solid #C72A18;
-    background:#C72A18;;
+    border: 17px solid #ee161f;
+    background:#ee161f;;
 
 }
 .card-uno-label-small {
@@ -72,7 +72,7 @@
   font-size: 28px !important;
 }
 .card-uno-label, .card-uno-label-small {
-    color: #E6CA1E;
+    color: #f8db22;
     letter-spacing: .05rem;
     -webkit-transform:rotate(45deg);
     transform: rotate(45deg);
@@ -157,7 +157,7 @@
     transform: rotate(-30deg);
 }
 .card-uno-label {
-    color: #E6CA1E;
+    color: #f8db22;
     font-size: 35px;
     -webkit-transform:rotate(45deg);
     transform: rotate(45deg);
@@ -212,19 +212,19 @@
 }
 
 .card.red{
-  color:#C72A18;
+  color:#ee161f;
 }
 
 .card.red .inner{
-  background:#C72A18;
+  background:#ee161f;
 }
 
 .card.yellow{
-  color:#E6CA1E;
+  color:#f8db22;
 }
 
 .card.yellow .inner{
-  background:#E6CA1E;
+  background:#f8db22;
 }
 
 
@@ -305,9 +305,9 @@
 }
 .card.num-6.red .card-value:after,
 .card.num-9.red .card-value:after{
-    background:#C72A18;
+    background:#ee161f;
 }
 .card.num-6.yellow .card-value:after,
 .card.num-9.yellow .card-value:after{
-    background:#E6CA1E;
+    background:#f8db22;
 } */
