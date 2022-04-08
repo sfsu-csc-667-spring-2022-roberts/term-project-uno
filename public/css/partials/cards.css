@@ -62,7 +62,7 @@
     border-top: 11px !important;
     border-bottom: 11px !important;
     border: 17px solid #ee161f;
-    background:#ee161f;;
+    background:#ee161f;
 
 }
 .card-uno-label-small {
@@ -83,7 +83,7 @@
     color:#000000;
 }
   
-.card-b.black .inner-b{
+  .card-b.black .inner-b{
     background:#000000;
 }
 
@@ -295,19 +295,3 @@
     height:4px;
     box-shadow:1px 1px 0 #000000;
 }
-/* .card.num-6.blue .card-value:after,
-.card.num-9.blue .card-value:after{
-    background:#0063B3;
-}
-.card.num-6.green .card-value:after,
-.card.num-9.green .card-value:after{
-    background:#18A849;
-}
-.card.num-6.red .card-value:after,
-.card.num-9.red .card-value:after{
-    background:#ee161f;
-}
-.card.num-6.yellow .card-value:after,
-.card.num-9.yellow .card-value:after{
-    background:#f8db22;
-} */

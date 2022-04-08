@@ -11,6 +11,7 @@ const { verifyToken } = require('./lib/utils/token');
 const testRouter = require('./routes/test');
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
+const gamesRouter = require('./routes/games');
 
 const app = express();
 
@@ -41,6 +42,7 @@ app.use(express.static(path.join(__dirname, '/public')));
 app.use('/test', testRouter);
 app.use('/', indexRouter);
 app.use('/api/users', usersRouter);
+app.use('/api/games', gamesRouter);
 app.use(verifyToken);
 
 // catch 404 and forward to error handler
