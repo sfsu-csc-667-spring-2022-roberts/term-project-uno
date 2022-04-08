@@ -43,10 +43,10 @@ let mainDeck = [
 
 let messages = [
     { id: 1, sender: "snowpuff808", message: "You're trash, kys ", time: "5:49 PM" },
-    { id: 2, sender: "dawggydawg6969", message: "Look whose talking bruh, you have a whole ass 15 cards", time: "5:51 PM" },
-    { id: 3, sender: "snowpuff808", message: "Keep running your mouth, I'll be sure to place a +4 on your ass", time: "5:53 PM" },
+    { id: 2, sender: "dawggydawg6969", message: "Look who's talking bruh, you have a whole ass 15 cards", time: "5:51 PM" },
+    { id: 3, sender: "snowpuff808", message: "Keep running your mouth, I'll be sure to place a +4 on your ass >;)", time: "5:53 PM" },
     { id: 4, sender: "dawggydawg6969", message: "and you eat ass... a ha ha", time: "5:53 PM" },
-    { id: 5, sender: "saggyballs", message: "Chill guys, relax...just play the game", time: "5:55 PM" },
+    { id: 5, sender: "saggyballs", message: "Chill guys, relax... just play the game ;(", time: "5:55 PM" },
 ];
 
 let count = 6;
