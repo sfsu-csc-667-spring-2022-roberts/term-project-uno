@@ -37,6 +37,12 @@ router.get('/create-lobby', verifyToken, (req,res) => {
   res.render('create-lobby', {layout: false, title: 'Create Lobby', authenticated, user: req.user});
 });
 
+router.get('/lobby', verifyToken, (req,res) => {
+  const authenticated = req.user != undefined;
+
+  res.render('lobby', {layout: false, title: 'Lobby', authenticated, user: req.user});
+});
+
 router.get('/find-lobby', verifyToken, (req,res) => {
   const authenticated = req.user != undefined;
 
