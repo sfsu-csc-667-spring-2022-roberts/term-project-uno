@@ -11,18 +11,18 @@
   <body>
     {{> navbar}}
     <main>
-      {{#if user}}
-      <ul id="menu">
-        <li>
-          <a href="/create-lobby">Create Lobby</a>
-        </li>
-        <li>
-          <a href="/find-lobby">Find Lobby</a>
-        </li>
-      </ul>
-      {{else}}
-      Hi
-      {{/if}}
+      <form id="menu">
+        <header>
+          <h2>Play Now</h2>
+        </header>
+        {{#if authenticated}}
+        <a href="/create-lobby">Create Lobby</a>
+        <a href="/find-lobby">Find Lobby</a>
+        {{else}}
+        <a href="/login">Create Lobby</a>
+        <a href="/login">Find Lobby</a>
+        {{/if}}
+      </form>
     </main>
   </body>
 </html>

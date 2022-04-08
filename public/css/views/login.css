@@ -51,7 +51,6 @@ main {
 }
 
 #loginForm {
-  background: #fafafa;
   display: flex;
   flex-direction: column;
   width: 21rem;
@@ -69,7 +68,7 @@ main {
 }
 
 #loginForm button {
-  background: #18A849;
+  background: #ee161f;
   color: white;
   font-weight: bold;
   border: none;
@@ -81,12 +80,12 @@ main {
 
 #loginForm header {
   display: flex;
-  background: #18A849;
+  background: #ee161f;
   margin: 0;
   height: 4rem;
   justify-content: center;
   align-items: center;
-  border-bottom: 0.2rem solid #15943f;
+  border-bottom: 0.2rem solid #d6151d;
 }
 
 #loginForm header h2 {

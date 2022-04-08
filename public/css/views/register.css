@@ -39,7 +39,6 @@ main {
 }
 
 #registerForm {
-  background: #fafafa;
   display: flex;
   flex-direction: column;
   width: 21rem;

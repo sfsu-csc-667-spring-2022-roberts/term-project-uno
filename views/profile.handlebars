@@ -11,23 +11,37 @@
   <body>
     {{> navbar}}
     <main>
-      <div class="profile-pic"></div>
-      <div class="profile-info-container">
+      <summary>
+        <header>
           <h1>{{requestedUser.username}}</h1>
-          <div class="statistic-headers">
-              <label>Games Played</label>
-              <label>Games Won</label>
-              <label>Win Percentage</label>
+        </header>
+        <section>
+          <div id="profile-pic">
+            {{#if requesterUser.pictureUrl}}
+            <img src="{{requestedUser.pictureUrl}}">
+            {{else}}
+            <img src="https://bethesdadentalhealth.com/wp-content/uploads/2016/10/profile-icon-png-898.png">
+            {{/if}}
           </div>
-          <div class="statistic-values">
-              <label>{{requestedUser.gamesPlayed}}</label>
-              <label>{{requestedUser.gamesWon}}</label>
-              <label id="winRatio">0%</label>
+          <div id="profile-info">
+            <div id="stats">
+              <div>
+                <label>Games Played</label>
+                <p>0</p>
+              </div>
+              <div>
+                <label>Games Won</label>
+                <p>0</p>
+              </div>
+              <div>
+                <label>Win Ratio</label>
+                <p>0%</p>
+              </div>
+            </div>
+            <span>Joined <time id="joined">{{requestedUser.createdAt}}</time></span>
           </div>
-          <div>
-            Joined <time id="joined">{{requestedUser.createdAt}}</time>
-          </div>
-      </div>
+        </section>
+      </summary>
     </main>
   </body>
   <script src="/js/views/profile.js" type="module"></script>
