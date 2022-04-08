@@ -10,13 +10,15 @@
   </head>
   <body>
     {{> navbar}}
-    <form id="loginForm">
-      <main>
+    <main>
+      <form id="loginForm">
+        <header>
+          <h2>Login</h2>
+        </header>
         <section class="input">
           <p class="error-message hidden" id="error">Invalid username and/or password</p>
         </section>
         <section class="input">
-          <label for="username">Username</label>
           <input 
             type="text" 
             placeholder="Username" 
@@ -25,7 +27,6 @@
             required>
         </section>
         <section class="input">
-          <label for="password">Password</label>
           <input 
             type="password" 
             placeholder="Password" 
@@ -35,10 +36,10 @@
         </section>
         <button type="submit">Login</button>
         <span>
-          Haven't registered? <a href="/register">Click here</a>
+          Not registered? <a href="/register">Sign up here</a>
         </span>
-      </main>
-    </form>
+      </form>
+    </main>
   </body>
   <script src="/js/views/login.js" type="module"></script>
 </html>

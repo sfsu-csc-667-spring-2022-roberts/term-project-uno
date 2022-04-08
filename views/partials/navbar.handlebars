@@ -1,15 +1,32 @@
 <nav id="nav-container">
-  <a id="logo" href="/">Team UNO</a>
-  <li class="dropdown">
-    <div id="nav-profile-pic"></div>
+  <img 
+    id="logo"
+    src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/UNO_Logo.svg/1280px-UNO_Logo.svg.png"
+  >
+  <ul id="nav-links">
+    <li>
+      <a href="/" class="nav-link">Home</a>
+    </li>
+    <li>
+      <a href="/find-lobby" class="nav-link">Lobbies</a>
+    </li>
+    <li>
+      <a href="/leaderboard" class="nav-link">Leaderboard</a>
+    </li>
+  </ul>
+  <input id="search-user" type="text" placeholder="Search Users">
+  {{#if user}}
+  <li id="dropdown">
+    <div id="nav-profile-pic">
+      {{#if user.pictureUrl}}
+      <img src="{{user.pictureUrl}}">
+      {{else}}
+      <img src="https://bethesdadentalhealth.com/wp-content/uploads/2016/10/profile-icon-png-898.png">
+      {{/if}}
+    </div>
     <ul id="profile-dropdown" class="dropdown-menu">
-      {{#if authenticated}}
       <li>
-        {{#if user}}
         <a href="/{{user.username}}" class="menu-item">Profile</a>
-        {{else}}
-        <a href="#" class="menu-item">Profile</a>
-        {{/if}}
       </li>
       <li>
         <a href="/settings" class="menu-item">Settings</a>
@@ -17,19 +34,17 @@
       <li>
         <button id="logout" class="menu-item">Logout</button>
       </li>
-      {{else}}
-      <li>
-        <a href="/login" class="menu-item">
-          Login
-        </a>
-      </li>
-      <li>
-        <a href="/register" class="menu-item">
-          Register
-        </a>
-      </li>
-      {{/if}}
     </ul>
   </li>
+  {{else}}
+  <ul id="unauthenticated-links">
+    <li>
+      <a href="/login" class="nav-link">Login</a>
+    </li>
+    <li>
+      <a href="/register" class="nav-link">Sign Up</a>
+    </li>
+  </ul>
+  {{/if}}
   <script src="/js/partials/navbar.js" type="module"></script>
 </nav>
