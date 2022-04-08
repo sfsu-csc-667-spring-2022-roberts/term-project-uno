@@ -74,7 +74,8 @@
     cursor: pointer;
 }
 #message-send-btn:hover {
-    box-shadow:0 0 5px #1981ff;
+    background-color:#1980ff80;
+    fill: white;
 }
 
 .message-container {
