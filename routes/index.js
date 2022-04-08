@@ -71,7 +71,7 @@ router.get('/:username', verifyToken, async (req, res, next) => {
 
 router.get('/games/:id(\\d+)', verifyToken, (req, res) => {
   const authenticated = req.user != undefined;
-  if (!authenticated) res.redirect("/");
+  if (!authenticated) res.redirect("/login");
   else res.render('game', {layout: false, title: `Game ${req.params.id}`, authenticated, user: req.user});
 });
 

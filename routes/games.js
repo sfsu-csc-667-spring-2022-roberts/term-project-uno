@@ -19,15 +19,7 @@ router.get('/:id', authenticate, async (req, res) => {
                 { id: 9, userID: 121, turnIndex: 0, username: "glizzy", cards: 7, avatar: "https://store.playstation.com/store/api/chihiro/00_09_000/container/CH/de/99/EP2402-CUSA05624_00-AV00000000000213/0/image?_version=00_09_000&platform=chihiro&bg_color=000000&opacity=100&w=330&h=330" },
                 { id: 10, userID: 552, turnIndex: 9, username: "flowerboy1", cards: 7, avatar: "https://store.playstation.com/store/api/chihiro/00_09_000/container/CH/de/99/EP2402-CUSA05624_00-AV00000000000213/0/image?_version=00_09_000&platform=chihiro&bg_color=000000&opacity=100&w=330&h=330" },
             ],
-            drawStack: [
-                { id: 2, color: "blue", value: 5, special: false },
-                { id: 8, color: "yellow", value: 9, special: false },
-                { id: 43, color: "blue", value: 4, special: false },
-                { id: 56, color: "red", value: 1, special: false },
-                { id: 1, color: "blue", value: 0, special: false },
-                { id: 38, color: "green", value: 3, special: false },
-            ],
-            playedCards: [
+            playedDeck: [
                 { id: 44, color: "red", value: 3, special: false },
                 { id: 8, color: "yellow", value: 7, special: false },
                 { id: 43, color: "blue", value: 7, special: false },
@@ -43,6 +35,7 @@ router.get('/:id', authenticate, async (req, res) => {
                 { id: 19, color: "green", value: 1, special: false },
                 { id: 32, color: "blue", value: 6, special: false },
             ],
+            drawDeckCount: 12,
             turnIndex: 0,
             currentColor: "red",
             playerOrderReversed: false,
@@ -60,6 +53,31 @@ router.get('/:id', authenticate, async (req, res) => {
         }
         gameState.players = players;
         res.json({ gameState });
+    } else res.status(401).json({ message: "Unauthorized" });
+});
+
+const messages = [
+    { id: 1, sender: "snowpuff808", message: "You're trash, kys ", createdAt: new Date() },
+    { id: 2, sender: "dawggydawg6969", message: "Look whose talking bruh, you have a whole ass 15 cards", createdAt: new Date() },
+    { id: 3, sender: "snowpuff808", message: "Keep running your mouth, I'll be sure to place a +4 on your ass", createdAt: new Date() },
+    { id: 4, sender: "dawggydawg6969", message: "and you eat ass... a ha ha", createdAt: new Date() },
+    { id: 5, sender: "saggyballs", message: "Chill guys, relax...just play the game", createdAt: new Date() },
+];
+let count = 6;
+
+router.get('/:id/messages', authenticate, async (req, res) => {
+    if (req.user) {
+        res.json({ messages });
+    } else res.status(401).json({ message: "Unauthorized" });
+});
+
+router.post('/:id/messages', authenticate, async (req, res) => {
+    if (req.user) {
+        const { message } = req.body;
+        const newMessage = { id: count, sender: req.user.username, message: message, createdAt: new Date() };
+        messages.push(newMessage);
+        count++;
+        res.json({ messages });
     } else res.status(401).json({ message: "Unauthorized" });
 });
 

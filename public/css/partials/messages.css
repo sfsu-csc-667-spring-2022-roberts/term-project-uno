@@ -1,7 +1,8 @@
 #message-icon {
     position: absolute;
     background-color: white;
-    top: 80px;
+    /* top: 80px; */
+    top: 40px;
     left: 40px;
     z-index: 5;
     width: 30px;
@@ -11,7 +12,6 @@
     padding: 5px;
     /* box-shadow:0 0 10px #aaaaaa; */
     box-shadow:0 0 10px #1981ff;
-
 }
 
 .hidden {
@@ -28,7 +28,8 @@
     border-radius: 8px;
     width: 320px;
     height: 50vh;
-    top: 130px;
+    /* top: 130px; */
+    top: 100px;
     left: 10px;
     z-index: 6;
     overflow: hidden;
@@ -73,7 +74,7 @@
     cursor: pointer;
 }
 #message-send-btn:hover {
-    box-shadow:0 0 5px #aaaaaa;
+    box-shadow:0 0 5px #1981ff;
 }
 
 .message-container {
