@@ -49,7 +49,7 @@ const getMessages = async () => {
 
 const sendMessage = async () => {
     if (messageInput.value.trim().length > 0) {
-        fetch(`/api/games/${parseInt(window.location.pathname.split('/')[2])}/messages`, {
+        fetch(`/api${window.location.pathname}/messages`, {
             method: 'POST',
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ message: messageInput.value })
