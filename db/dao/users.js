@@ -73,7 +73,7 @@ async function findUserByName(username) {
     if (results && results.length === 1) return Promise.resolve(results[0]);
     else return Promise.resolve(null);
   })
-  .catch((e) => Promise.reject(e));
+  .catch((err) => Promise.reject(err));
 }
 
 async function changeUsername(oldUsername, newUsername, password) {
@@ -84,11 +84,12 @@ async function changeUsername(oldUsername, newUsername, password) {
       SET username = replace(username, $2, $3)
       WHERE id = $4
       RETURNING id`,
-      ['Users', oldUsername, newUsername, userId]
-    ).then((results) => {
+      ['Users', oldUsername, newUsername, userId])
+    .then((results) => {
       if (results && results.length === 1) return Promise.resolve(results[0].id);
       else return Promise.resolve(-1);
-    });
+    })
+    .catch((err) => Promise.reject(err));
   } else throw new UserError('Invalid password', 401);
 }
 
@@ -107,7 +108,8 @@ async function changePassword(username, oldPassword, newPassword) {
     .then((results) => {
       if (results && results.length === 1) return Promise.resolve(results[0].id);
       else return Promise.resolve(-1);
-    });
+    })
+    .catch((err) => Promise.reject(err));
   } else throw new UserError('Invalid password', 401);
 }
 

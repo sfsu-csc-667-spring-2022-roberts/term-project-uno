@@ -5,7 +5,6 @@ const { generateToken, authenticate } = require('../lib/utils/token');
 const { validateRegister, validateLogin, validateChangeUsername,
   validateChangePassword } = require('../lib/validation/users');
 
-
 const router = express.Router();
 
 /* Get authenticated user info */
