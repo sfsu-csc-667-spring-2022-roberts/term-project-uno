@@ -2,8 +2,8 @@
 @import url(https://fonts.googleapis.com/css?family=Source+Sans+Pro:900);
 
 .card-b-small {
-  margin-bottom: 10px;
-  margin-right: -70px;
+  margin-top: -70px;
+  margin-left: -48px;
 }
 
 .card-b-big {
@@ -11,18 +11,34 @@
   margin-top: -70px;
 }
 
+.card-logo-small, .card-logo-big {
+  object-fit: contain;
+  -webkit-transform:rotate(-25deg);
+  transform: rotate(-25deg);
+  margin-top: 5px;
+}
+
+.card-logo-small {
+  width: 44px;
+  height: 30px;
+}
+.card-logo-big {
+  width: 74px;
+  height: 64px;
+}
+
 .card-b {
-    float:left;
+    /* float:left; */
     background:#fff;
     border-radius:5px;
     display:table;
     box-sizing:border-box;
     padding:5px;
-    margin-left: -17px;
-    margin-top: -70px;
+    /* margin-left: -17px; */
+    height: 70px;
+    width: fit-content;
+    /* margin-bottom: -70px; */
     font-family: 'Source Sans Pro', sans-serif;
-    -webkit-transform:rotate(270deg);
-    transform: rotate(270deg);
     text-shadow:
     -.5px  -1.2px 0 #ffffff,
     -.5px  .4px 0 #ffffff,
@@ -36,7 +52,7 @@
     0px  .4px   0 #ffffff,
    -1px  0px   0 #ffffff,
     0  0 0 #000000 !important;    
-    height: 0 !important;
+    /* height: 0 !important; */
   box-shadow:0 0 5px #aaaaaa;
   text-align:center;
   position:relative;
@@ -55,14 +71,15 @@
     display:inline-block;
     vertical-align:15%;
     margin-bottom: 0px !important;
-    padding:18px 9px;
+    padding:19px 0px;
     border-radius: 85%;
     -webkit-transform:rotate(30deg);
     transform: rotate(30deg);
     border-top: 11px !important;
     border-bottom: 11px !important;
-    border: 17px solid #ee161f;
+    /* border: 17px solid #ee161f; */
     background:#ee161f;
+
 
 }
 .card-uno-label-small {
@@ -70,13 +87,6 @@
 }
 .card-uno-label {
   font-size: 28px !important;
-}
-.card-uno-label, .card-uno-label-small {
-    color: #f8db22;
-    letter-spacing: .05rem;
-    -webkit-transform:rotate(45deg);
-    transform: rotate(45deg);
-    margin-top: 5px;
 }
 
 .card-b.black{
