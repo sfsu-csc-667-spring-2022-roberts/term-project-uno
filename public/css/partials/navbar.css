@@ -26,6 +26,10 @@
   height: auto;
 }
 
+#hidden-search-submit {
+  display: none;
+}
+
 #logo {
   height: 3.51rem;
   width: 5rem;
@@ -52,7 +56,7 @@
   margin-left: auto;
 }
 
-#search-user {
+#search-input {
   padding: 0.5rem;
 }
 
