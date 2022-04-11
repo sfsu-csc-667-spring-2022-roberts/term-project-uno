@@ -8,31 +8,14 @@ body {
   margin: 0;
 }
 
-button, input[type="submit"], input[type="reset"] {
-  display: block;
-  background: red;
-  color: white;
-  padding: 0.25rem;
-  border-radius: 0.25rem;
-  cursor: pointer;
-  font: inherit;
-  outline: inherit;
-  border: none;
-}
-
 main {
-  display: flex;
-  flex-direction: column;
-  margin-top: 5rem;
-  width: 15rem;
-}
-
-main > * {
-  margin-bottom: 0.5rem;
+  width: 100%;
+  height: 100%;
 }
 
 .hidden {
   display: none !important;
+  margin: 0 !important;
 }
 
 .error-message {
@@ -46,4 +29,59 @@ main > * {
 .input {
   display: flex;
   flex-direction: column;
+  margin: 1rem 2rem;
+}
+
+.input input {
+  outline: none;
+  border: 1px solid #e5e5e5;
+  box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 3px, rgba(0, 0, 0, 0.24) 0px 1px 2px;
+  padding: 0.5rem;
+}
+
+#registerForm {
+  display: flex;
+  flex-direction: column;
+  width: 21rem;
+  margin-top: 5rem;
+  border-radius: 0.5rem;
+  box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
+  padding: 0;
+  overflow: hidden;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+#registerForm > * {
+  margin-bottom: 0.5rem;
+}
+
+#registerForm button {
+  background: #ee161f;
+  color: white;
+  font-weight: bold;
+  border: none;
+  padding: 0.5rem;
+  cursor: pointer;
+  border-radius: 0.5rem;
+  margin: 1rem 2rem;
+  box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 3px, rgba(0, 0, 0, 0.24) 0px 1px 2px;
+}
+
+#registerForm header {
+  display: flex;
+  background: #ee161f;
+  margin: 0;
+  height: 4rem;
+  justify-content: center;
+  align-items: center;
+  border-bottom: 0.2rem solid #d6151d;
+}
+
+#registerForm header h2 {
+  color: white;
+}
+
+#registerForm span {
+  margin: 0.5rem auto 1rem auto;
 }

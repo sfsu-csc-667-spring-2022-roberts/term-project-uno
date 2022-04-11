@@ -1,6 +1,6 @@
 const express = require('express');
 const IndexError = require('../helpers/error/IndexError');
-const { verifyToken } = require('../lib/utils/token');
+const { authenticate, verifyToken } = require('../lib/utils/token');
 const { validateUsername } = require('../lib/validation/users');
 const { findUserByName } = require('../db/dao/users');
 
@@ -24,17 +24,23 @@ router.get('/register', verifyToken, async (req, res) => {
   res.render('register', {layout: false, title: 'Register', authenticated, user: req.user});
 });
 
-router.get('/settings', verifyToken, (req, res) => {
+router.get('/settings', authenticate, (req, res) => {
   const authenticated = req.user != undefined;
 
   res.render('settings', {layout: false, title: 'User Settings', authenticated, user: req.user});
 });
 
 
-router.get('/create-lobby', verifyToken, (req,res) => {
+router.get('/create-lobby', authenticate, (req,res) => {
   const authenticated = req.user != undefined;
 
   res.render('create-lobby', {layout: false, title: 'Create Lobby', authenticated, user: req.user});
+});
+
+router.get('/lobby', authenticate, (req,res) => {
+  const authenticated = req.user != undefined;
+
+  res.render('lobby', {layout: false, title: 'Lobby', authenticated, user: req.user});
 });
 
 router.get('/find-lobby', verifyToken, (req,res) => {
@@ -60,6 +66,10 @@ router.get('/:username', verifyToken, async (req, res, next) => {
     return next(new IndexError('Cannot find user "' + username + '"', 404));
   }
   
+  const { gamesPlayed, gamesWon } = requestedUser;
+  const winRate = gamesPlayed > 0 ? (gamesWon / gamesPlayed).toFixed(4) * 100 : 0;
+  requestedUser['winRate'] = winRate;
+
   res.render('profile', {
     layout: false,
     title: username,
@@ -69,11 +79,10 @@ router.get('/:username', verifyToken, async (req, res, next) => {
   });
 });
 
-// /games/:id(\\d+) <-- use this after the lobby page is created
 router.get('/games/:id(\\d+)', verifyToken, (req, res) => {
   const authenticated = req.user != undefined;
-
-  res.render('game', {layout: false, title: `Game ${req.params.id}`, authenticated, user: req.user});
+  if (!authenticated) res.redirect("/login");
+  else res.render('game', {layout: false, title: `Game ${req.params.id}`, authenticated, user: req.user});
 });
 
 

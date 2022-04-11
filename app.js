@@ -11,6 +11,8 @@ const { verifyToken } = require('./lib/utils/token');
 const testRouter = require('./routes/test');
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
+const lobbiesRouter = require('./routes/lobbies');
+const gamesRouter = require('./routes/games');
 
 const app = express();
 
@@ -32,7 +34,7 @@ app.engine('handlebars', hbs.engine);
 app.set('view engine', 'handlebars');
 app.set('views', path.join(__dirname, 'views'));
 
-app.use(logger('dev'));
+if (process.env.NODE_ENV === 'development') app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
@@ -41,6 +43,8 @@ app.use(express.static(path.join(__dirname, '/public')));
 app.use('/test', testRouter);
 app.use('/', indexRouter);
 app.use('/api/users', usersRouter);
+app.use('/api/lobbies', lobbiesRouter);
+app.use('/api/games', gamesRouter);
 app.use(verifyToken);
 
 // catch 404 and forward to error handler
