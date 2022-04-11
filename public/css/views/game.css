@@ -6,7 +6,8 @@ body {
 }
 
 .cards-container {
-  border: 1px solid black;
+  /* border: 1px solid rgb(176, 176, 176);
+  text-shadow: 2px 0 0 black; */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -15,11 +16,11 @@ body {
 #draw-and-play-cards-container {
   display: flex;
   justify-content: center;
-  gap: 150px;
+  gap: 130px;
   position: absolute;
-  top: 55%;
+  top: 50%;
   left: 50%;
-  margin-left: -105px;
+  margin-left: -100px;
 }
 
 #draw-deck {
@@ -34,7 +35,6 @@ body {
   position: relative;
   grid-template-columns: 1;
   grid-template-rows: 1;
-  margin-top: -18px;
 }
 
 .draw-play-deck-item {
@@ -49,23 +49,23 @@ body {
   justify-content: center;
   align-content: center;
   position: absolute;
-  bottom: 0;
+  bottom: 15px;
 }
 
 #main-player-deck-grid {
   display: grid;
   width: 100%;
-  grid-template-columns: repeat(9, 60px);
+  grid-template-columns: repeat(20, 40px);
   grid-auto-rows: 1fr;
   justify-content: center;
   align-content: center;
   position: absolute;
-  bottom: 0;
+  bottom: 15px;
 }
 
 #players-left, #players-right, #players-top {
   display: flex;
-  align-items: center;
+  
   position: absolute;
   justify-content: center;
 }
@@ -80,62 +80,80 @@ body {
 }
 
 #players-right {
-  top: 135px;
+  /* top: 135px; */
+  bottom: 30px;
   right: 0;
 }
 
 #players-top {
   /* top: 64px; */
+  align-items: center;
   top: 0;
-  height: 80px;
   width: 80%;
   left: 9%;    
 }
 
 .players-top-item, .players-left-item, .players-right-item {
   display: flex;
-  margin: auto;
   z-index: -1;
+  gap: 15px;
 }
 
 .players-top-item {
   flex-direction: column;
-  gap: 100px;
+  margin-left: auto;
+  margin-right: auto;
+  gap: 80px;
 }
 
 .players-left-item {
-  gap: 20px;
+  margin-top: auto;
+  margin-bottom: auto;
 }
 
 .players-right-item {
+  margin-top: auto;
+  margin-bottom: auto;
   flex-direction: row-reverse;
-  gap: 20px;
 }
 
 .players-top-deck, .players-right-deck, .players-left-deck {
   display: grid;
-  align-self: center;
-  width: 100px;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns:repeat(12, 1fr);
   grid-auto-rows: 1fr;
+  justify-content: center;
+  align-self: center;
+  border: 1px solid black;
 }
 
-.players-top-deck {
-  margin-left: calc(50% - 8px);
-  margin-right: auto;
-  margin-top: -30px;
+.players-top-deck-flex, .players-right-deck-flex, .players-left-deck-flex {
+  display: flex;
+  justify-content: center;
+  align-self: center;
+  border: 1px solid black;
+}
+
+.players-top-deck, .players-top-deck-flex {
+  margin-top: -35px;
+  margin-left: -50px;
   -webkit-transform:rotate(180deg);
   transform: rotate(180deg);
 }
 
-.players-right-deck {
-  margin-right: -60px;
+.players-right-deck, .players-right-deck-flex {
+  margin-top: -48px;
+  margin-right: -50px;
+  width: 60px;
+  /* margin-right: -60px; */
   -webkit-transform:rotate(270deg);
   transform: rotate(270deg);
 }
 
-.players-left-deck {
-  margin-left: -60px;
+.players-left-deck, .players-left-deck-flex {
+  /* margin-left: -60px; */
+  width: 60px;
+  margin-bottom: -48px;
+  margin-left: -50px;
   -webkit-transform:rotate(-270deg);
   transform: rotate(-270deg);
 }
@@ -144,24 +162,20 @@ body {
   display: flex;
   flex-direction: column;
   gap: 5px;
-  align-self: center;
-
+  /* align-self: center; */
+  width: 200px;
 }
 .player-avatar-div {
-  margin-left: 12px;
+  margin-top: auto;
 }
+
 .player-avatar-div-left {
-  margin-top: 70px;
-  width: 200px;
+  /* margin-top: 70px; */
   margin-left: auto;
-  margin-right: auto;
   z-index: 2;
 }
 
 .player-avatar-div-right {
-  width: 200px !important;
-  margin-top: -55px;
-  margin-left: auto;
   margin-right: auto;
   z-index: 2;
 }
@@ -203,6 +217,82 @@ body {
   font-weight: 800;
   box-shadow:0 0 10px #1981ff;
 }
-#leave-game-btn:hover {
+#leave-game-btn:hover, #leave-btn-confirm:hover, #leave-btn-cancel:hover {
   box-shadow:0 0 10px red;
 }
+
+#leave-popup-div-container {
+  display: flex;
+  position: fixed;
+  justify-content: center;
+  z-index: 8;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  top: 0;
+  /* background-color: #eff1f3b0; */
+  background-color: #4d4d4db0;
+}
+
+#leave-popup-div {
+  background-color: white;
+  width: 600px;
+  overflow: hidden;
+  padding-bottom: 30px;
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  margin: auto;
+  box-shadow: rgba(0, 0, 0, 0.3) 0px 19px 38px, rgba(0, 0, 0, 0.22) 0px 15px 12px;
+  border-radius: 12px;
+  transition: all 5s ease-in-out;
+}
+
+#leave-popup-div header {
+  display: flex;
+  background: #ee161f;
+  color: white;
+  margin: 0;
+  padding: 5px;
+  height: 4rem;
+  justify-content: center;
+  align-items: center;
+  border-bottom: 0.2rem solid #d6151d;
+}
+
+#leave-popup-div button {
+  display: block;
+  background: #ee161f;
+  text-decoration: none;
+  color: white;
+  padding: 0.5rem;
+  /* margin: 1rem 2rem 0 2rem; */
+  border-radius: 0.5rem;
+  font-weight: bold;
+  cursor: pointer;
+  text-align: center;
+  border-style: hidden;
+  width: 200px;
+  box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 3px, rgba(0, 0, 0, 0.24) 0px 1px 2px;
+}
+
+#leave-btns-container {
+  display: flex;
+  margin-top: 20px;
+  justify-content: center;
+  align-content: center;
+  gap: 50px;
+}
+
+/* #leave-btn-confirm, #leave-btn-cancel {
+  color: black;
+  background-color: white;
+  font-size: 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  padding: 10px;
+  font-family: inherit;
+  border-style: hidden;
+  font-weight: 800;
+  box-shadow:0 0 10px #1981ff;
+} */

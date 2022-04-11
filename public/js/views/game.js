@@ -2,10 +2,27 @@
 const playersLeftContainer = document.getElementById("players-left");
 const playersTopContainer = document.getElementById("players-top");
 const playersRightContainer = document.getElementById("players-right");
-const mainDeckDiv = document.createElement("div");
 const mainDeckContainer = document.getElementById("main-deck-container");
 const drawDeckDiv = document.getElementById("draw-deck");
 const playedDeckDiv = document.getElementById("played-deck");
+const leaveBtn = document.getElementById("leave-game-btn");
+const mainDeckDiv = document.createElement("div");
+const leavePopUpDiv = document.createElement("div");
+
+// ------ game listeners
+
+leaveBtn.onclick = (e) => {
+    leavePopUpDiv.setAttribute("id", "leave-popup-div-container");
+    leavePopUpDiv.innerHTML = "<div id='leave-popup-div'><header><h2>Are you sure you want to leave the game?</h2></header><h5>This will count as a loss</h5><div id='leave-btns-container'><button id='leave-btn-cancel'>Cancel</button><button id='leave-btn-confirm'>Leave</button></div></div>";
+    document.body.appendChild(leavePopUpDiv);
+    document.getElementById("leave-btn-cancel").onclick = (e) => {
+        document.body.removeChild(leavePopUpDiv);
+    }
+    document.getElementById("leave-btn-confirm").onclick = (e) => {
+        window.location.replace("/");
+    }
+}
+
 
 // ------ game methods
 const getGameState = async () => {
@@ -81,18 +98,19 @@ const buildGameBoard = async (players) => {
 const createPlayer = (player, placement, position) => {
     let cardsString = "";
     for (let i = 0; i < player.cards; i++) {
+        if (i > 23) break;
         cardsString += createCard({}, "player");
     }
     switch (placement) {
         case "left": {
             return (
                 `<div id="${player.id}" class="players-left-item">
-                    <div id="players-left-${position}-deck" class="players-left-deck">
+                    <div id="players-left-${position}-deck" class="${player.cards < 12 ? "players-left-deck-flex" : "players-left-deck"}">
                         ${cardsString}
                     </div>
                     <div class="player-avatar-div-left">
                         <img alt="player avatar" class="player-avatar" src="${player.avatar}" />
-                        <label class="player-username">${player.username}</label>
+                        <label class="player-username">${player.username} <label style="display:inline; color: #FFFFFF; text-shadow: 2px 1px 2px #000000; font-size: 12px; margin-left: 5px; z-index:3;">${player.cards}</label></label>
                     </div>
                 </div>`
             );
@@ -100,12 +118,12 @@ const createPlayer = (player, placement, position) => {
         case "top": {
             return (
                 `<div id="${player.id}" class="players-top-item">
-                    <div id="players-top-${position}-deck" class="players-top-deck">
+                    <div id="players-top-${position}-deck" class="${player.cards < 12 ? "players-top-deck-flex" : "players-top-deck"}">
                         ${cardsString}
                     </div>
                     <div class="player-avatar-div">
                         <img alt="player avatar" class="player-avatar" src="${player.avatar}" />
-                        <label class="player-username">${player.username}</label>
+                        <label class="player-username">${player.username} <label style="display:inline; color: #FFFFFF; text-shadow: 2px 1px 2px #000000; font-size: 12px; margin-left: 5px; z-index:3;">${player.cards}</label></label>
                     </div>
                 </div>`
             );
@@ -113,12 +131,12 @@ const createPlayer = (player, placement, position) => {
         case "right": {
             return (
                 `<div id="${player.id}" class="players-right-item">
-                    <div id="players-right-${position}-deck" class="players-right-deck">
+                    <div id="players-right-${position}-deck" class="${player.cards < 12 ? "players-right-deck-flex" : "players-right-deck"}">
                         ${cardsString}
                     </div>
                     <div class="player-avatar-div-right">
                         <img alt="player avatar" class="player-avatar" src="${player.avatar}" />
-                        <label class="player-username">${player.username}</label>
+                        <label class="player-username"><label style="color: #FFFFFF; text-shadow: 2px 1px 2px #000000; font-size: 12px; margin-right: 5px;">${player.cards}</label> ${player.username}</label>
                     </div>
                 </div>`
             );
@@ -134,7 +152,7 @@ const createCard = (card, type) => {
                 `<div class="card-b black draw-play-deck-item card-b-big" onclick="drawCard(this);">
                     <span class="inner-b">
                         <span class="mark-black">
-                            <div class="card-uno-label">UNO</div>
+                            <img class="card-logo-big" src="/images/uno-logo.png" alt="card logo"/>
                         </span>
                     </span>
                 </div>`
@@ -167,7 +185,7 @@ const createCard = (card, type) => {
                 `<div class="card-b black card-b-small">
                     <span class="inner-b">
                         <span class="mark-black">
-                            <div class="card-uno-label-small">UNO</div>
+                            <img class="card-logo-small" src="/images/uno-logo.png" alt="card logo"/>
                         </span>
                     </span>
                 </div>`
@@ -188,7 +206,7 @@ const getPlayedDeck = async (playedDeck) => {
 };
 
 const getMainPlayerDeck = async (mainDeck) => {
-    mainDeck.length > 9 ? mainDeckDiv.setAttribute("id", "main-player-deck-grid") : mainDeckDiv.setAttribute("id", "main-player-deck-flex");
+    mainDeck.length > 15 ? mainDeckDiv.setAttribute("id", "main-player-deck-grid") : mainDeckDiv.setAttribute("id", "main-player-deck-flex");
     mainDeckDiv.innerHTML = "";
     mainDeck.forEach(card => mainDeckDiv.innerHTML = mainDeckDiv.innerHTML + createCard(card, "main"));
     mainDeckContainer.appendChild(mainDeckDiv);
