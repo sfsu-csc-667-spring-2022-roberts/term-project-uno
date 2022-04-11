@@ -13,6 +13,10 @@
     /* box-shadow:0 0 10px #aaaaaa; */
     box-shadow:0 0 10px #1981ff;
 }
+#message-icon:hover {
+    box-shadow:0 0 10px red;
+  }
+  
 
 .hidden {
     display: none !important;
@@ -24,7 +28,7 @@
     flex-direction: column;
     background-color: white;
     /* box-shadow:0 0 5px #aaaaaa; */
-    box-shadow:0 0 20px #1981ff;
+    box-shadow:0 0 5px #1981ff;
     border-radius: 8px;
     width: 320px;
     height: 50vh;
