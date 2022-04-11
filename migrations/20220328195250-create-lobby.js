@@ -8,6 +8,16 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
+      hostId: {
+        allowNull: false,
+        type: Sequelize.INTEGER,
+        references: {
+          model: 'Users',
+          key: 'id'
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'NO ACTION'
+      },
       name: {
         type: Sequelize.STRING,
         allowNull: false,
@@ -26,6 +36,16 @@ module.exports = {
           min: 2,
           max: 10
         }
+      },
+      busy: {
+        type: Sequelize.BOOLEAN,
+        allowNull: false,
+        defaultValue: false
+      },
+      createdAt: {
+        allowNull: false,
+        type: Sequelize.DATE,
+        defaultValue: Sequelize.fn('now')
       }
     });
   },

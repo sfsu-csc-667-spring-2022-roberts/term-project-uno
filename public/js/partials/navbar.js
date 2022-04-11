@@ -1,20 +1,22 @@
-document.getElementById('nav-profile-pic').addEventListener('click', (event) => {
-  const element = document.querySelector('#profile-dropdown');
-  const removeClickListener = () => {
-    document.removeEventListener('click', outsideClickListener);
-  }
-  const outsideClickListener = (e) => {
-    if (!element.contains(e.target) && element.classList.contains('dropdown-menu-visible')) {
-      element.setAttribute('class', 'dropdown-menu');
-      removeClickListener();
+const navProfilePic = document.getElementById('nav-profile-pic');
+if (navProfilePic) {
+  navProfilePic.addEventListener('click', (event) => {
+    const element = document.querySelector('#profile-dropdown');
+    const removeClickListener = () => {
+      document.removeEventListener('click', outsideClickListener);
     }
-  }
-  
-  event.stopPropagation();
-  document.addEventListener('click', outsideClickListener);
-  element.setAttribute('class', 'dropdown-menu-visible');
-});
-
+    const outsideClickListener = (e) => {
+      if (!element.contains(e.target) && element.classList.contains('dropdown-menu-visible')) {
+        element.setAttribute('class', 'dropdown-menu');
+        removeClickListener();
+      }
+    }
+    
+    event.stopPropagation();
+    document.addEventListener('click', outsideClickListener);
+    element.setAttribute('class', 'dropdown-menu-visible');
+  });
+}
 
 const logout = document.getElementById('logout');
 if (logout) {

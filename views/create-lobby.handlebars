@@ -18,7 +18,7 @@
         <output id="num-players-output" class="num-players-output">2</output>
         <div id="private-container" class="private-container">
           <div>
-            <input type="checkbox" id="private-checkbox" onclick={private()}>
+            <input type="checkbox" id="private-checkbox">
             <label for="private-checkbox">Private</label>
           </div>
         </div>
@@ -26,20 +26,5 @@
       </main>
     </form>
   </body>
+  <script src="/js/views/create-lobby.js" type="module"></script>
 </html>
-
-<script>
-  function private() {
-    if(document.getElementById("private-checkbox").checked == true) {
-      let passwordInput = document.createElement('input');
-      passwordInput.id = 'password-input';
-      passwordInput.class = 'password-input';
-      passwordInput.placeholder = "Password";
-      passwordInput.required = true;
-      document.getElementById("private-container").appendChild(passwordInput);
-    }
-    else {
-      document.getElementById("private-container").removeChild(document.getElementById("password-input"));
-    }
-  }
-</script>

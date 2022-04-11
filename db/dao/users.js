@@ -1,6 +1,8 @@
 const db = require('../index');
 const bcrypt = require('bcrypt');
 
+const UserError = require('../../helpers/error/UserError');
+
 async function usernameExists(username) {
   return db.query(`
     SELECT id 
@@ -71,7 +73,44 @@ async function findUserByName(username) {
     if (results && results.length === 1) return Promise.resolve(results[0]);
     else return Promise.resolve(null);
   })
-  .catch((e) => Promise.reject(e));
+  .catch((err) => Promise.reject(err));
+}
+
+async function changeUsername(oldUsername, newUsername, password) {
+  const userId = await authenticate(oldUsername, password);
+  if (userId > 0) {
+    return db.query(`
+      UPDATE $1:name
+      SET username = replace(username, $2, $3)
+      WHERE id = $4
+      RETURNING id`,
+      ['Users', oldUsername, newUsername, userId])
+    .then((results) => {
+      if (results && results.length === 1) return Promise.resolve(results[0].id);
+      else return Promise.resolve(-1);
+    })
+    .catch((err) => Promise.reject(err));
+  } else throw new UserError('Invalid password', 401);
+}
+
+async function changePassword(username, oldPassword, newPassword) {
+  const userId = await authenticate(username, oldPassword);
+  if (userId > 0) {
+    return bcrypt.hash(newPassword, 8)
+    .then((newHashedPassword) => {
+      return db.query(`
+        UPDATE $1:name
+        SET password = $2
+        WHERE id = $3
+        RETURNING id`,
+        ['Users', newHashedPassword, userId])
+    })
+    .then((results) => {
+      if (results && results.length === 1) return Promise.resolve(results[0].id);
+      else return Promise.resolve(-1);
+    })
+    .catch((err) => Promise.reject(err));
+  } else throw new UserError('Invalid password', 401);
 }
 
 module.exports = {
@@ -80,4 +119,6 @@ module.exports = {
   authenticate,
   findUserById,
   findUserByName,
+  changeUsername,
+  changePassword
 };
