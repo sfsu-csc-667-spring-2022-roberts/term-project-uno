@@ -10,7 +10,7 @@ router.get('/:id', authenticate, async (req, res) => {
             const gameState = {
                 players: [
                     { id: 1, userID: 521, turnIndex: 4, username: "saggyballs", cards: 7, avatar: "https://store.playstation.com/store/api/chihiro/00_09_000/container/CH/de/99/EP2402-CUSA05624_00-AV00000000000213/0/image?_version=00_09_000&platform=chihiro&bg_color=000000&opacity=100&w=330&h=330" },
-                    { id: 2, userID: user.id, turnIndex: 7, username: user.username, cards: 1, avatar: user.pictureUrl },
+                    { id: 2, userID: user.id, turnIndex: 7, username: user.username, cards: 2, avatar: user.pictureUrl },
                     { id: 3, userID: 222, turnIndex: 6, username: "coolguy905", cards: 10, avatar: "https://store.playstation.com/store/api/chihiro/00_09_000/container/CH/de/99/EP2402-CUSA05624_00-AV00000000000213/0/image?_version=00_09_000&platform=chihiro&bg_color=000000&opacity=100&w=330&h=330" },
                     { id: 4, userID: 319, turnIndex: 1, username: "joemomma", cards: 29, avatar: "https://store.playstation.com/store/api/chihiro/00_09_000/container/CH/de/99/EP2402-CUSA05624_00-AV00000000000213/0/image?_version=00_09_000&platform=chihiro&bg_color=000000&opacity=100&w=330&h=330" },
                     { id: 5, userID: 401, turnIndex: 5, username: "horse666fivefive", cards: 29, avatar: "https://store.playstation.com/store/api/chihiro/00_09_000/container/CH/de/99/EP2402-CUSA05624_00-AV00000000000213/0/image?_version=00_09_000&platform=chihiro&bg_color=000000&opacity=100&w=330&h=330" },
