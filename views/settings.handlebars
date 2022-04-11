@@ -11,33 +11,54 @@
   <body>
     {{> navbar}}
     <main>
-    <div class="pic-settings-container" onclick={uploadFile()}>
-        <img class="profile-pic"></img>
-        <div class="hover-info-container">
-            <p>Click to Edit</p>
-            <input type="file" accept="image/*" id="file-upload" class="file-upload" ></input>
-        </div>
-    </div>
-    <div class="profile-info-container">
-        <h1>{{user.username}}</h1>
-        <form>
-          <h2>Change Username</h1>
-          <input type="text" placeholder="Username" required>
-          <button type="submit">Save</button>
-        </form>
-        <form>
-          <h2>Change Password</h1>
-          <input type="text" placeholder="Old Password" required>
-          <input type="text" placeholder="New Password" required>
-          <button type="submit">Save</button>
-        </form>
-    </div>
+      <div id="settingsForm">
+        <header><h2>Settings</h2></header>
+        <section id="settings">
+          <form id="pictureForm">
+              <div id="profile-pic">
+                {{#if user.pictureUrl}}
+                <img src="{{user.pictureUrl}}">
+                {{else}}
+                <img src="https://bethesdadentalhealth.com/wp-content/uploads/2016/10/profile-icon-png-898.png">
+                {{/if}}
+              </div>
+              <label id="upload-pic">
+                <input type="file" accept="image/*" id="fileUpload">
+                Upload Profile Picture
+              </label>
+          </form>
+          <div id="profile-info-container">
+              <form id="changeUsername">
+                <h3>Username</h3>
+                <p class="error-message hidden" id="username-change-feedback"></p>
+                <div class="input">
+                  <input type="text" id="username" name="username" placeholder="{{user.username}}" required>
+                </div>
+                <div class="input">
+                  <input type="password" id="password" name="password" placeholder="Password" required>
+                </div>
+                <button type="submit">Change Username</button>
+              </form>
+              <form id="changePassword">
+                <h3>Password</h3>
+                <p class="error-message hidden" id="change-password-feedback"></p>
+                <div class="input">
+                  <input id="oldPassword" name="oldPassword" type="password" placeholder="Old Password" required>
+                </div>
+                <div class="input">
+                  <input id="newPassword" name="newPassword" type="password" placeholder="New Password" required>
+                  <p class="error-message hidden" id="new-password-error"></p>
+                </div>
+                <div class="input">
+                  <input id="confirmNewPassword" name="confirmNewPassword" type="password" placeholder="Confirm New Password" required>
+                  <p class="error-message hidden" id="confirm-password-error"></p>
+                </div>  
+                <button type="submit">Change Password</button>
+              </form>
+          </div>
+        </section>
+      </div>
     </main>
   </body>
+  <script src="/js/views/settings.js" type="module"></script>
 </html>
-
-<script>
-  function uploadFile() {
-    document.getElementById("file-upload").click();
-  }
-</script>

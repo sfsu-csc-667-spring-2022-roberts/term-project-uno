@@ -13,11 +13,11 @@
     <main>
       <summary>
         <header>
-          <h1>{{requestedUser.username}}</h1>
+          <h2>{{requestedUser.username}}</h2>
         </header>
         <section>
           <div id="profile-pic">
-            {{#if requesterUser.pictureUrl}}
+            {{#if requestedUser.pictureUrl}}
             <img src="{{requestedUser.pictureUrl}}">
             {{else}}
             <img src="https://bethesdadentalhealth.com/wp-content/uploads/2016/10/profile-icon-png-898.png">
@@ -27,15 +27,15 @@
             <div id="stats">
               <div>
                 <label>Games Played</label>
-                <p>0</p>
+                <p>{{requestedUser.gamesPlayed}}</p>
               </div>
               <div>
                 <label>Games Won</label>
-                <p>0</p>
+                <p>{{requestedUser.gamesWon}}</p>
               </div>
               <div>
-                <label>Win Ratio</label>
-                <p>0%</p>
+                <label>Win Rate</label>
+                <p>{{requestedUser.winRate}}%</p>
               </div>
             </div>
             <span>Joined <time id="joined">{{requestedUser.createdAt}}</time></span>
