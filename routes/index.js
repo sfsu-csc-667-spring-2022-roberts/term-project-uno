@@ -108,15 +108,19 @@ router.get('/lobby/:lobbyId', verifyToken, async (req, res, next) => {
       object["ready"] = lobbyGuests[i].userReady;
       guestAndStatus.push(object);
     }
+    console.log(req.user.id == hostId);
 
     res.render('lobby', {
       layout: false,
-      title: lobbyId,
+      title:  "Uno Lobby #"+lobbyId,
+      lobbyId: lobbyId,
       lobbyName: name,
       currentPlayers: lobbyGuests.length + 1,
       maxCount: playerCapacity,
       hostName: hostName,
+      hostId: hostId,
       guest: guestAndStatus,
+      isHost: req.user.id == hostId,
     });
   }
   

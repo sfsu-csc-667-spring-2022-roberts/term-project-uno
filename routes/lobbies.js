@@ -11,32 +11,29 @@ const router = express.Router();
 router.get('/', async (req, res) => {
   LobbyDao.findAllFreeLobbies()
   .then(async (results) => {
-    for(let i = 0; i<results.length;i++) {
-      if(results[i].password) {
-        results[i].type = "private";
+    const queries = [];
+
+    results.forEach((result) => {
+      if(result.password) {
+        result.type = "private";
       }
       else {
-        results[i].type = "public";
+        result.type = "public";
       }
-      delete results[i].password;
-      await LobbyGuestsDao.findAllLobbyGuests(results[i].id)
-      .then((lobbyGuests) => {
-        results[i].guests = lobbyGuests;
-      })
-      .catch((err) => {
-        console.error(err);
-        res.status(500).json({ message: 'An unexpected error occured' });
-      })
-      await UserDao.findUserById(results[i].hostId)
-      .then((user) => {
-        results[i].hostName = user.username;
-      })
-      .catch((err) => {
-        console.error(err);
-        res.status(500).json({ message: 'An unexpected error occured' });
-      })
-    }
-    // console.log(results);
+      delete result.password;
+
+      const formatLobbyInfo = async () => {
+        const lobbyGuests = await LobbyGuestsDao.findAllLobbyGuests(result.id);
+        const host = await UserDao.findUserById(result.hostId);
+        result.guests = lobbyGuests;
+        result.hostName = host.username;
+        console.log("hello!");
+      }
+      queries.push(formatLobbyInfo());
+    });
+
+    await Promise.allSettled(queries);
+
     res.json(results);
   })
   .catch((err) => {
@@ -78,7 +75,7 @@ router.get('/:id', authenticate, async (req, res) => {
 });
 
 /* Create a new lobby */
-router.post('/create', authenticate, async (req, res) => {
+router.post('/', authenticate, async (req, res) => {
   const hostId = req.user.id;
   const { lobbyName, maxPlayers} = req.body;
 
@@ -110,7 +107,7 @@ router.post('/create', authenticate, async (req, res) => {
 
 });
 
-router.post("/join/:id", authenticate, async (req, res) => {
+router.post("/:id/users", authenticate, async (req, res) => {
   const user = req.user.id;
   const { id } = req.params;
   let data;

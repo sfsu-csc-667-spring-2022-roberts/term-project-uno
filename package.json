@@ -23,7 +23,7 @@
     "jsonwebtoken": "^8.5.1",
     "morgan": "~1.9.1",
     "pg-promise": "^10.11.1",
-    "sequelize": "^6.17.0",
+    "sequelize": "^6.18.0",
     "sequelize-cli": "^6.4.1"
   },
   "devDependencies": {

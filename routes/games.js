@@ -2,7 +2,20 @@ const express = require('express');
 const { authenticate } = require('../lib/utils/token');
 const router = express.Router();
 
-/* Get game */
+/* Create game */
+router.post('/', authenticate, async (req, res) => {
+    try {
+        if (req.user) {
+            const user = req.user;
+
+            res.json({ message: "created"});
+        } else res.status(401).json({ message: "Unauthorized" });
+    } catch (err) {
+        res.status(500).json({message: "Something went wrong"});
+    }
+});
+
+/* Get game state */
 router.get('/:id', authenticate, async (req, res) => {
     try {
         if (req.user) {
@@ -49,7 +62,6 @@ router.get('/:id', authenticate, async (req, res) => {
                 currentColor: "red",
                 playerOrderReversed: false,
             };
-
             gameState.players.sort((a, b) => a.turnIndex - b.turnIndex);
             const mainPlayer = gameState.players.find(p => p.userID === user.id);
             const mainPlayerIndex = gameState.players.indexOf(mainPlayer);
@@ -68,6 +80,61 @@ router.get('/:id', authenticate, async (req, res) => {
     }
 });
 
+/* Delete game */
+router.delete('/:id', authenticate, async (req, res) => {
+    try {
+        if (req.user) {
+            const user = req.user;
+
+            res.json({ message: "Left the game" });
+        } else res.status(401).json({ message: "Unauthorized" });
+    } catch (err) {
+        res.status(500).json({message: "Something went wrong"});
+    }
+});
+
+/* Leave game */
+router.delete('/:id/players', authenticate, async (req, res) => {
+    try {
+        if (req.user) {
+            const user = req.user;
+
+            res.json({ message: "Left the game" });
+        } else res.status(401).json({ message: "Unauthorized" });
+    } catch (err) {
+        res.status(500).json({message: "Something went wrong"});
+    }
+});
+
+/* Play card */
+router.patch('/:id/playCard', authenticate, async (req, res) => {
+    try {
+        if (req.user) {
+            const user = req.user;
+
+            res.json({ gameState });
+        } else res.status(401).json({ message: "Unauthorized" });
+    } catch (err) {
+        res.status(500).json({message: "Something went wrong"});
+    }
+});
+
+/* Draw card */
+router.patch('/:id/drawCard', authenticate, async (req, res) => {
+    try {
+        if (req.user) {
+            const user = req.user;
+
+            res.json({ gameState });
+        } else res.status(401).json({ message: "Unauthorized" });
+    } catch (err) {
+        res.status(500).json({message: "Something went wrong"});
+    }
+});
+
+
+
+
 const messages = [
     { id: 1, sender: "snowpuff808", message: "You're trash, kys ", createdAt: new Date() },
     { id: 2, sender: "dawggydawg6969", message: "Look whose talking bruh, you have a whole ass 15 cards", createdAt: new Date() },
@@ -77,12 +144,14 @@ const messages = [
 ];
 let count = 6;
 
+/* Get messages */
 router.get('/:id/messages', authenticate, async (req, res) => {
     if (req.user) {
         res.json({ messages });
     } else res.status(401).json({ message: "Unauthorized" });
 });
 
+/* Send message */
 router.post('/:id/messages', authenticate, async (req, res) => {
     if (req.user) {
         const { message } = req.body;
