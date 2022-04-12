@@ -113,6 +113,20 @@ async function changePassword(username, oldPassword, newPassword) {
   } else throw new UserError('Invalid password', 401);
 }
 
+async function findUserBySimilarName(username) {
+  return db.query(`
+    SELECT id, username, $1:name, $2:name, $3:name, $4:name 
+    FROM $5:name 
+    WHERE username
+    LIKE $6`,
+    ['pictureUrl', 'gamesWon', 'gamesPlayed', 'createdAt', 'Users', `%${username}%`])
+  .then((results) => {
+    if (results && results.length > 0) return Promise.resolve(results);
+    else return Promise.resolve(null);
+  })
+  .catch((err) => Promise.reject(err));
+}
+
 module.exports = {
   usernameExists,
   create,
@@ -120,5 +134,6 @@ module.exports = {
   findUserById,
   findUserByName,
   changeUsername,
-  changePassword
+  changePassword,
+  findUserBySimilarName
 };

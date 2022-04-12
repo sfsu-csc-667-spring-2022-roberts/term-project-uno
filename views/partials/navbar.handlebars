@@ -14,7 +14,10 @@
       <a href="/leaderboard" class="nav-link">Leaderboard</a>
     </li>
   </ul>
-  <input id="search-user" type="text" placeholder="Search Users">
+  <form id="search-form">
+    <input id="search-input" type="text" placeholder="Search Users">
+    <input id="hidden-search-submit" type="submit">
+  </form>
   {{#if user}}
   <li id="dropdown">
     <div id="nav-profile-pic">

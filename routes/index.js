@@ -2,7 +2,7 @@ const express = require('express');
 const IndexError = require('../helpers/error/IndexError');
 const { authenticate, verifyToken } = require('../lib/utils/token');
 const { validateUsername } = require('../lib/validation/users');
-const { findUserByName, findUserById } = require('../db/dao/users');
+const { findUserByName, findUserBySimilarName, findUserById } = require('../db/dao/users');
 const { findLobby } = require('../db/dao/lobbies');
 const { findAllLobbyGuests } = require('../db/dao/lobbyGuests');
 const object = require('@hapi/joi/lib/types/object');
@@ -27,12 +27,22 @@ router.get('/register', verifyToken, async (req, res) => {
   res.render('register', {layout: false, title: 'Register', authenticated, user: req.user});
 });
 
+router.get('/search', verifyToken, async (req, res) => {
+  const authenticated = req.user != undefined;
+  const { q } = req.query;
+  const title = q ? `Search "${q}"` : `Search`;
+  let results;
+
+  if (q) results = await findUserBySimilarName(q);
+
+  res.render('search', { layout: false, title, authenticated, user: req.user, results, q});
+});
+
 router.get('/settings', authenticate, (req, res) => {
   const authenticated = req.user != undefined;
 
   res.render('settings', {layout: false, title: 'User Settings', authenticated, user: req.user});
 });
-
 
 router.get('/create-lobby', authenticate, (req,res) => {
   const authenticated = req.user != undefined;
