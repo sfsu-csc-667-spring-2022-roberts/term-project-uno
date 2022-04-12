@@ -8,7 +8,6 @@ window.addEventListener('load', () => {
   })
   .then(async (res) => {
     const data = await res.json();
-    // console.log(data);
     for(let i = 0; i<data.length; i++) {
       const { id, hostName, name, playerCapacity, guests, type } = data[i];
       const newLobby = document.createElement("div");
@@ -47,7 +46,7 @@ window.addEventListener('load', () => {
 async function joinLobby(lobbyId) {
   console.log("click");
   const url = window.location.protocol + '//' + window.location.host;
-  fetch(url + '/api/lobbies/join/' + lobbyId, {
+  fetch(url + '/api/lobbies/' + lobbyId + '/users', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
