@@ -16,7 +16,6 @@ router.get('/', authenticate, async (req, res) => {
 router.patch('/', authenticate, async (req, res) => {
   if (req.body.username && req.body.password) {
     const { error } = validateChangeUsername(req.body);
-    console.log(error + " \n " + req.body);
     if (error) return res.status(400).json({ message: error.details[0].message });
 
     const oldUsername = req.user.username;

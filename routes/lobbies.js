@@ -1,4 +1,3 @@
-const keys = require('@hapi/joi/lib/types/keys');
 const express = require('express');
 const LobbyDao = require('../db/dao/lobbies');
 const LobbyGuestsDao = require('../db/dao/lobbyGuests');

@@ -3,7 +3,6 @@ const bcrypt = require('bcrypt');
 
 const LobbyError = require('../../helpers/error/LobbyError');
 
-
 async function findLobbyGuests(guestId) {
   return db.query(`
     SELECT *
