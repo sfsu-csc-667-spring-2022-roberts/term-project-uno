@@ -80,6 +80,25 @@ async function findAllFreeLobbies() {
   .catch((err) => Promise.reject(err));
 }
 
+// async function authenticate(username, password) {
+//   let userId;
+//   return db.query(`
+//     SELECT id, username, password 
+//     FROM $1:name 
+//     WHERE username = $2`, ['Users', username])
+//   .then((results) => {
+//     if (results && results.length === 1) {
+//       userId = results[0].id;
+//       return bcrypt.compare(password, results[0].password);
+//     } else return Promise.resolve(-1);
+//   })
+//   .then((passwordsMatch) => {
+//     if (passwordsMatch) return Promise.resolve(userId);
+//     return Promise.resolve(-1);
+//   })
+//   .catch((e) => Promise.reject(e));
+// }
+
 module.exports = {
   createPrivate,
   createPublic, 

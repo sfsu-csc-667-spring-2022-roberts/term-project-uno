@@ -10,11 +10,11 @@
   </head>
   <body>
     {{> navbar}}
-    <form>
+    <form id="createLobbyForm">
       <main>
         <h2>Create Lobby</h2>
-        <input type="text" placeholder="Lobby Name" id="lobby-name-input" name="lobby-name" required>
-        <input type="range" min="2" max="10" value="1" id="num-players-slider" oninput="this.nextElementSibling.value = this.value">
+        <input type="text" placeholder="Lobby Name" id="lobby-name-input" name="lobbyName" required>
+        <input type="range" min="2" max="10" value="1" id="num-players-slider" oninput="this.nextElementSibling.value = this.value" name="maxPlayers">
         <output id="num-players-output" class="num-players-output">2</output>
         <div id="private-container" class="private-container">
           <div>

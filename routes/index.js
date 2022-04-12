@@ -2,7 +2,10 @@ const express = require('express');
 const IndexError = require('../helpers/error/IndexError');
 const { authenticate, verifyToken } = require('../lib/utils/token');
 const { validateUsername } = require('../lib/validation/users');
-const { findUserByName } = require('../db/dao/users');
+const { findUserByName, findUserById } = require('../db/dao/users');
+const { findLobby } = require('../db/dao/lobbies');
+const { findAllLobbyGuests } = require('../db/dao/lobbyGuests');
+const object = require('@hapi/joi/lib/types/object');
 
 const router = express.Router();
 
@@ -77,6 +80,38 @@ router.get('/:username', verifyToken, async (req, res, next) => {
     authenticated,
     requestedUser,
   });
+});
+
+router.get('/lobby/:lobbyId', verifyToken, async (req, res, next) => {
+  const { lobbyId } = req.params;
+  const requestedLobby = await findLobby(lobbyId);
+
+  if(requestedLobby) {
+    const { hostId, name, playerCapacity, busy } = requestedLobby[0];
+    const host = await findUserById(hostId);
+    const hostName = host.username;
+    const lobbyGuests = await findAllLobbyGuests(lobbyId);
+    let guestAndStatus = []
+    for(let i = 0; i<lobbyGuests.length; i++) {
+      const guest = await findUserById(lobbyGuests[i].userId)
+      object["username"] = guest.username
+      object["ready"] = lobbyGuests[i].userReady;
+      guestAndStatus.push(object);
+    }
+
+    res.render('lobby', {
+      layout: false,
+      title: lobbyId,
+      lobbyName: name,
+      currentPlayers: lobbyGuests.length + 1,
+      maxCount: playerCapacity,
+      hostName: hostName,
+      guest: guestAndStatus,
+    });
+  }
+  
+
+
 });
 
 router.get('/games/:id(\\d+)', verifyToken, (req, res) => {

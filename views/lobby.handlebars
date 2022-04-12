@@ -19,12 +19,14 @@
 
         <div class = "player-container">
         <div class="header-container">
-          <div class="lobby-name-header">Name</div>
-          <div class="player-count-header">Click to Kick</div>
+          <div class="lobby-name-header">{{lobbyName}}</div>
+          <div class="player-count-header">{{currentPlayers}}/{{maxCount}}</div>
         </div>
         <div class="lobby-container">
-            <div class="lobby-name">Chris</div>
-            <button type="button">Kick</button>
+            <div class="lobby-name">{{hostName}} (Host)</div>
+            {{#each guest}}
+              <div class="lobby-name">{{this.username}} Ready: {{this.ready}}</div>
+            {{/each}}
         </div>  
         </div>
 

@@ -1,3 +1,7 @@
+import serializeForm from '../lib/serializeForm.js';
+
+const createLobbyForm = document.getElementById('createLobbyForm');
+
 const privateCheckBox = document.getElementById('private-checkbox');
 
 if (privateCheckBox) {
@@ -5,6 +9,7 @@ if (privateCheckBox) {
     if(privateCheckBox.checked == true) {
       const passwordInput = document.createElement('input');
       passwordInput.id = 'password-input';
+      passwordInput.name = "password";
       passwordInput.class = 'password-input';
       passwordInput.placeholder = "Password";
       passwordInput.required = true;
@@ -15,3 +20,27 @@ if (privateCheckBox) {
     }
   });
 }
+
+createLobbyForm.addEventListener('submit', (event) => {
+  event.preventDefault();
+  event.stopPropagation();
+
+  const serializedData = serializeForm(createLobbyForm);
+  const url = window.location.protocol + '//' + window.location.host;
+
+  fetch(url + '/api/lobbies/create', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(serializedData)
+  })
+  .then(async (res) => {
+    if (res.redirected) {
+      window.location.href = res.url;
+    }
+  })
+  .catch((err) => {
+    console.error(err);
+  });
+});
