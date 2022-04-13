@@ -44,7 +44,6 @@ window.addEventListener('load', () => {
 });
 
 async function joinLobby(lobbyId) {
-  console.log("click");
   const url = window.location.protocol + '//' + window.location.host;
   fetch(url + '/api/lobbies/' + lobbyId + '/users', {
     method: 'POST',
