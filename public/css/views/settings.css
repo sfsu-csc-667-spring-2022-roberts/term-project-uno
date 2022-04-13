@@ -69,8 +69,10 @@ main {
 }
 
 #settingsForm button:hover {
-  transform: scale(1.2);
-  -webkit-transform: scale(1.2);
+  transform: scale(1.15);
+  -webkit-transform: scale(1.15);
+  -moz-transform: scale(1.15);
+  -o-transform: scale(1.15);
 }
 
 #settingsForm header {
@@ -133,8 +135,10 @@ main {
 }
 
 #upload-pic:hover {
-  transform: scale(1.2);
-  -webkit-transform: scale(1.2);
+  transform: scale(1.15);
+  -webkit-transform: scale(1.15);
+  -moz-transform: scale(1.15);
+  -o-transform: scale(1.15);
 }
 
 #upload-pic input[type=file] {
