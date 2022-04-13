@@ -51,9 +51,10 @@ async function findLobby(id) {
     SELECT *
     FROM $1:name
     WHERE id = $2`, ['Lobbies', id])
-  .then((results) => {
-    return Promise.resolve(results);
-  })
+    .then((results) => {
+      if (results && results.length === 1) return Promise.resolve(results);
+      else return Promise.resolve(null);
+    })
   .catch((err) => Promise.reject(err));
 }
 

@@ -122,10 +122,7 @@ router.get('/lobby/:lobbyId', verifyToken, async (req, res, next) => {
       guest: guestAndStatus,
       isHost: req.user.id == hostId,
     });
-  }
-  
-
-
+  } else res.redirect('/');
 });
 
 router.get('/games/:id(\\d+)', verifyToken, (req, res) => {
