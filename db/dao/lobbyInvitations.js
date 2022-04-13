@@ -9,7 +9,7 @@ async function create(userId, lobbyId) {
     .then((results) => {
       if (results && results.length === 1) {
         return Promise.resolve(results[0].lobbyId);
-      } else return Promise.resolve(null);
+      } else return Promise.resolve(-1);
     })
     .catch((err) => Promise.reject(err));
 }
@@ -20,7 +20,7 @@ async function findUsersInvitations(userId) {
     FROM $1:name
     WHERE $2:name = $3`, ['LobbyInvitations', 'userId', userId])
   .then((results) => {
-    if (results) return Promise.resolve(results);
+    if (results && results.length > 0) return Promise.resolve(results);
     else return Promise.resolve(null);
   })
   .catch((err) => Promise.reject(err));
@@ -32,8 +32,20 @@ async function findLobbysInvitations(lobbyId) {
     FROM $1:name
     WHERE $2:name = $3`, ['LobbyInvitations', 'lobbyId', lobbyId])
   .then((results) => {
-    if (results) return Promise.resolve(results);
+    if (results && results.length > 0) return Promise.resolve(results);
     else return Promise.resolve(null);
+  })
+  .catch((err) => Promise.reject(err));
+}
+
+async function removeUserInvitation(userId, lobbyId) {
+  return db.query(`
+    DELETE FROM $1:name
+    WHERE $2:name = $3 AND $4:name = $5
+    RETURNING *`, ['LobbyInvitations', 'userId', userId, 'lobbyId', lobbyId])
+  .then((results) => {
+    if (results && results.length === 1) return Promise.resolve(true);
+    else return Promise.resolve(false);
   })
   .catch((err) => Promise.reject(err));
 }
@@ -41,5 +53,6 @@ async function findLobbysInvitations(lobbyId) {
 module.exports = {
   create,
   findUsersInvitations,
-  findLobbysInvitations
+  findLobbysInvitations,
+  removeUserInvitation
 }

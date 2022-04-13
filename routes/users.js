@@ -7,11 +7,6 @@ const { validateRegister, validateLogin, validateChangeUsername,
 
 const router = express.Router();
 
-/* Get authenticated user info */
-router.get('/', authenticate, async (req, res) => {
-  res.redirect(`/${req.user.username}`);
-});
-
 /* Change user information */
 router.patch('/', authenticate, async (req, res) => {
   if (req.body.username && req.body.password) {
@@ -116,6 +111,11 @@ router.post('/login', async (req, res) => {
 router.post('/logout', authenticate, async(req, res) => {
   res.cookie('token', '', { httpOnly: true, maxAge: 1});
   return res.json();
+});
+
+/* Get authenticated user info */
+router.get('/me', authenticate, async (req, res) => {
+  res.redirect(`/${req.user.username}`);
 });
 
 module.exports = router;

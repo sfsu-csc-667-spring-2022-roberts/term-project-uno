@@ -1,9 +1,11 @@
 const express = require('express');
 const LobbyDao = require('../db/dao/lobbies');
 const LobbyGuestsDao = require('../db/dao/lobbyGuests');
+const LobbyInvitationsDao = require('../db/dao/lobbyInvitations');
 const UserDao = require('../db/dao/users');
 const LobbyError = require('../helpers/error/LobbyError');
 const { authenticate } = require('../lib/utils/token');
+const { validateUsername } = require('../lib/validation/users');
 
 const router = express.Router();
 
@@ -27,7 +29,6 @@ router.get('/', async (req, res) => {
         const host = await UserDao.findUserById(result.hostId);
         result.guests = lobbyGuests;
         result.hostName = host.username;
-        console.log("hello!");
       }
       queries.push(formatLobbyInfo());
     });
@@ -43,7 +44,7 @@ router.get('/', async (req, res) => {
 });
 
 /* Get Lobby */
-router.get('/:id', authenticate, async (req, res) => {
+router.get('/:id(\\d+)', authenticate, async (req, res) => {
   const { id } = req.params;
   let data;
 
@@ -107,7 +108,8 @@ router.post('/', authenticate, async (req, res) => {
 
 });
 
-router.post("/:id/users", authenticate, async (req, res) => {
+/* Join Lobby */
+router.post("/:id(\\d+)/users", authenticate, async (req, res) => {
   const user = req.user.id;
   const { id } = req.params;
   let data;
@@ -148,5 +150,55 @@ router.post("/:id/users", authenticate, async (req, res) => {
     res.status(500).json({ message: 'An unexpected error occured' });
   });
 });
+
+/* Create invitation */
+router.post('/:lobbyId(\\d+)/invitations', authenticate, async (req, res) => {
+  const { error } = validateUsername(req.body);
+  if (error) return res.status(400).json({ message: 'Invalid username' });
+
+  const { username } = req.body;
+  const { lobbyId } = req.params;
+
+  LobbyDao.verifyHost(req.user.id, lobbyId)
+  .then((isHost) => {
+    if (isHost) {
+      return UserDao.findUserByName(username);
+    } else throw new LobbyError('Only the lobby host can create invitations', 401);
+  })
+  .then((invitee) => {
+    if (invitee) {
+      return LobbyInvitationsDao.create(invitee.id, lobbyId)
+    } else throw new LobbyError('User was not found', 404);
+  })
+  .then((lobbyIdResult) => {
+    if (lobbyIdResult > 0) {
+      return res.status(204).send();
+    } else throw new LobbyError('Unable to send invitation', 500);
+  })
+  .catch((err) => {
+    if (err instanceof LobbyError) {
+      return res.status(err.getStatus()).json({ message: err.getMessage() });
+    }
+    console.error(err);
+    res.status(500).json({ message: 'An unexpected error occured' });
+  })
+});
+
+router.delete('/:lobbyId(\\d+)/invitations', authenticate, (req, res) => {
+  const { lobbyId } = req.params;
+
+  LobbyInvitationsDao.removeUserInvitation(req.user.id, lobbyId)
+  .then((removed) => {
+    if (removed) return res.status(204).send();
+    else throw new LobbyError('Invitation was not found', 404);
+  })
+  .catch((err) => {
+    if (err instanceof LobbyError) {
+      return res.status(err.getStatus()).json({ message: err.getMessage() });
+    }
+    console.error(err);
+    res.status(500).json({ message: 'An unexpected error occured' });
+  });
+})
 
 module.exports = router;
