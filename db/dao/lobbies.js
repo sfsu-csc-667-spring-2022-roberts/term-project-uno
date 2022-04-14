@@ -59,6 +59,18 @@ async function findLobby(id) {
   .catch((err) => Promise.reject(err));
 }
 
+async function findFreeLobby(lobbyId) {
+  return db.query(`
+  SELECT *
+  FROM $1:name
+  WHERE id = $2 AND busy = $3`, ['Lobbies', lobbyId, false])
+.then((results) => {
+  if (results && results.length === 1) return Promise.resolve(results);
+  else return Promise.resolve(null);
+})
+.catch((err) => Promise.reject(err));
+}
+
 async function findHostLobbies(hostId) {
   return db.query(`
   SELECT *
@@ -81,25 +93,6 @@ async function findAllFreeLobbies() {
   })
   .catch((err) => Promise.reject(err));
 }
-
-// async function authenticate(username, password) {
-//   let userId;
-//   return db.query(`
-//     SELECT id, username, password 
-//     FROM $1:name 
-//     WHERE username = $2`, ['Users', username])
-//   .then((results) => {
-//     if (results && results.length === 1) {
-//       userId = results[0].id;
-//       return bcrypt.compare(password, results[0].password);
-//     } else return Promise.resolve(-1);
-//   })
-//   .then((passwordsMatch) => {
-//     if (passwordsMatch) return Promise.resolve(userId);
-//     return Promise.resolve(-1);
-//   })
-//   .catch((e) => Promise.reject(e));
-// }
 
 async function verifyHost(userId, lobbyId) {
   return db.query(`
@@ -133,6 +126,7 @@ module.exports = {
   createPublic, 
   deleteLobby,
   findLobby,
+  findFreeLobby,
   findHostLobbies,
   findAllFreeLobbies,
   verifyHost,

@@ -34,7 +34,7 @@ router.get('/', async (req, res) => {
     });
 
     await Promise.allSettled(queries);
-
+    console.log(results);
     res.json(results);
   })
   .catch((err) => {

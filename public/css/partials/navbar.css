@@ -51,6 +51,8 @@
   filter: brightness(106%);
   transform: scale(1.1);
   -webkit-transform: scale(1.1);
+  -moz-transform: scale(1.1);
+  -o-transform: scale(1.1);
 }
 
 #nav-profile-pic {
@@ -60,6 +62,8 @@
 #nav-profile-pic:hover {
   transform: scale(1.1);
   -webkit-transform: scale(1.1);
+  -moz-transform: scale(1.1);
+  -o-transform: scale(1.1);
 }
 
 #search-input {
@@ -141,4 +145,6 @@
 .nav-link:hover {
   transform: scale(1.2);
   -webkit-transform: scale(1.2);
+  -moz-transform: scale(1.2);
+  -o-transform: scale(1.2);
 }

@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="/css/scrollbar.css" />
     <link rel="stylesheet" type="text/css" href="/css/views/home.css" />
     <link rel="stylesheet" type="text/css" href="/css/partials/navbar.css" />
     <title>{{title}}</title>
@@ -11,18 +12,54 @@
   <body>
     {{> navbar}}
     <main>
+      {{#if user}}
       <form id="menu">
         <header>
           <h2>Play Now</h2>
         </header>
-        {{#if user}}
-        <a href="/create-lobby">Create Lobby</a>
-        <a href="/find-lobby">Find Lobby</a>
-        {{else}}
-        <a href="/login">Create Lobby</a>
-        <a href="/login">Find Lobby</a>
-        {{/if}}
+        <div id="menu-container">
+          <div id="menu-options">
+            <a href="/create-lobby" class="button">Create New Lobby</a>
+            <a href="/find-lobby" class="button">Find New Lobby</a>
+          </div>
+          <div id="menu-lists">
+            <div id="user-lobby-list">
+              <h3>My Lobbies</h3>
+              <div class="list-container">
+                <ul>
+                  {{#each lobbies}}
+                  <li class="lobby">
+                    <a href="/lobby/{{this.id}}">
+                      {{#equals this.busy true}}
+                      <span>In-Game</span>
+                      {{else}}
+                      <span>Waiting</span>
+                      {{/equals}}
+                      <span class="host-name">{{this.hostName}}</span>
+                      <span class="lobby-name">{{this.name}}</span>
+                      <span class="capacity">{{inc this.guestLength}}/{{this.playerCapacity}}</span>
+                    </a>
+                  </li>
+                  {{/each}}
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
       </form>
+      {{else}}
+      <form id="menu" style="width: 20rem !important;">
+        <header>
+          <h2>Play Now</h2>
+        </header>
+        <div id="menu-container">
+          <div>
+            <a href="/login" class="button">Create New Lobby</a>
+            <a href="/login" class="button">Find New Lobby</a>
+          </div>
+        </div>  
+      </form>
+      {{/if}}
     </main>
   </body>
 </html>

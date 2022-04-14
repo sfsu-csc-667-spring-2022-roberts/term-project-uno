@@ -7,7 +7,8 @@ async function findLobbyGuests(guestId) {
     FROM $1:name
     WHERE $2:name = $3`, ['LobbyGuests', 'userId', guestId])
   .then((results) => {
-    return Promise.resolve(results);
+    if (results && results.length > 0) return Promise.resolve(results);
+    else return Promise.resolve(null);
   })
   .catch((err) => Promise.reject(err));
 }
