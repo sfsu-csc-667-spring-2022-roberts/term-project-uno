@@ -22,7 +22,6 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   DrawCard.init({
-    order: DataTypes.INTEGER
   }, {
     sequelize,
     modelName: 'DrawCard',

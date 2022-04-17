@@ -22,7 +22,6 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   PlayedCard.init({
-    order: DataTypes.INTEGER
   }, {
     sequelize,
     modelName: 'PlayedCard',
