@@ -8,6 +8,7 @@ const { validateUsername } = require('../lib/validation/users');
 const { findLobby } = require('../db/dao/lobbies');
 const { findAllLobbyGuests } = require('../db/dao/lobbyGuests');
 const { findUsersInvitations } = require('../db/dao/lobbyInvitations');
+const { verifyUserInGame } = require('../db/dao/players');
 const router = express.Router();
 
 async function formatLobbyInfo(lobby) {
@@ -131,7 +132,7 @@ router.get('/lobby/:lobbyId(\\d+)', authenticate, async (req, res, next) => {
   const requestedLobby = await findLobby(lobbyId);
 
   if(requestedLobby) {
-    const { hostId, name, playerCapacity, busy } = requestedLobby[0];
+    const { hostId, name, playerCapacity, busy } = requestedLobby;
     const host = await UserDao.findUserById(hostId);
     const hostName = host.username;
     const lobbyGuests = await findAllLobbyGuests(lobbyId);
@@ -161,7 +162,12 @@ router.get('/lobby/:lobbyId(\\d+)', authenticate, async (req, res, next) => {
 
 /* Game Pages */
 router.get('/games/:id(\\d+)', authenticate, (req, res) => {
-  res.render('game', {layout: false, title: `Game ${req.params.id}`, user: req.user});
+  verifyUserInGame(req.params.id, req.user.id)
+  .then((isUserInGame) => {
+    if (isUserInGame) {
+      res.render('game', {layout: false, title: `Game ${req.params.id}`, user: req.user});
+    } else res.redirect('/');
+  })
 });
 
 module.exports = router;

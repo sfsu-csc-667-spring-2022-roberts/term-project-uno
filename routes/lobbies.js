@@ -34,7 +34,6 @@ router.get('/', async (req, res) => {
     });
 
     await Promise.allSettled(queries);
-    console.log(results);
     res.json(results);
   })
   .catch((err) => {
@@ -114,20 +113,20 @@ router.post("/:id(\\d+)/users", authenticate, async (req, res) => {
   const { id } = req.params;
   let data;
   LobbyDao.findLobby(id)
-  .then((results) => {
-    if(results[0].password) {
-      results[0].type = "true";
+  .then((lobby) => {
+    if(lobby.password) {
+      lobby.type = "true";
     }
     else {
-      results[0].type = "false";
+      lobby.type = "false";
     }
-    delete results[0].password;
-    data = results;
+    delete lobby.password;
+    data = lobby;
 
     return LobbyGuestsDao.findAllLobbyGuests(id);
   })
   .then((result) => {
-    if(result.length + 2 > data[0].playerCapacity) {
+    if(result.length + 2 > data.playerCapacity) {
       return res.status(400).json({ message: 'Lobby is full'});
     }
     for(let i = 0; i<result.length; i++) {
@@ -135,7 +134,7 @@ router.post("/:id(\\d+)/users", authenticate, async (req, res) => {
         return res.status(400).json({ message: 'Already in this lobby'});
       }
     }
-    if(user == data[0].hostId) {
+    if(user == data.hostId) {
       return res.status(400).json({ message: 'Already in this lobby'});
     }
     return LobbyGuestsDao.addGuest(user,id)

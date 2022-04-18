@@ -144,12 +144,11 @@ async function findAllLobbies(userId) {
   .then((results) => {
     const hostLobbies = results[0];
     let lobbies = results.slice(1, results.length).map((result) => {
-      if (result.status === 'fulfilled' && result.value && result.value.length === 1) {
-        if (result.value[0].password) delete result.value[0].password;
-        return result.value[0];
+      if (result.status === 'fulfilled' && result.value) {
+        if (result.value.password) delete result.value.password;
+        return result.value;
       }
     });
-
     if (hostLobbies.status === 'fulfilled') {
       lobbies = hostLobbies.value.map((hostLobby) => {
         if (hostLobby.password) delete hostLobby.password;
@@ -157,7 +156,7 @@ async function findAllLobbies(userId) {
       })
       .concat(lobbies);
     }
-
+    
     if (lobbies && lobbies.length > 0) return Promise.resolve(lobbies);
     else return Promise.resolve(null);
   })
