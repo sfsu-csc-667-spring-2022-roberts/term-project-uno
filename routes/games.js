@@ -133,6 +133,8 @@ router.delete('/:id', authenticate, async (req, res) => {
     const user = req.user;
     res.json({ message: "Left the game" });
   } catch (err) {
+    if (err instanceof GameError) return res.status(err.getStatus()).json({ message: err.getMessage() });
+    console.error(err);
     res.status(500).json({message: "Something went wrong"});
   }
 });
@@ -143,6 +145,8 @@ router.delete('/:id/players', authenticate, async (req, res) => {
     const user = req.user;
     res.json({ message: "Left the game" });
   } catch (err) {
+    if (err instanceof GameError) return res.status(err.getStatus()).json({ message: err.getMessage() });
+    console.error(err);
     res.status(500).json({message: "Something went wrong"});
   }
 });
@@ -152,8 +156,8 @@ router.patch('/:id/playCard', authenticate, async (req, res) => {
   try {
     const user = req.user;
     const mainPlayer = gameState.players.find(p => p.userID === user.id);
-    if (!mainPlayer) throw new Error("Unauthorized to join the game");
-    if (mainPlayer.turnIndex !== gameState.turnIndex) throw new Error("Unauthorized action, it is not your turn");
+    if (!mainPlayer) throw new GameError("Unauthorized to join the game", 401);
+    if (mainPlayer.turnIndex !== gameState.turnIndex) throw new GameError("Unauthorized action, it is not your turn", 401);
 
     const id = parseInt(req.body.id);
     const card = gameState.mainDeck.find(c => c.id === id);
@@ -171,6 +175,8 @@ router.patch('/:id/playCard', authenticate, async (req, res) => {
     }
     res.json({ card, count: gameState.mainDeck.length, currentIndex: gameState.turnIndex ,success: true });
   } catch (err) {
+    if (err instanceof GameError) return res.status(err.getStatus()).json({ message: err.getMessage() });
+    console.error(err);
     res.status(500).json({message: "Something went wrong"});
   }
 });
@@ -181,8 +187,8 @@ router.patch('/:id/drawCard', authenticate, async (req, res) => {
   try {
     const user = req.user;
     const mainPlayer = gameState.players.find(p => p.userID === user.id);
-    if (!mainPlayer) throw new Error("Unauthorized to join the game");
-    if (mainPlayer.turnIndex !== gameState.turnIndex) throw new Error("Unauthorized action, it is not your turn");
+    if (!mainPlayer) throw new GameError("Unauthorized to join the game", 401);
+    if (mainPlayer.turnIndex !== gameState.turnIndex) throw new GameError("Unauthorized action, it is not your turn", 401);
     const card = { id: idCount, color: "green", value: 2, special: false };
     idCount++;
     if (gameState.drawDeckCount <= 0) throw new Error();
@@ -198,6 +204,8 @@ router.patch('/:id/drawCard', authenticate, async (req, res) => {
     }
     res.json({ card, count: gameState.mainDeck.length, currentIndex: gameState.turnIndex, success: true });
   } catch (err) {
+    if (err instanceof GameError) return res.status(err.getStatus()).json({ message: err.getMessage() });
+    console.error(err);
     res.status(500).json({message: "Something went wrong"});
   }
 });
