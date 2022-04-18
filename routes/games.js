@@ -31,19 +31,19 @@ router.post('/', authenticate, async (req, res) => {
             }
             LobbyGuestDao.getAllLobbyGuests(lobbyId)
             .then((results) => {
-                if(results.length <= 1) {
+                if(results.length <= 0) {
                     return res.status(400).json({message: "Mininum 2 Players"});
                 }
-                for(let i=0;i<results.length;i++) {
-                    // if(results[i].userReady == false) { (to do later)
+                results.forEach((result) => {
+                    // if(result.userReady == false) { (to do later)
                     //     return res.status(401).json({message: "Not All Players are ready."});
                     // }
-                }
+                })
                 players = results;
                 CardDao.getAllNormalCards()
                 .then((results) => {
                     availableCards = results;
-                    console.log("Add Normal",availableCards.length);
+                    // console.log("Add Normal",availableCards.length);
                     const randomIndex = Math.floor(Math.random()*availableCards.length);
                     firstCard = availableCards[randomIndex];
                     return CardDao.getAllSpecialCards()
@@ -52,7 +52,7 @@ router.post('/', authenticate, async (req, res) => {
                     for(let i=0; i<results.length;i++) {
                         availableCards.push(results[i]);
                     }
-                    console.log("Add Special", availableCards.length);
+                    // console.log("Add Special", availableCards.length);
                     return GameDao.createGame(firstCard.color, lobbyId);
                 })
                 .then(async (result) => {
@@ -96,7 +96,7 @@ router.post('/', authenticate, async (req, res) => {
                             }); 
                             turnIndex++
                         }
-                        console.log("After Player Initial Cards", availableCards.length);
+                        // console.log("After Player Initial Cards", availableCards.length);
                         while(availableCards.length>0) {
                             // console.log(availableCards.length);
                             const randomIndex = Math.floor(Math.random()*availableCards.length);
@@ -139,6 +139,7 @@ router.post('/', authenticate, async (req, res) => {
 
 /* Get game state */
 router.get('/:id', authenticate, async (req, res) => {
+    GameDao.findGameState(req.params.id, req.user.id);
     try {
         if (req.user) {
             const user = req.user;
