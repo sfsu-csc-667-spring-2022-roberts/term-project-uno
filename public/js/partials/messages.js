@@ -67,7 +67,7 @@ const createMessage = (message) => {
     return (
         `<div id="${message.id}" class="message-container">
             <strong class="message-sender">${message.sender}</strong>
-            <textarea class="message" contenteditable="false" disabled>${message.message}</textarea>
+            <div class="message">${message.message}</div>
             <span class="message-time">${timeFormat(new Date(message.createdAt).toLocaleTimeString().split(":"))}</span>
         </div>`
     );
