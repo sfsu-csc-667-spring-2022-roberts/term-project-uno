@@ -7,7 +7,7 @@
     <link rel="stylesheet" type="text/css" href="/css/views/lobby.css" />
     <link rel="stylesheet" type="text/css" href="/css/partials/navbar.css" />
     <link rel="stylesheet" type="text/css" href="/css/partials/messages.css" />
-    <script defer type="text/javascript" src="/js/views/game.js"></script>
+    <script defer type="text/javascript" src="/js/views/lobby.js"></script>
 
 
     <title>{{title}}</title>
@@ -19,18 +19,25 @@
 
         <div class = "player-container">
         <div class="header-container">
-          <div class="lobby-name-header">Name</div>
-          <div class="player-count-header">Click to Kick</div>
+          <div class="lobby-name-header">{{lobbyName}}</div>
+          <div class="player-count-header">{{currentPlayers}}/{{maxCount}}</div>
         </div>
         <div class="lobby-container">
-            <div class="lobby-name">Chris</div>
-            <button type="button">Kick</button>
+            <div class="lobby-name">{{hostName}} (Host)</div>
+            {{#each guest}}
+              <div class="lobby-name">{{this.username}} Ready: {{this.ready}}</div>
+            {{/each}}
         </div>  
         </div>
 
         <div class="big-buttons">
             <button type="button" class="button2">Leave</button>
-            <button type="button" class="button2" id="ready" onclick="colorchange()">Say I'm Ready</button>
+            {{#if isHost}}
+              <button type="button" class="start-button" onclick="start({{lobbyId}})">Start</button>
+            {{else}}
+              <button type="button" class="button2" id="ready" onclick="colorchange()">Say I'm Ready</button>
+            {{/if}}
+
         </div>
 <div>
     <svg id="message-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">

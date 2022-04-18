@@ -65,6 +65,14 @@ main {
   border-radius: 0.5rem;
   cursor: pointer;
   box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 3px, rgba(0, 0, 0, 0.24) 0px 1px 2px;
+  transition: all 0.15s ease-in-out;
+}
+
+#settingsForm button:hover {
+  transform: scale(1.15);
+  -webkit-transform: scale(1.15);
+  -moz-transform: scale(1.15);
+  -o-transform: scale(1.15);
 }
 
 #settingsForm header {
@@ -123,6 +131,14 @@ main {
   padding: 0.5rem;
   border-radius: 0.5rem;
   box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 3px, rgba(0, 0, 0, 0.24) 0px 1px 2px;
+  transition: all 0.15s ease-in-out;
+}
+
+#upload-pic:hover {
+  transform: scale(1.15);
+  -webkit-transform: scale(1.15);
+  -moz-transform: scale(1.15);
+  -o-transform: scale(1.15);
 }
 
 #upload-pic input[type=file] {

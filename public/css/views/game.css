@@ -207,6 +207,7 @@ body {
   border-radius: 50%;
   object-fit: fill;
   box-shadow:0 0 5px #aaaaaa;
+  background: white;
 }
 
 .player-username {

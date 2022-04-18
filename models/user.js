@@ -31,6 +31,9 @@ module.exports = (sequelize, DataTypes) => {
       User.hasMany(models.GameMessage, {
         foreignKey: 'userId'
       });
+      User.hasMany(models.LobbyInvitatio, {
+        foreignKey: 'userId'
+      });
     }
   }
   User.init({

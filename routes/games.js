@@ -1,20 +1,143 @@
 const express = require('express');
+const CardDao = require('../db/dao/cards');
+const LobbyDao = require('../db/dao/lobbies');
+const LobbyGuestDao = require('../db/dao/lobbyGuests');
+const GameDao = require('../db/dao/games');
+const PlayedCardDao = require('../db/dao/playedCards')
+const PlayerDao = require('../db/dao/players');
+const PlayerCardDao = require('../db/dao/playerCards')
+const DrawCardDao = require('../db/dao/drawCards');
+
 const { authenticate } = require('../lib/utils/token');
 const router = express.Router();
+
+const NUM_STARTING_CARDS = 7;
 
 /* Create game */
 router.post('/', authenticate, async (req, res) => {
     try {
-        if (req.user) {
-            const user = req.user;
+        const hostId = req.user.id;
+        const lobbyId = req.body.id;
+        let players;
+        let availableCards = [];
+        let firstCard;
+        let gameId;
 
-            res.json({ message: "created"});
-        } else res.status(401).json({ message: "Unauthorized" });
+        LobbyDao.findLobby(lobbyId)
+        .then((result) => {
+            if(result[0].hostId != hostId)
+            {
+                return res.status(401).json({message: "Unauthorized: Not Lobby Host"});
+            }
+            LobbyGuestDao.getAllLobbyGuests(lobbyId)
+            .then((results) => {
+                if(results.length <= 0) {
+                    return res.status(400).json({message: "Mininum 2 Players"});
+                }
+                results.forEach((result) => {
+                    // if(result.userReady == false) { (to do later)
+                    //     return res.status(401).json({message: "Not All Players are ready."});
+                    // }
+                })
+                players = results;
+                CardDao.getAllNormalCards()
+                .then((results) => {
+                    availableCards = results;
+                    // console.log("Add Normal",availableCards.length);
+                    const randomIndex = Math.floor(Math.random()*availableCards.length);
+                    firstCard = availableCards[randomIndex];
+                    return CardDao.getAllSpecialCards()
+                })
+                .then((results) => {
+                    for(let i=0; i<results.length;i++) {
+                        availableCards.push(results[i]);
+                    }
+                    // console.log("Add Special", availableCards.length);
+                    return GameDao.createGame(firstCard.color, lobbyId);
+                })
+                .then(async (result) => {
+                    gameId = result.id;
+                    await PlayedCardDao.createPlayedCard(firstCard.id, result.id)
+                    .then(async (result) => {
+                        // console.log(firstCard);
+                        const cardIndex = availableCards.indexOf(firstCard);
+                        const removedCard = availableCards.splice(cardIndex, 1)[0];
+                        // console.log(removedCard);
+                        console.log("Initial Card Placed", availableCards.length);
+                        if(removedCard.id != result.cardId) {
+                            return res.status(500).json({message: "Something went wrong"});
+                        }
+                        turnIndex = 0;
+                        const host = {"userId":hostId};
+                        players.push(host);
+                        // console.log("Normal",players);
+                        players = players.sort(() => Math.random() - 0.5)
+                        // console.log("Randomized",players);
+                        for(let i=0; i<players.length;i++) {
+                            await PlayerDao.createPlayer(turnIndex, players[i].userId, gameId)
+                            .then(async (result) => {
+                                for(let k=0; k<NUM_STARTING_CARDS; k++) {
+                                    const randomIndex = Math.floor(Math.random()*availableCards.length);
+                                    // console.log("BEFORE CREATE", availableCards[randomIndex]);
+                                    await PlayerCardDao.createPlayerCard(availableCards[randomIndex].id, result.id)
+                                    .then((result) => {
+                                        const removedCard = availableCards.splice(randomIndex, 1)[0];
+                                        // console.log("REMOVED", removedCard);
+                                    })
+                                    .catch((err) => {
+                                        console.error("ERROR",err);
+                                        res.status(500).json({ message: 'An unexpected error occured' });
+                                    }); 
+                                }
+                            })
+                            .catch((err) => {
+                                console.error("ERROR",err);
+                                res.status(500).json({ message: 'An unexpected error occured' });
+                            }); 
+                            turnIndex++
+                        }
+                        // console.log("After Player Initial Cards", availableCards.length);
+                        while(availableCards.length>0) {
+                            // console.log(availableCards.length);
+                            const randomIndex = Math.floor(Math.random()*availableCards.length);
+                            // console.log("BEFORE CREATE", availableCards[randomIndex]);
+                            await DrawCardDao.createDrawCard(availableCards[randomIndex].id, gameId)
+                            .then((result) => {
+                                const removedCard = availableCards.splice(randomIndex, 1)[0];
+                                // console.log("REMOVED", removedCard);
+                                if(availableCards.length == 0) {
+                                    // console.log("HERE");
+                                    //set lobby to busy (do later)
+                                    res.redirect("/games/"+gameId);
+                                }
+                            })
+                            .catch((err) => {
+                                console.error("ERROR",err);
+                                res.status(500).json({ message: 'An unexpected error occured' });
+                            }); 
+                        }
+                    })
+                })
+                .catch((err) => {
+                    console.error("ERROR",err);
+                    res.status(500).json({ message: 'An unexpected error occured' });
+                }); 
+            })
+            .catch((err) => {
+                console.error("ERROR",err);
+                res.status(500).json({ message: 'An unexpected error occured' });
+            });     
+        })
+        .catch((err) => {
+            console.error("ERROR",err);
+            res.status(500).json({ message: 'An unexpected error occured' });
+        });
     } catch (err) {
         res.status(500).json({message: "Something went wrong"});
     }
 });
 
+/*
 const gameState = {
     players: [
         { id: 1, userID: 5, turnIndex: 1, username: "saggyballs", cards: 1, avatar: "https://store.playstation.com/store/api/chihiro/00_09_000/container/CH/de/99/EP2402-CUSA05624_00-AV00000000000213/0/image?_version=00_09_000&platform=chihiro&bg_color=000000&opacity=100&w=330&h=330" },
@@ -74,12 +197,14 @@ const gameState = {
     currentColor: "red",
     playerOrderReversed: false,
 };
+*/
 
 /* Get game state */
 router.get('/:id', authenticate, async (req, res) => {
     try {
         if (req.user) {
             const user = req.user;
+            const gameState = await GameDao.findGameState(req.params.id, req.user.id);
             gameState.players.sort((a, b) => a.turnIndex - b.turnIndex);
             const mainPlayer = gameState.players.find(p => p.userID === user.id);
             if (!mainPlayer) throw new Error("Unauthorized to join the game");

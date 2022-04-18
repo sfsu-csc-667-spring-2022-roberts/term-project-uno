@@ -2,6 +2,9 @@ const db = require('../index');
 const bcrypt = require('bcrypt');
 
 const UserError = require('../../helpers/error/UserError');
+const { findHostLobbies, findLobby, findFreeLobby } = require('./lobbies');
+const { findLobbyGuests } = require('./lobbyGuests');
+const { findPlayers } = require('./players');
 
 async function usernameExists(username) {
   return db.query(`
@@ -113,12 +116,62 @@ async function changePassword(username, oldPassword, newPassword) {
   } else throw new UserError('Invalid password', 401);
 }
 
+async function findUserBySimilarName(username) {
+  return db.query(`
+    SELECT id, username, $1:name, $2:name, $3:name, $4:name 
+    FROM $5:name 
+    WHERE username
+    LIKE $6`,
+    ['pictureUrl', 'gamesWon', 'gamesPlayed', 'createdAt', 'Users', `%${username}%`])
+  .then((results) => {
+    if (results && results.length > 0) return Promise.resolve(results);
+    else return Promise.resolve(null);
+  })
+  .catch((err) => Promise.reject(err));
+}
+
+async function findAllLobbies(userId) {
+  return findLobbyGuests(userId)
+  .then((lobbyGuests) => {
+    const asyncTasks = [findHostLobbies(userId)];
+    if (lobbyGuests) {
+      lobbyGuests.forEach((lobbyGuest) => {
+        asyncTasks.push(findLobby(lobbyGuest.lobbyId));
+      })
+    } 
+    return Promise.allSettled(asyncTasks);
+  })
+  .then((results) => {
+    const hostLobbies = results[0];
+    let lobbies = results.slice(1, results.length).map((result) => {
+      if (result.status === 'fulfilled' && result.value && result.value.length === 1) {
+        if (result.value[0].password) delete result.value[0].password;
+        return result.value[0];
+      }
+    });
+
+    if (hostLobbies.status === 'fulfilled') {
+      lobbies = hostLobbies.value.map((hostLobby) => {
+        if (hostLobby.password) delete hostLobby.password;
+        return hostLobby;
+      })
+      .concat(lobbies);
+    }
+
+    if (lobbies && lobbies.length > 0) return Promise.resolve(lobbies);
+    else return Promise.resolve(null);
+  })
+  .catch((err) => Promise.reject(err));
+}
+
 module.exports = {
   usernameExists,
   create,
   authenticate,
   findUserById,
   findUserByName,
+  findAllLobbies,
   changeUsername,
-  changePassword
+  changePassword,
+  findUserBySimilarName
 };
