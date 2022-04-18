@@ -1,9 +1,7 @@
-
 @import url(https://fonts.googleapis.com/css?family=Source+Sans+Pro:900);
 
 .card-b-small {
   margin-top: -70px;
-  margin-left: -48px;
 }
 
 .card-b-big {
@@ -22,22 +20,20 @@
   width: 44px;
   height: 30px;
 }
+
 .card-logo-big {
   width: 74px;
   height: 64px;
 }
 
 .card-b {
-    /* float:left; */
     background:#fff;
     border-radius:5px;
     display:table;
     box-sizing:border-box;
     padding:5px;
-    /* margin-left: -17px; */
     height: 70px;
     width: fit-content;
-    /* margin-bottom: -70px; */
     font-family: 'Source Sans Pro', sans-serif;
     text-shadow:
     -.5px  -1.2px 0 #ffffff,
@@ -52,7 +48,6 @@
     0px  .4px   0 #ffffff,
    -1px  0px   0 #ffffff,
     0  0 0 #000000 !important;    
-    /* height: 0 !important; */
   box-shadow:0 0 5px #aaaaaa;
   text-align:center;
   position:relative;
@@ -67,7 +62,7 @@
     overflow:hidden;
   }
 
-  .card-b .mark-black {
+.card-b .mark-black {
     display:inline-block;
     vertical-align:15%;
     margin-bottom: 0px !important;
@@ -77,14 +72,13 @@
     transform: rotate(30deg);
     border-top: 11px !important;
     border-bottom: 11px !important;
-    /* border: 17px solid #ee161f; */
     background:#ee161f;
-
-
 }
+
 .card-uno-label-small {
   font-size: 18px !important;
 }
+
 .card-uno-label {
   font-size: 28px !important;
 }
@@ -93,7 +87,7 @@
     color:#000000;
 }
   
-  .card-b.black .inner-b{
+.card-b.black .inner-b{
     background:#000000;
 }
 
@@ -111,17 +105,15 @@
       z-index: 4 !important;
   }
 
-
 .card {
-  float:left;
   background:#fff;
   border-radius:5px;
   display:table;
   box-sizing:border-box;
   height: 124px;
   padding:5px;
-  margin-left: -30px;
   margin-top: -70px;
+  width: fit-content;
   font-family: 'Source Sans Pro', sans-serif;
   font-size: 70px;
   text-shadow:
@@ -139,7 +131,6 @@
   position:relative;
   cursor: pointer;
 }
-
 
 .card .inner{
   display:table-cell;
@@ -166,6 +157,7 @@
     -webkit-transform:rotate(-30deg);
     transform: rotate(-30deg);
 }
+
 .card-uno-label {
     color: #f8db22;
     font-size: 35px;
@@ -173,7 +165,6 @@
     transform: rotate(45deg);
     margin-top: 5px;
 }
-
 
 .card:before,
 .card:after{
@@ -236,7 +227,13 @@
 .card.yellow .inner{
   background:#f8db22;
 }
+.card.wild{
+  color:black;
+}
 
+.card.wild .inner{
+  background:black;
+}
 
 .card.num-0:before,
 .card.num-0:after{
@@ -304,4 +301,139 @@
     border:1px solid #000000;
     height:4px;
     box-shadow:1px 1px 0 #000000;
+}
+
+.card.plus2:before,
+.card.plus2:after{
+  content:"+2";
+  font-size: 17px !important;
+}
+
+.card.plus4choose:before,
+.card.plus4choose:after{
+  text-shadow:
+  1px  1px 0 #000000,
+ -1px -1px 0 #000000,
+ -1.3px  -1.3px 0 #ffffff,
+ -1px  1px 0 #000000,
+  1px -1px 0 #000000,
+  -1.3px  1.3px 0 #ffffff,
+  1.3px -1.3px 0 #ffffff,
+  1px  0   0 #000000,
+ -1px  0   0 #000000,
+  0   -1px 0 #000000,
+  0    1px 0 #000000,
+  2px  2px 0 #000000,
+  2.4px  2.4px 0 #ffffff !important;
+  content:"+4";
+  font-size: 17px !important;
+}
+
+.card.plus2:before, .card.plus4choose:before {
+  left: 6px !important;
+}
+
+.card.plus2:after, .card.plus4choose:after {
+  right: 6px !important;
+}
+
+.plus2-img {
+  object-fit: contain;
+  -webkit-transform:rotate(-30deg);
+  transform: rotate(-30deg);
+  height: 50px;
+  margin-left: 2.3px;
+  margin-right: 2.4px;
+  margin-top: 5px;
+}
+
+.plus4-img {
+  object-fit: cover;
+  -webkit-transform:rotate(-30deg);
+  transform: rotate(-30deg);
+  height: 74.4px;
+  margin-right: 2.5px;
+  margin-bottom: -11px;
+}
+
+.skip-img {
+  object-fit:contain;
+  -webkit-transform:rotate(-30deg);
+  transform: rotate(-30deg);
+  height: 50.2px;
+  margin-top: 30px;
+}
+
+.skip-img-small {
+  position: absolute;
+  object-fit: contain;
+  width: 20px;
+  height: 20px;
+}
+
+.skip-img-small-top {
+  top: 7px;
+  left: 7px;
+}
+
+.skip-img-small-bottom {
+  bottom: 7px;
+  right: 7px;
+  -webkit-transform:rotate(180deg);
+  transform: rotate(180deg);
+}
+
+.reverse-img {
+  object-fit:contain;
+  -webkit-transform:rotate(-30deg);
+  transform: rotate(-30deg);
+  height: 50px;
+  width: 53.5px;
+  margin-top: 30px;
+}
+
+.reverse-img-small {
+  position: absolute;
+  object-fit: contain;
+  width: 20px;
+  height: 20px;
+}
+
+.reverse-img-small-top {
+  top: 7px;
+  left: 6px;
+}
+
+.reverse-img-small-bottom {
+  bottom: 7px;
+  right: 7px;
+  -webkit-transform:rotate(180deg);
+  transform: rotate(180deg);
+}
+
+.wild-choose-img {
+  object-fit: fill;
+  margin-bottom: -20px;
+  margin-left: -4px;
+  height: 110px;
+  width: 110%;
+}
+
+.wild-img-small {
+  position: absolute;
+  object-fit: contain;
+  width: 25px;
+  height: 25px;
+  -webkit-transform:rotate(10deg);
+  transform: rotate(10deg);
+}
+
+.wild-img-small-top {
+  top: 7px;
+  left: 6px;
+}
+
+.wild-img-small-bottom {
+  bottom: 7px;
+  right: 7px;
 }
