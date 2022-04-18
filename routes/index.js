@@ -139,9 +139,8 @@ router.get('/lobby/:lobbyId(\\d+)', authenticate, async (req, res, next) => {
     
     for(let i = 0; i<lobbyGuests.length; i++) {
       const guest = await UserDao.findUserById(lobbyGuests[i].userId)
-      object["username"] = guest.username
-      object["ready"] = lobbyGuests[i].userReady;
-      guestAndStatus.push(object);
+      const guestObject = {"username":guest.username, "ready": lobbyGuests[i].userReady}
+      guestAndStatus.push(guestObject);
     }
 
     res.render('lobby', {

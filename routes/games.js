@@ -29,7 +29,7 @@ router.post('/', authenticate, async (req, res) => {
             {
                 return res.status(401).json({message: "Unauthorized: Not Lobby Host"});
             }
-            LobbyGuestDao.getAllLobbyGuests(lobbyId)
+            LobbyGuestDao.findAllLobbyGuests(lobbyId)
             .then((results) => {
                 if(results.length <= 0) {
                     return res.status(400).json({message: "Mininum 2 Players"});
@@ -39,6 +39,9 @@ router.post('/', authenticate, async (req, res) => {
                     //     return res.status(401).json({message: "Not All Players are ready."});
                     // }
                 })
+                console.log("lobbyGuests: " + results.length);
+                console.log(results);
+                console.log("-----------------------\n")
                 players = results;
                 CardDao.getAllNormalCards()
                 .then((results) => {
@@ -72,6 +75,9 @@ router.post('/', authenticate, async (req, res) => {
                         players.push(host);
                         // console.log("Normal",players);
                         players = players.sort(() => Math.random() - 0.5)
+                        console.log("players after random sort " + players.length);
+                        console.log(players);
+                        console.log("--------------------------------------\n");
                         // console.log("Randomized",players);
                         for(let i=0; i<players.length;i++) {
                             await PlayerDao.createPlayer(turnIndex, players[i].userId, gameId)
