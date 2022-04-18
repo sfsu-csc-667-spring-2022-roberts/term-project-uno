@@ -22,9 +22,23 @@ async function createPlayer(turnIndex, userId, gameId) {
       return Promise.resolve(result[0]);
     } else return Promise.resolve(null);
   })
+  .catch((err) => Promise.reject(err));
+}
+
+async function verifyUserInGame(gameId, userId) {
+  return db.query(`
+    SELECT * FROM "Players"
+    WHERE "gameId" = $1 AND "userId" = $2
+  `, [gameId, userId])
+  .then((results) => {
+    if (results && results.length === 1) return Promise.resolve(true);
+    else return Promise.resolve(false);
+  })
+  .catch((err) => Promise.reject(err));
 }
 
 module.exports = {
   findPlayers,
-  createPlayer
+  createPlayer,
+  verifyUserInGame
 }
