@@ -8,6 +8,7 @@ const PlayedCardDao = require('../db/dao/playedCards')
 const PlayerDao = require('../db/dao/players');
 const PlayerCardDao = require('../db/dao/playerCards')
 const DrawCardDao = require('../db/dao/drawCards');
+const MessageDao = require('../db/dao/messages');
 
 const { authenticate } = require('../lib/utils/token');
 const router = express.Router();
@@ -210,27 +211,40 @@ router.patch('/:id/drawCard', authenticate, async (req, res) => {
   }
 });
 
-const messages = [
-  { id: 1, sender: "snowpuff808", message: "You're trash, kys ", createdAt: new Date() },
-  { id: 2, sender: "dawggydawg6969", message: "Look whose talking bruh, you have a whole ass 15 cards", createdAt: new Date() },
-  { id: 3, sender: "snowpuff808", message: "Keep running your mouth, I'll be sure to place a +4 on your ass", createdAt: new Date() },
-  { id: 4, sender: "dawggydawg6969", message: "and you eat ass... a ha ha", createdAt: new Date() },
-  { id: 5, sender: "saggyballs", message: "Chill guys, relax...just play the game", createdAt: new Date() },
-];
-let count = 6;
-
 /* Get messages */
 router.get('/:id/messages', authenticate, async (req, res) => {
-  res.json({ messages });
+  try {
+    if (!PlayerDao.verifyUserInGame(req.params.id, req.user.id)) {
+      return res.status(401).json({ message: 'User is not part of the game' });
+    }
+    res.json({ messages: await MessageDao.findGameMessages(req.params.id)});
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Something went wrong' });
+  }
 });
 
 /* Send message */
 router.post('/:id/messages', authenticate, async (req, res) => {
-  const { message } = req.body;
-  const newMessage = { id: count, sender: req.user.username, message: message, createdAt: new Date() };
-  messages.push(newMessage);
-  count++;
-  res.json({ messages });
+  try {
+    if (!PlayerDao.verifyUserInGame(req.params.id, req.user.id)) {
+      return res.status(401).json({ message: 'User is not part of the game' });
+    }
+    
+    const { message } = req.body;
+    const messageObj = await MessageDao.createGameMessage(message, req.user.id, req.params.id);
+  
+    messageObj.sender = req.user.username;
+    delete messageObj.userId;
+    delete messageObj.gameId;
+  
+    // TO DO - Somehow broadcast new message to rest of players ;)
+  
+    res.json({ messageObj });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Something went wrong' });
+  }
 });
 
 module.exports = router;
