@@ -28,7 +28,7 @@ createLobbyForm.addEventListener('submit', (event) => {
   const serializedData = serializeForm(createLobbyForm);
   const url = window.location.protocol + '//' + window.location.host;
 
-  fetch(url + '/api/lobbies/create', {
+  fetch(url + '/api/lobbies/', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

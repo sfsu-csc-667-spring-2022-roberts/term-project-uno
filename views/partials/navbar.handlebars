@@ -19,26 +19,29 @@
     <input id="hidden-search-submit" type="submit">
   </form>
   {{#if user}}
-  <li id="dropdown">
-    <div id="nav-profile-pic">
+  <a href="/notifications" class="nav-icon" id="nav-notifications">
+    <img src="/images/notifications.png">
+  </a>
+  <div>
+    <div class="nav-icon" id="nav-profile-pic">
       {{#if user.pictureUrl}}
       <img src="{{user.pictureUrl}}">
       {{else}}
-      <img src="https://bethesdadentalhealth.com/wp-content/uploads/2016/10/profile-icon-png-898.png">
+      <img src="/images/default-profile-pic.png">
       {{/if}}
     </div>
     <ul id="profile-dropdown" class="dropdown-menu">
       <li>
-        <a href="/api/users/" class="menu-item">Profile</a>
+        <a href="/api/users/me" class="menu-item">Profile</a>
       </li>
       <li>
         <a href="/settings" class="menu-item">Settings</a>
       </li>
       <li>
-        <button id="logout" class="menu-item">Logout</button>
+        <a href="#" id="logout" class="menu-item">Logout</a>
       </li>
     </ul>
-  </li>
+  </div>
   {{else}}
   <ul id="unauthenticated-links">
     <li>
@@ -49,5 +52,5 @@
     </li>
   </ul>
   {{/if}}
-  <script src="/js/partials/navbar.js" type="module"></script>
+  <script defer src="/js/partials/navbar.js" type="module"></script>
 </nav>

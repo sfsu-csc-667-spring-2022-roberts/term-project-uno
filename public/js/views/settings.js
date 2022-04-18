@@ -12,6 +12,81 @@ function validatePasswordForm(data) {
   data.newPassword === data.confirmNewPassword;
 }
 
+function informUsernameSuccess() {
+  const feedback = document.getElementById('username-change-feedback');
+  const usernameInput = document.getElementById('username');
+  const passwordInput = document.getElementById('password');
+  usernameInput.setAttribute('placeholder', usernameInput.value);
+  feedback.innerHTML = 'Successfully changed username';
+  feedback.className = 'success-message';
+  usernameInput.value = '';
+  passwordInput.value = '';
+}
+
+function informUsernameUnexpectedError() {
+  const feedback = document.getElementById('username-change-feedback');
+  const passwordInput = document.getElementById('password');
+  feedback.innerHTML = 'An unexpected error occured. Try again later.';
+  feedback.className = 'error-message';
+  passwordInput.value = '';
+}
+
+async function informUsernameError(res) {
+  const feedback = document.getElementById('username-change-feedback');
+  const passwordInput = document.getElementById('password');
+  try {
+    const data = await res.json();
+    feedback.innerHTML = data.message;
+  } catch (e) {
+    feedback.innerHTML = `An error occured: ${res.status}`; 
+  } finally {
+    feedback.className = 'error-message';
+    passwordInput.value = '';
+  }
+}
+
+function informPasswordSuccess() {
+  const feedback = document.getElementById('change-password-feedback');
+  const oldPassword = document.getElementById('oldPassword');
+  const newPassword = document.getElementById('newPassword');
+  const confirmNewPassword = document.getElementById('confirmNewPassword');
+  feedback.innerHTML = 'Successfully changed password';
+  feedback.className = 'success-message';
+  oldPassword.value = '';
+  newPassword.value = '';
+  confirmNewPassword.value = '';
+}
+
+function informPasswordUnexpecterError() {
+  const feedback = document.getElementById('change-password-feedback');
+  const oldPassword = document.getElementById('oldPassword');
+  const newPassword = document.getElementById('newPassword');
+  const confirmNewPassword = document.getElementById('confirmNewPassword');
+  feedback.innerHTML = 'An unexpected error occured. Try again later.';
+  feedback.className = 'error-message';
+  oldPassword.value = '';
+  newPassword.value = '';
+  confirmNewPassword.value = '';
+}
+
+async function informPasswordError(res) {
+  const feedback = document.getElementById('change-password-feedback');
+  const oldPassword = document.getElementById('oldPassword');
+  const newPassword = document.getElementById('newPassword');
+  const confirmNewPassword = document.getElementById('confirmNewPassword');
+  try {
+    const data = await res.json();
+    feedback.innerHTML = data.message;
+  } catch (e) {
+    feedback.innerHTML = `An error occured: ${res.status}`; 
+  } finally {
+    feedback.className = 'error-message';
+    oldPassword.value = '';
+    newPassword.value = '';
+    confirmNewPassword.value = '';
+  }
+}
+
 /*
  Handle Picture submission here!
  should be PUT request at /api/users/avatar
@@ -22,11 +97,7 @@ changeUsernameForm.addEventListener('submit', (event) => {
   event.preventDefault();
   event.stopPropagation();
 
-  const feedback = document.getElementById('username-change-feedback');
   const serializedData = serializeForm(changeUsernameForm);
-
-  feedback.innerHTML = '';
-  feedback.className = 'hidden';
 
   if (validateUsernameForm(serializedData)) {
     const url = window.location.protocol + '//' + window.location.host;
@@ -38,22 +109,12 @@ changeUsernameForm.addEventListener('submit', (event) => {
       body: JSON.stringify(serializedData)
     })
     .then(async (res) => {
-      if (res.status === 204) {
-        feedback.innerHTML = 'Successfully changed username';
-        feedback.className = 'success-message';
-      } else {
-        try {
-          const data = await res.json();
-          feedback.innerHTML = data.message;
-        } catch (e) {
-          feedback.innerHTML = `An error occured: ${res.status}`; 
-        } finally {
-          feedback.className = 'error-message';
-        }
-      }
+      if (res.status === 204) informUsernameSuccess();
+      else await informUsernameError(res);
     })
     .catch((err) => {
       console.error(err);
+      informUsernameUnexpectedError();
     })
   }
 })
@@ -63,7 +124,6 @@ changePasswordForm.addEventListener('submit', (event) => {
   event.preventDefault();
   event.stopPropagation();
 
-  const feedback = document.getElementById('change-password-feedback');
   const serializedData = serializeForm(changePasswordForm);
 
   if (validatePasswordForm(serializedData)) {
@@ -76,22 +136,12 @@ changePasswordForm.addEventListener('submit', (event) => {
       body: JSON.stringify(serializedData)
     })
     .then(async (res) => {
-      if (res.status === 204) {
-        feedback.innerHTML = 'Successfully changed password';
-        feedback.className = 'success-message';
-      } else {
-        try {
-          const data = await res.json();
-          feedback.innerHTML = data.message;
-        } catch (e) {
-          feedback.innerHTML = `An error occured: ${res.status}`; 
-        } finally {
-          feedback.className = 'error-message';
-        }
-      }
+      if (res.status === 204) informPasswordSuccess();
+      else await informPasswordError(res);
     })
     .catch((err) => {
       console.error(err);
+      informPasswordUnexpecterError();
     })
   }
 })

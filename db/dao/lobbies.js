@@ -2,6 +2,7 @@ const db = require('../index');
 const bcrypt = require('bcrypt');
 
 const LobbyError = require('../../helpers/error/LobbyError');
+const { verifyGuest } = require('../dao/lobbyGuests');
 
 async function createPrivate(userId, name, playerCapacity, password) {
   return bcrypt.hash(password, 8)
@@ -52,9 +53,22 @@ async function findLobby(id) {
     FROM $1:name
     WHERE id = $2`, ['Lobbies', id])
   .then((results) => {
-    return Promise.resolve(results);
+    if (results && results.length === 1) return Promise.resolve(results);
+    else return Promise.resolve(null);
   })
   .catch((err) => Promise.reject(err));
+}
+
+async function findFreeLobby(lobbyId) {
+  return db.query(`
+  SELECT *
+  FROM $1:name
+  WHERE id = $2 AND busy = $3`, ['Lobbies', lobbyId, false])
+.then((results) => {
+  if (results && results.length === 1) return Promise.resolve(results);
+  else return Promise.resolve(null);
+})
+.catch((err) => Promise.reject(err));
 }
 
 async function findHostLobbies(hostId) {
@@ -80,30 +94,41 @@ async function findAllFreeLobbies() {
   .catch((err) => Promise.reject(err));
 }
 
-// async function authenticate(username, password) {
-//   let userId;
-//   return db.query(`
-//     SELECT id, username, password 
-//     FROM $1:name 
-//     WHERE username = $2`, ['Users', username])
-//   .then((results) => {
-//     if (results && results.length === 1) {
-//       userId = results[0].id;
-//       return bcrypt.compare(password, results[0].password);
-//     } else return Promise.resolve(-1);
-//   })
-//   .then((passwordsMatch) => {
-//     if (passwordsMatch) return Promise.resolve(userId);
-//     return Promise.resolve(-1);
-//   })
-//   .catch((e) => Promise.reject(e));
-// }
+async function verifyHost(userId, lobbyId) {
+  return db.query(`
+    SELECT $1:name
+    FROM $2:name
+    WHERE id = $3`, ['hostId', 'Lobbies', lobbyId])
+  .then((results) => {
+    if (result && results.length === 1 && results[0].hostId === userId) {
+      return Promise.resolve(true);
+    } else return Promise.resolve(false);
+  })
+  .catch((err) => Promise.reject(err));
+}
+
+async function verifyHostOrGuest(userId, lobbyId) {
+  return db.query(`
+    SELECT $1:name
+    FROM $2:name
+    WHERE id = $3`, ['hostId', 'Lobbies', lobbyId])
+  .then((results) => {
+    if (result && results.length === 1 && results[0].hostId === userId) {
+      return Promise.resolve(true);
+    } else return verifyGuest(userId, lobbyId);
+  })
+  .then((isGuest) => Promise.resolve(isGuest))
+  .catch((err) => Promise.reject(err));
+}
 
 module.exports = {
   createPrivate,
   createPublic, 
   deleteLobby,
   findLobby,
+  findFreeLobby,
   findHostLobbies,
-  findAllFreeLobbies
+  findAllFreeLobbies,
+  verifyHost,
+  verifyHostOrGuest,
 }

@@ -26,6 +26,9 @@ const hbs = create({
         return options.inverse(this);
       }
     },
+    inc(value, options) {
+      return parseInt(value) + 1;
+    }
   }
 })
 
