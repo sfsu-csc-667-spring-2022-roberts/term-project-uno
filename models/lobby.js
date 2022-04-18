@@ -24,6 +24,9 @@ module.exports = (sequelize, DataTypes) => {
       Lobby.hasMany(models.LobbyMessage, {
         foreignKey: 'lobbyId'
       });
+      Lobby.hasMany(models.LobbyInvitation, {
+        foreignKey: 'lobbyId'
+      });
     }
   }
   Lobby.init({
