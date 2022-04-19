@@ -304,12 +304,12 @@ const createCard = (card, type) => {
                 }
                 case "swap" : {
                     return (
-                        `<div class="card num-${card.value} ${card.color} draw-play-deck-item" >
+                        `<div style="width: 87px;" class="card ${card.value} ${card.color} draw-play-deck-item" >
                             <span class="inner">
-                                <span class="mark">
-                                    <div class="card-value">${card.value}</div>
-                                </span>
+                                <img class="wild-choose-img" src="/images/uno-swap.png" alt="swap"/>
                             </span>
+                            <img class="wild-img-small wild-img-small-top" src="/images/uno-wild.png" alt="swap"/>
+                            <img class="wild-img-small wild-img-small-bottom" src="/images/uno-wild.png" alt="swap"/>
                         </div>`
                     );
                 }
@@ -389,12 +389,12 @@ const createCard = (card, type) => {
                 }
                 case "swap" : {
                     return (
-                        `<div id="${card.id}" class="card num-${card.value} ${card.color}" onclick="playCard(this);">
+                        `<div id="${card.id}" style="width: 87px;" class="card ${card.value} ${card.color}" onclick="playCard(this);">
                             <span class="inner">
-                                <span class="mark">
-                                    <div class="card-value">${card.value}</div>
-                                </span>
+                                <img class="wild-choose-img" src="/images/uno-swap.png" alt="swap"/>
                             </span>
+                            <img class="wild-img-small wild-img-small-top" src="/images/uno-wild.png" alt="swap"/>
+                            <img class="wild-img-small wild-img-small-bottom" src="/images/uno-wild.png" alt="swap"/>
                         </div>`
                     );
                 }
