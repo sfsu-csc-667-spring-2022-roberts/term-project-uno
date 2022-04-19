@@ -1,6 +1,4 @@
 const express = require('express');
-const object = require('@hapi/joi/lib/types/object');
-
 const IndexError = require('../helpers/error/IndexError');
 const UserDao = require('../db/dao/users');
 const { authenticate, verifyToken } = require('../lib/utils/token');
@@ -8,42 +6,11 @@ const { validateUsername } = require('../lib/validation/users');
 const { findLobby } = require('../db/dao/lobbies');
 const { findAllLobbyGuests } = require('../db/dao/lobbyGuests');
 const { findUsersInvitations } = require('../db/dao/lobbyInvitations');
+const { findGameWithLobby } = require('../db/dao/games');
 const { verifyUserInGame } = require('../db/dao/players');
+const { formatAllLobbyInfo, calculateWinRate } = require('../lib/utils/index');
+
 const router = express.Router();
-
-async function formatLobbyInfo(lobby) {
-  const results = await Promise.allSettled([findAllLobbyGuests(lobby.id), UserDao.findUserById(lobby.hostId)]);
-  const lobbyGuests = results[0].value;
-  const host = results[1].value;
-  return {
-    id: lobby.id,
-    name: lobby.name,
-    guestLength: lobbyGuests ? lobbyGuests.length : 0,
-    hostName: host.username ? host.username : "",
-    busy: lobby.busy,
-    playerCapacity: lobby.playerCapacity,
-    createdAt: lobby.createdAt
-  };
-}
-
-async function formatAllLobbyInfo(lobbies) {
-  const asyncTasks = [];
-  if (lobbies) {
-    lobbies.forEach((lobby) => {
-      asyncTasks.push(formatLobbyInfo(lobby));
-    })
-  }
-
-  const results = await Promise.allSettled(asyncTasks);
-  return results.map((result) => {
-    if (result.status === 'fulfilled') return result.value;
-  });
-}
-
-function calculateWinRate(user) {
-  const { gamesPlayed, gamesWon } = user;
-  return gamesPlayed > 0 ? (gamesWon / gamesPlayed).toFixed(4) * 100 : 0;
-}
 
 router.get('/', verifyToken, (req, res) => {
   if (req.user) {
@@ -57,7 +24,7 @@ router.get('/', verifyToken, (req, res) => {
     .catch((err) => {
       console.error(err);
       next(new IndexError('An unexpected error occured', 500));
-    })
+    });
   } else res.render('home', {layout: false, title: 'Home'});
 });
 
@@ -128,36 +95,52 @@ router.get('/:username', verifyToken, async (req, res, next) => {
 
 /* Lobby Pages */
 router.get('/lobby/:lobbyId(\\d+)', authenticate, async (req, res, next) => {
-  const { lobbyId } = req.params;
-  const requestedLobby = await findLobby(lobbyId);
+  try {
+    const { lobbyId } = req.params;
+    const requestedLobby = await findLobby(lobbyId);
+  
+    if(requestedLobby && !requestedLobby.busy) {
+      const { hostId, name, playerCapacity, busy } = requestedLobby;
+      const asyncTasks = await Promise.all([UserDao.findUserById(hostId), findAllLobbyGuests(lobbyId)]);
+      const host = asyncTasks[0];
+      const lobbyGuests = asyncTasks[1];
+      const hostName = host.username;
+      const lobbyGuestTasks = [];
+      const guestAndStatus = []
+      
+      lobbyGuests.forEach((lobbyGuest) => {
+        lobbyGuestTasks.push(UserDao.findUserById(lobbyGuest.userId));
+      });
 
-  if(requestedLobby) {
-    const { hostId, name, playerCapacity, busy } = requestedLobby;
-    const host = await UserDao.findUserById(hostId);
-    const hostName = host.username;
-    const lobbyGuests = await findAllLobbyGuests(lobbyId);
-    let guestAndStatus = []
-    
-    for(let i = 0; i<lobbyGuests.length; i++) {
-      const guest = await UserDao.findUserById(lobbyGuests[i].userId)
-      const guestObject = {"username":guest.username, "ready": lobbyGuests[i].userReady}
-      guestAndStatus.push(guestObject);
+      const usersInfo = await Promise.all(lobbyGuestTasks);
+      usersInfo.forEach((guest) => {
+        const guestObject = {"username":guest.username, "ready": lobbyGuests[i].userReady}
+        guestAndStatus.push(guestObject);
+      })
+  
+      res.render('lobby', {
+        layout: false,
+        title:  "Uno Lobby #"+lobbyId,
+        lobbyId: lobbyId,
+        lobbyName: name,
+        currentPlayers: lobbyGuests.length + 1,
+        maxCount: playerCapacity,
+        hostName: hostName,
+        hostId: hostId,
+        guest: guestAndStatus,
+        isHost: req.user.id == hostId,
+        user: req.user
+      });
+    } 
+    else if (requestedLobby && requestedLobby.busy) {
+      const game = await findGameWithLobby(lobbyId)
+      res.redirect(`/games/${game.id}`);
     }
-
-    res.render('lobby', {
-      layout: false,
-      title:  "Uno Lobby #"+lobbyId,
-      lobbyId: lobbyId,
-      lobbyName: name,
-      currentPlayers: lobbyGuests.length + 1,
-      maxCount: playerCapacity,
-      hostName: hostName,
-      hostId: hostId,
-      guest: guestAndStatus,
-      isHost: req.user.id == hostId,
-      user: req.user
-    });
-  } else res.redirect('/');
+    else res.redirect('/');
+  } catch (err) {
+    console.error(err);
+    next(new IndexError('An unexpected error occured', 500));
+  }
 });
 
 /* Game Pages */

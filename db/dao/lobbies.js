@@ -94,6 +94,16 @@ async function findAllFreeLobbies() {
   .catch((err) => Promise.reject(err));
 }
 
+async function setBusy(lobbyId, busy) {
+  return db.one(`
+    UPDATE "Lobbies"
+    SET busy = $1
+    WHERE id = $2
+    RETURNING id
+  `, [busy, lobbyId])
+  .catch((err) => Promise.reject(err));
+}
+
 async function verifyHost(userId, lobbyId) {
   return db.query(`
     SELECT $1:name
@@ -129,6 +139,7 @@ module.exports = {
   findFreeLobby,
   findHostLobbies,
   findAllFreeLobbies,
+  setBusy,
   verifyHost,
   verifyHostOrGuest,
 }

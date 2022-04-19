@@ -13,7 +13,7 @@ const init = (app, server) => {
     const cookies = parseCookies(socket.handshake.headers.cookie);
     const user = cookies.token ? await parseToken(cookies.token) : null;
 
-    socket.join(user.id);
+    if (user) socket.join(user.id);
 
     socket.on('join-game-room', async (message) => {
       try {

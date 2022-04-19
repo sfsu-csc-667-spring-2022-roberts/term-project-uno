@@ -32,7 +32,7 @@ async function create(username, password) {
   })
   .catch((err) => Promise.reject(err));
 }
-``
+
 async function authenticate(username, password) {
   let userId;
   return db.query(`
