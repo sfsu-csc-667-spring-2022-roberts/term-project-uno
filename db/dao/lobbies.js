@@ -53,7 +53,7 @@ async function findLobby(id) {
     FROM $1:name
     WHERE id = $2`, ['Lobbies', id])
   .then((results) => {
-    if (results && results.length === 1) return Promise.resolve(results);
+    if (results && results.length === 1) return Promise.resolve(results[0]);
     else return Promise.resolve(null);
   })
   .catch((err) => Promise.reject(err));
