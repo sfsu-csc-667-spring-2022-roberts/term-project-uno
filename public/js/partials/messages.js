@@ -5,6 +5,11 @@ const messagesDiv = document.getElementById("messages");
 const messageInput = document.getElementById("message-input");
 const messageIcon = document.getElementById("message-icon");
 
+// ------ socket events
+socket.on('game-message-send', (data) => {
+    appendMessage(data);
+});
+
 // ------ message events
 messageInput.addEventListener("keyup", (e) => {
     if (e.key === "Enter") {
@@ -48,18 +53,12 @@ const getMessages = async () => {
 };
 
 const sendMessage = async () => {
-    if (messageInput.value.trim().length > 0) {
-        fetch(`/api${window.location.pathname}/messages`, {
-            method: 'POST',
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ message: messageInput.value })
-        })
-            .then(response => response.json())
-            .then(data => {
-                messageInput.value = "";
-                getMessages();
-            })
-            .catch(err => console.log(err));
+    if (messageInput.value.trim().length > 0) {   
+        const pathnames = window.location.pathname.split('/');
+        const gameId = pathnames[pathnames.length-1];
+
+        socket.emit('game-message-send', JSON.stringify({ message: messageInput.value, gameId }))
+        messageInput.value = "";
     }
 };
 
@@ -72,5 +71,10 @@ const createMessage = (message) => {
         </div>`
     );
 };
+
+const appendMessage = (message) => {
+    messagesDiv.innerHTML = messagesDiv.innerHTML + createMessage(message);
+    if (messagePopUpToggle) messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
 
 const timeFormat = (time) => `${time[0]}:${time[1]} ${time[2].split(" ")[1]}`;

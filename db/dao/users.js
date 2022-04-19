@@ -2,9 +2,8 @@ const db = require('../index');
 const bcrypt = require('bcrypt');
 
 const UserError = require('../../helpers/error/UserError');
-const { findHostLobbies, findLobby, findFreeLobby } = require('./lobbies');
+const { findHostLobbies, findLobby } = require('./lobbies');
 const { findLobbyGuests } = require('./lobbyGuests');
-const { findPlayers } = require('./players');
 
 async function usernameExists(username) {
   return db.query(`
@@ -33,7 +32,7 @@ async function create(username, password) {
   })
   .catch((err) => Promise.reject(err));
 }
-
+``
 async function authenticate(username, password) {
   let userId;
   return db.query(`
