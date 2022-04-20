@@ -42,22 +42,59 @@ main {
   -o-transform: scale(1.15);
 }
 
-.list-container {
-  overflow-y: scroll;
+.lobby {
+  background: #f1f1f1;
+  border-radius: 0.25rem;
+  outline: 1px solid #dedede;
+}
+
+.lobby-waiting {
+  font-weight: 700;
+  color: #18A849;
+}
+
+.lobby-busy {
+  font-weight: 700;
+  color: #ee161f;
+}
+
+.lobby-hostname {
+  font-weight: 600;
+}
+
+.lobby-name {
+  font-style: italic;
+}
+
+.lobby-capacity {
+  font-size: 1rem;
+}
+
+#lobby-header {
+  background: #004177;
+  color: rgb(233, 233, 233);
+}
+
+#list-container {
+  overflow-y: auto;
   overflow-x: hidden;
   flex-grow: 0;
 }
 
-.list-container ul {
-  min-height: 15rem;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  padding-top: 0.25rem;
+#list-container table {
+  width: 100%;
 }
 
-.list-container li {
-  padding: 0.5rem;
+#list-container a {
+  text-decoration: none;
+  color: inherit;
+}
+
+#list-container th, td {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: .375rem;
 }
 
 #menu {
@@ -128,4 +165,9 @@ main {
   display: flex;
   flex-direction: column;
   height: 15rem;
+}
+
+#user-lobby-list table {
+  background: #f1f1f1;
+  table-layout: fixed;
 }
