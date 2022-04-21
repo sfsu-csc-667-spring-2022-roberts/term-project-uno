@@ -100,35 +100,55 @@ router.get('/lobby/:lobbyId(\\d+)', authenticate, async (req, res, next) => {
     const requestedLobby = await findLobby(lobbyId);
   
     if(requestedLobby && !requestedLobby.busy) {
-      const { hostId, name, playerCapacity, busy } = requestedLobby;
+      const { hostId, name } = requestedLobby;
       const asyncTasks = await Promise.all([UserDao.findUserById(hostId), findAllLobbyGuests(lobbyId)]);
       const host = asyncTasks[0];
       const lobbyGuests = asyncTasks[1];
-      const hostName = host.username;
       const lobbyGuestTasks = [];
-      const guestAndStatus = []
-      
+      const leftList = [];
+      const rightList = [];
+      const guests = [{
+        host: true,
+        username: host.username,
+        avatar: host.pictureUrl
+      }];
+
       lobbyGuests.forEach((lobbyGuest) => {
         lobbyGuestTasks.push(UserDao.findUserById(lobbyGuest.userId));
       });
 
       const usersInfo = await Promise.all(lobbyGuestTasks);
-      usersInfo.forEach((guest) => {
-        const guestObject = {"username":guest.username, "ready": guest.userReady}
-        guestAndStatus.push(guestObject);
-      })
-  
+
+      for(let i = 0; i < usersInfo.length; i++) {
+        const guest = { 
+          username: usersInfo[i].username, 
+          avatar: usersInfo[i].pictureUrl,
+          ready: lobbyGuests[i].userReady,
+          id: lobbyGuests[i].userId
+        };
+        guests.push(guest);
+      }
+
+      while(guests.length < 10) {
+        guests.push({ empty: true })
+      }
+
+      for(let i = 0; i < 5 && i < guests.length; i++) {
+        leftList.push(guests[i]);
+      }
+
+      for(let i = 5; i < 10 && i < guests.length; i++) {
+        rightList.push(guests[i]);
+      }
+
       res.render('lobby', {
         layout: false,
-        title:  "Uno Lobby #"+lobbyId,
+        title:  `Uno Lobby #${lobbyId}`,
         lobbyId: lobbyId,
         lobbyName: name,
-        currentPlayers: lobbyGuests.length + 1,
-        maxCount: playerCapacity,
-        hostName: hostName,
-        hostId: hostId,
-        guest: guestAndStatus,
-        isHost: req.user.id == hostId,
+        leftList,
+        rightList,
+        isHost: req.user.id === hostId,
         user: req.user
       });
     } 

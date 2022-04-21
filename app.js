@@ -26,8 +26,28 @@ const hbs = create({
         return options.inverse(this);
       }
     },
+    varEquals(varName, value, options) {
+      if (options.data.root[varName] === value) {
+        return options.fn(this);
+      } else {
+        return options.inverse(this);
+      }
+    },
     inc(value, options) {
       return parseInt(value) + 1;
+    },
+    loopTimes(n, options) {
+      let accum = '';
+      for(let i = 0; i < n; i++) {
+        accum += options.fn(i);
+      }
+      return accum;
+    },
+    assign(varName, varValue, options) {
+      options.data.root[varName] = varValue;
+    },
+    get(varName, options) {
+      return options.data.root[varName];
     }
   }
 })
