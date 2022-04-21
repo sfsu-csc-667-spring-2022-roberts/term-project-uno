@@ -53,7 +53,7 @@
                     {{else}}
                       {{#varEquals "isHost" true}}
                         <td class="lobby-guest-kick">
-                          <button id="{{this.id}}" class="lobby-button">Kick</button>
+                          <button id="{{this.id}}" class="lobby-button kick">Kick</button>
                         </td>
                       {{else}}
                         <td></td>
@@ -100,7 +100,7 @@
                     {{else}}
                       {{#varEquals "isHost" true}}
                         <td class="lobby-guest-kick">
-                          <button id="{{this.id}}" class="lobby-button">Kick</button>
+                          <button id="{{this.id}}" class="lobby-button kick">Kick</button>
                         </td>
                       {{else}}
                         <td></td>
@@ -126,11 +126,11 @@
             {{/if}}
             <div id="lobby-options">
               {{#if isHost}}
-              <button class="lobby-button" onclick="start({{lobbyId}})">Start</button>
+              <button id="start-button" class="lobby-button">Start</button>
               {{else}}
-              <button class="lobby-button">Ready</button>
+              <button id="ready-button" class="lobby-button">Ready</button>
               {{/if}}
-              <button class="lobby-button">Leave Lobby</button>
+              <button id='leave-button' class="lobby-button">Leave Lobby</button>
             </div>
           </div>
         </div>
@@ -152,5 +152,10 @@
       </div>
     </main>
     <script src="/socket.io/socket.io.js"></script>
+    <script>
+      const userId = "{{user.id}}"
+      const lobbyName = "{{lobbyName}}"
+      const lobbyId = "{{lobbyId}}"
+    </script>
   </body>
 </html>

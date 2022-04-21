@@ -87,9 +87,65 @@ async function findAllFreeLobbies() {
     SELECT *
     FROM $1:name
     WHERE busy = $2
-    ORDER BY $3:name DESC`, ['Lobbies', false, 'createdAt'])
+    ORDER BY $3:name DESC`, 
+  ['Lobbies', false, 'createdAt'])
   .then((results) => {
     return Promise.resolve(results);
+  })
+  .catch((err) => Promise.reject(err));
+}
+
+async function findAllMembers(lobbyId) {
+  const findUserInfo = (userId) => db.one(`
+    SELECT id, username, "pictureUrl"
+    FROM "Users"
+    WHERE id = $1
+  `, [userId]);
+
+  return db.one(`
+    SELECT "hostId"
+    FROM "Lobbies"
+    WHERE id = $1
+  `, [lobbyId])
+  .then((lobby) => {
+    return Promise.all([lobby.hostId, db.query(`
+      SELECT "userId", "userReady"
+      FROM "LobbyGuests"
+      WHERE "lobbyId" = $1
+    `, [lobbyId])]);
+  })
+  .then((members) => {
+    const hostId = members[0];
+    const guests = members[1];
+    const usersInfo = [findUserInfo(hostId)];
+
+    guests.forEach((guest) => {
+      usersInfo.push(findUserInfo(guest.userId));
+    })
+
+    return Promise.all([Promise.all(usersInfo), guests]);
+  })
+  .then((results) => {
+    const users = results[0];
+    const guests = results[1];
+    const host = users[0];
+    const members = [{
+      host: true,
+      username: host.username,
+      avatar: host.pictureUrl,
+      id: host.id
+    }];
+
+    for (let i = 1; i < users.length; i++) {
+      members.push({
+        username: users[i].username,
+        avatar: users[i].pictureUrl,
+        ready: guests[i - 1].userReady,
+        id: users[i].id
+      });
+    }
+
+    return Promise.resolve(members);
   })
   .catch((err) => Promise.reject(err));
 }
@@ -105,12 +161,12 @@ async function setBusy(lobbyId, busy) {
 }
 
 async function verifyHost(userId, lobbyId) {
-  return db.query(`
-    SELECT $1:name
-    FROM $2:name
-    WHERE id = $3`, ['hostId', 'Lobbies', lobbyId])
-  .then((results) => {
-    if (result && results.length === 1 && results[0].hostId === userId) {
+  return db.one(`
+    SELECT "hostId"
+    FROM "Lobbies"
+    WHERE id = $1`, [lobbyId])
+  .then((lobby) => {
+    if (lobby.hostId === userId) {
       return Promise.resolve(true);
     } else return Promise.resolve(false);
   })
@@ -131,6 +187,16 @@ async function verifyHostOrGuest(userId, lobbyId) {
   .catch((err) => Promise.reject(err));
 }
 
+async function setHost(newHostId, lobbyId) {
+  return db.query(`
+    UPDATE "Lobbies"
+    SET "hostId" = $1
+    WHERE id = $2
+    RETURNING id
+  `, [newHostId, lobbyId])
+  .catch((err) => Promise.reject(err));
+}
+
 module.exports = {
   createPrivate,
   createPublic, 
@@ -138,8 +204,10 @@ module.exports = {
   findLobby,
   findFreeLobby,
   findHostLobbies,
+  findAllMembers,
   findAllFreeLobbies,
   setBusy,
+  setHost,
   verifyHost,
   verifyHostOrGuest,
 }

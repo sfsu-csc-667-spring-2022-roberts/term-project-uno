@@ -110,7 +110,8 @@ router.get('/lobby/:lobbyId(\\d+)', authenticate, async (req, res, next) => {
       const guests = [{
         host: true,
         username: host.username,
-        avatar: host.pictureUrl
+        avatar: host.pictureUrl,
+        id: host.id,
       }];
 
       lobbyGuests.forEach((lobbyGuest) => {

@@ -104,50 +104,6 @@ router.post('/', authenticate, async (req, res) => {
       res.status(500).json({ message: 'An unexpected error occured' });
     });
   }
-
-});
-
-/* Join Lobby */
-router.post("/:id(\\d+)/users", authenticate, async (req, res) => {
-  const user = req.user.id;
-  const { id } = req.params;
-  let data;
-  LobbyDao.findLobby(id)
-  .then((lobby) => {
-    if(lobby.password) {
-      lobby.type = "true";
-    }
-    else {
-      lobby.type = "false";
-    }
-    delete lobby.password;
-    data = lobby;
-
-    return LobbyGuestsDao.findAllLobbyGuests(id);
-  })
-  .then((result) => {
-    if(result.length + 2 > data.playerCapacity) {
-      return res.status(400).json({ message: 'Lobby is full'});
-    }
-    for(let i = 0; i<result.length; i++) {
-      if(result[i].userId == user) {
-        return res.status(400).json({ message: 'Already in this lobby'});
-      }
-    }
-    if(user == data.hostId) {
-      return res.status(400).json({ message: 'Already in this lobby'});
-    }
-    return LobbyGuestsDao.addGuest(user,id)
-    .then((result) => {
-      if(result){
-        res.redirect("/lobby/"+id);
-      }
-    })
-  })
-  .catch((err) => {
-    console.error("ERROR",err);
-    res.status(500).json({ message: 'An unexpected error occured' });
-  });
 });
 
 /* Create invitation */

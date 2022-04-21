@@ -1,11 +1,34 @@
 const socketIo = require('socket.io');
 const LobbyDao = require('../db/dao/lobbies');
+const LobbyGuestDao = require('../db/dao/lobbyGuests');
 const PlayerDao = require('../db/dao/players');
 const MessageDao = require('../db/dao/messages');
+const { splitLobbyMembers } = require('../lib/utils/socket');
 const { parseToken } = require('../lib/utils/token');
 const { parseCookies } = require('../lib/utils/cookies');
+const userSockets = {};
 
-const init = (app, server) => {
+function addToUserSockets(userId, socket) {
+  if (userSockets[userId]) {
+    userSockets[userId].push(socket);
+  } else userSockets[userId] = [socket];
+}
+
+function removeFromUserSockets(userId, socket) {
+  for (let i = 0; i < userSockets[userId].length; i++) {
+    if (userSockets[userId][i].id === socket.id) {
+      if (userSockets[userId].length === 1) delete userSockets[userId];
+      else userSockets[userId].splice(i, 1);
+      return;
+    }
+  }
+}
+
+function getSocketsFromUserSockets(userId) {
+  return userSockets[userId];
+}
+
+function init(app, server) {
   const io = socketIo(server);
 
   app.set('io', io);
@@ -14,14 +37,27 @@ const init = (app, server) => {
     const cookies = parseCookies(socket.handshake.headers.cookie);
     const user = cookies.token ? await parseToken(cookies.token) : null;
 
-    if (user) socket.join(user.id);
+    if (user) {
+      socket.join(user.id);
+      addToUserSockets(user.id, socket);
+    }
+
+    socket.on('disconnect', () => {
+      if (user) removeFromUserSockets(user.id, socket);
+    });
 
     socket.on('join-lobby-room', async (message) => {
       try {
         data = JSON.parse(message);
-        if (!user || !(await LobbyDao.verifyHostOrGuest(user.id, data.lobbyId))) return;
 
-        socket.join(`lobby/${data.lobbyId}`);
+        if (!user) return;
+        if (await LobbyDao.verifyHost(user.id, data.lobbyId)) {
+          socket.join(`lobby-host/${data.lobbyId}`);
+          socket.join(`lobby/${data.lobbyId}`);
+        } else if (await LobbyGuestDao.verifyGuest(user.id, data.lobbyId)) {
+          socket.join(`lobby-guest/${data.lobbyId}`);
+          socket.join(`lobby/${data.lobbyId}`);
+        }
       } catch (err) {
         console.error(err);
       }
@@ -59,19 +95,72 @@ const init = (app, server) => {
       try {
         data = JSON.parse(message);
 
-        // copy implementation from http endpoint
-        // Get new list of players
-        // Broadcast to relevant clients
+        const lobby = await LobbyDao.findLobby(data.lobbyId);
+        if (!lobby) return;
+
+        const lobbyGuests = await LobbyGuestDao.findAllLobbyGuests(data.lobbyId);
+
+        // Full Lobby
+        if (lobbyGuests.length + 2 > lobby.playerCapacity) return;
+
+        // Already a lobby member
+        if (user.id == lobby.hostId) {
+          socket.emit('redirect', JSON.stringify({ pathname: `/lobby/${data.lobbyId}` }));
+          return;
+        }
+        for (let i = 0; i < lobbyGuests.length; i++) {
+          if (user.id == lobbyGuests[i].id) {
+            socket.emit('redirect', JSON.stringify({ pathname: `/lobby/${data.lobbyId}` }));
+            return;
+          }
+        }
+
+        await LobbyGuestDao.addGuest(user.id, data.lobbyId);
+
+        const lobbyMembers = await LobbyDao.findAllMembers(data.lobbyId);
+        const { leftList, rightList } = splitLobbyMembers(lobbyMembers);
+
+        io.to(`lobby-guest/${data.lobbyId}`).emit('lobby-update-guests', JSON.stringify({ leftList, rightList }));
+        io.to(`lobby-host/${data.lobbyId}`).emit('lobby-update-guests', JSON.stringify({
+          host: true, leftList, rightList
+        }));
+        socket.emit('redirect', JSON.stringify({ pathname: `/lobby/${data.lobbyId}` }));
       } catch (err) {
         console.error(err);
       }
     });
 
-    socket.on('lobby-leave', async (message) => {
+    socket.on('leave-lobby', async (message) => {
       try {
         data = JSON.parse(message);
-    
 
+        const lobby = await LobbyDao.findLobby(data.lobbyId);
+        if (!lobby) return;
+
+        if (user.id == lobby.hostId) {
+          const nextHostId = await LobbyGuestDao.removeOldestGuest(data.lobbyId);
+          const nextHostSockets = getSocketsFromUserSockets(nextHostId);
+
+          await LobbyDao.setHost(nextHostId, data.lobbyId);
+          
+          nextHostSockets.forEach((hostSocket) => {
+            if (hostSocket.rooms.has(`lobby-guest/${data.lobbyId}`)) {
+              hostSocket.leave(`lobby-guest/${data.lobbyId}`);
+              hostSocket.join(`lobby-host/${data.lobbyId}`)
+              hostSocket.emit('upgrade-to-lobby-host', JSON.stringify({ upgrade: true }));
+            }
+          });
+        } else await LobbyGuestDao.remove(user.id, data.lobbyId);
+
+        socket.emit('redirect', JSON.stringify({ pathname: `/find-lobby` }));
+
+        const lobbyMembers = await LobbyDao.findAllMembers(data.lobbyId);
+        const { leftList, rightList } = splitLobbyMembers(lobbyMembers);
+
+        io.to(`lobby-guest/${data.lobbyId}`).emit('lobby-update-guests', JSON.stringify({ leftList, rightList }));
+        io.to(`lobby-host/${data.lobbyId}`).emit('lobby-update-guests', JSON.stringify({
+          host: true, leftList, rightList
+        }));
       } catch (err) {
         console.error(err);
       }
@@ -83,11 +172,14 @@ const init = (app, server) => {
 
         if (!user || !(await LobbyDao.verifyHost(user.id, data.lobbyId))) return;
 
-        /*
-          Remove player to kick from lobbyGuests
-          Get new list of players
-          Broadcast to relevant clients
-        */
+        await LobbyGuestDao.remove(data.userId, data.lobbyId);
+        const lobbyMembers = await LobbyDao.findAllMembers(data.lobbyId);
+        const { leftList, rightList } = splitLobbyMembers(lobbyMembers);
+
+        io.to(`lobby-guest/${data.lobbyId}`).emit('lobby-kick-player', JSON.stringify({ leftList, rightList }));
+        io.to(`lobby-host/${data.lobbyId}`).emit('lobby-kick-player', JSON.stringify({
+          host: true, leftList, rightList
+        }));
       } catch (err) {
         console.error(err);
       }
