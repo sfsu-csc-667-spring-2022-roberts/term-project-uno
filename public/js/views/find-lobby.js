@@ -18,8 +18,7 @@ window.addEventListener('load', () => {
       const lobbyType = document.createElement("div");
 
       newLobby.id = id;
-      newLobby.className= "lobby-container"; 
-      lobbyName.className = "lobby-name";
+      newLobby.className= "item-container"; 
       lobbyName.innerHTML = name;
       playerCount.innerHTML = 1 + guests.length + "/" + playerCapacity;
       joinButton.innerHTML = "Join";

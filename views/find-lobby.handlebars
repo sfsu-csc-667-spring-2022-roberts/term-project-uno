@@ -4,27 +4,35 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="/css/views/leaderboard.css" />
     <link rel="stylesheet" type="text/css" href="/css/views/find-lobby.css" />
     <link rel="stylesheet" type="text/css" href="/css/partials/navbar.css" />
     <title>{{title}}</title>
   </head>
-  <body id="body">
+  <body id="body"> 
     {{> navbar}}
-    <main>
+
+        <main>
+        <div class="entite-table">
         <div class="search-container">
           <input type="text" placeholder="Search" id="lobby-search-input" name="lobby-search" required>
           <button type="submit">Search</button>
           <button type="button">Refresh</button>
         </div>
-        <div class="header-container">
-          <div class="lobby-name-header">Lobby Name</div>
-          <div>Host</div>
-          <div>Type</div>
-          <div class="player-count-header">Players</div>
+        <div class="header-list-container">
+          <div class="header-item-container">Lobby Name</div>
+          <div class="header-item-container">Host</div>
+          <div class="header-item-container">Type</div>
+          <div class="header-item-container">Player Count</div>
         </div>
-        <div class="lobby-list-container" id="lobbyListContainer">
+
+        <div class="item-list-container" id="lobbyListContainer">
+
+        </div>
         </div>
     </main>
+
+
   </body>
   <script src="/js/views/find-lobby.js" type="module"></script>
 </html>

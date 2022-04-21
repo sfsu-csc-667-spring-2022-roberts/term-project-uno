@@ -44,6 +44,24 @@ function calculateWinRate(user) {
   return gamesPlayed > 0 ? (gamesWon / gamesPlayed).toFixed(4) * 100 : 0;
 }
 
+router.get('/leaderboard', verifyToken, (req, res) => {
+  res.render('leaderboard', {layout: false, title: 'Leaderboard'})
+});
+
+router.get('/leaderboardData', verifyToken, async (req, res) => {
+
+  UserDao.getScores()
+  .then((result) => {
+    console.log(result)
+    res.send(result)
+  })
+  .catch((err) => {
+    console.error(err);
+    next(new IndexError('An unexpected error occured', 500));
+  })
+
+});
+
 router.get('/', verifyToken, (req, res) => {
   if (req.user) {
     UserDao.findAllLobbies(req.user.id)
