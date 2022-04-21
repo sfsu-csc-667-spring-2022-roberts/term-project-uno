@@ -114,7 +114,7 @@ router.get('/lobby/:lobbyId(\\d+)', authenticate, async (req, res, next) => {
 
       const usersInfo = await Promise.all(lobbyGuestTasks);
       usersInfo.forEach((guest) => {
-        const guestObject = {"username":guest.username, "ready": lobbyGuests[i].userReady}
+        const guestObject = {"username":guest.username, "ready": guest.userReady}
         guestAndStatus.push(guestObject);
       })
   
