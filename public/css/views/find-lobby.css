@@ -17,10 +17,6 @@ main {
   height: 80%;
 }
 
-input {
-  width: 90%
-}
-
 .search-container {
   display: flex;
   justify-content: center;

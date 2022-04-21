@@ -3,26 +3,12 @@ const kickButtons = document.getElementsByClassName('kick')
 const leftTableBody = document.getElementById('list-1');
 const rightTableBody = document.getElementById('list-2');
 const lobbyMenu = document.getElementById('lobby-menu');
+const readyButton = document.getElementById('ready-button');
+const messages = document.getElementById('messages');
+const messageInput = document.getElementById('message-input');
 const baseURL = `${window.location.protocol}//${window.location.host}`;
 let leaveButton = document.getElementById('leave-button');
-
-async function start(lobbyId) {
-  fetch(baseURL + '/api/games/', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({id: lobbyId}),
-  })
-  .then(async (res) => {
-    if (res.redirected) {
-      window.location.href = res.url;
-    }
-  })
-  .catch((err) => {
-    console.error(err);
-  });
-}
+let startButton = document.getElementById('start-button');
 
 function joinLobbyRoom() {
   socket.emit('join-lobby-room', JSON.stringify({ lobbyId }));
@@ -39,6 +25,32 @@ function addKickButtonListener() {
       });
     }
   }
+}
+
+function sendMessage() {
+  if (messageInput.value.trim().length > 0) {   
+    socket.emit('lobby-message-send', JSON.stringify({ message: messageInput.value, lobbyId }))
+    messageInput.value = '';
+  }
+}
+
+function createMessage(message) {
+  return (
+    `<div id="${message.id ? message.id : ''}" class="message-container">
+      ${message.sender ? `<strong class="message-sender">${message.sender}</strong>` : ''}
+      <div class="message ${message.notification ? 'notification' : ''}">${message.message}</div>
+      <span class="message-time">${timeFormat(new Date(message.createdAt).toLocaleTimeString().split(":"))}</span>
+    </div>`
+  );
+}
+
+function appendMessage(message) {
+  messages.innerHTML = messages.innerHTML + createMessage(message);
+  messages.scrollTop = messages.scrollHeight;
+}
+
+function timeFormat(time) {
+  return `${time[0]}:${time[1]} ${time[2].split(" ")[1]}`;
 }
 
 function createGuestRow(guest) {
@@ -155,30 +167,14 @@ if (socket) {
     }
   })
   
-  /*
-            <div id="lobby-menu">
-            <h3 id="lobby-title">{{lobbyName}}</h3>
-            {{#if isHost}}
-            <div id="invitation-container">
-              <span id="invite-error" class="invite-error hidden"></span>
-              <form>
-                <input type="text" placeholder="Username" id="username" name="username">
-                <button class="lobby-button">Invite</button>
-              </form>
-            </div>
-            {{else}}
-            {{/if}}
-            <div id="lobby-options">
-              {{#if isHost}}
-              <button class="lobby-button" onclick="start({{lobbyId}})">Start</button>
-              {{else}}
-              <button class="lobby-button">Ready</button>
-              {{/if}}
-              <button id='leave-button' class="lobby-button">Leave Lobby</button>
-            </div>
-          </div>
-        </div>
-  */
+  socket.on('lobby-message-send', (message) => {
+    try {
+      data = JSON.parse(message);
+      appendMessage(data);
+    } catch (err) {
+      console.error(err);
+    }
+  })
 
   socket.on('upgrade-to-lobby-host', (message) => {
     try {
@@ -199,11 +195,19 @@ if (socket) {
         </div>
         `;
         leaveButton = document.getElementById('leave-button');
-        leaveButton.addEventListener('click', (e) => {
-          socket.emit('leave-lobby', JSON.stringify({
-            lobbyId
-          }));
-        })
+        startButton = document.getElementById('start-button');
+        if (leaveButton) {
+          leaveButton.addEventListener('click', (e) => {
+            socket.emit('leave-lobby', JSON.stringify({
+              lobbyId
+            }));
+          })
+        }
+        if (startButton) {
+          startButton.addEventListener('click', (e) => {
+            socket.emit('lobby-start-game', JSON.stringify({ lobbyId }));
+          });
+        }
       }
     } catch (err) {
       console.error(err);
@@ -213,6 +217,7 @@ if (socket) {
   socket.on('redirect', (message) => {
     try {
       const data = JSON.parse(message);
+      console.log(data);
       if (data.pathname) window.location.href = baseURL + data.pathname;
     } catch (err) {
       console.error(err);
@@ -229,4 +234,42 @@ if (leaveButton) {
       lobbyId
     }));
   })
+}
+
+if (messages) {
+  fetch(`/api/lobbies/${lobbyId}/messages`)
+  .then(response => response.json())
+  .then((data) => {
+    if (data.messages) {
+      messages.innerHTML = '';
+      data.messages.forEach((message) => {
+        messages.innerHTML = messages.innerHTML + createMessage(message);
+      })
+    }
+  })
+  .catch((err) => console.error(err))
+  .finally(() => {
+    messages.scrollTop = messages.scrollHeight;
+  })
+}
+
+if (messageInput) {
+  messageInput.addEventListener('keyup', (event) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      sendMessage();
+    }
+  });
+}
+
+if (readyButton) {
+  readyButton.addEventListener('click', (e) => {
+    socket.emit('lobby-toggle-ready', JSON.stringify({ lobbyId }));
+  });
+}
+
+if (startButton) {
+  startButton.addEventListener('click', (e) => {
+    socket.emit('lobby-start-game', JSON.stringify({ lobbyId }));
+  });
 }

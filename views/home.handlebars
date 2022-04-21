@@ -39,21 +39,21 @@
                   <tr class="lobby">
                     {{#equals this.busy true}}
                     <td class="lobby-busy">
-                      <a href="/lobby/{{this.id}}">In-Game</a>
+                      <a href="/lobbies/{{this.id}}">In-Game</a>
                     </td>
                     {{else}}
                     <td class="lobby-waiting">
-                      <a href="/lobby/{{this.id}}">Waiting</a>
+                      <a href="/lobbies/{{this.id}}">Waiting</a>
                     </td>
                     {{/equals}}
                     <td class="lobby-hostname">
-                      <a href="/lobby/{{this.id}}">{{this.hostName}}</a>
+                      <a href="/lobbies/{{this.id}}">{{this.hostName}}</a>
                     </td>
                     <td class="lobby-name">
-                      <a href="/lobby/{{this.id}}">{{this.name}}</a>
+                      <a href="/lobbies/{{this.id}}">{{this.name}}</a>
                     </td>
                     <td class="lobby-capacity">
-                      <a href="/lobby/{{this.id}}">{{inc this.guestLength}}/{{this.playerCapacity}}</a>
+                      <a href="/lobbies/{{this.id}}">{{inc this.guestLength}}/{{this.playerCapacity}}</a>
                     </td>
                   </tr>
                   {{/each}}

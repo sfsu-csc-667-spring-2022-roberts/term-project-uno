@@ -3,12 +3,12 @@ const IndexError = require('../helpers/error/IndexError');
 const UserDao = require('../db/dao/users');
 const { authenticate, verifyToken } = require('../lib/utils/token');
 const { validateUsername } = require('../lib/validation/users');
-const { findLobby } = require('../db/dao/lobbies');
-const { findAllLobbyGuests } = require('../db/dao/lobbyGuests');
+const { findLobby, findAllMembers, verifyHostOrGuest } = require('../db/dao/lobbies');
 const { findUsersInvitations } = require('../db/dao/lobbyInvitations');
 const { findGameWithLobby } = require('../db/dao/games');
 const { verifyUserInGame } = require('../db/dao/players');
 const { formatAllLobbyInfo, calculateWinRate } = require('../lib/utils/index');
+const { splitLobbyMembers } = require('../lib/utils/socket');
 
 const router = express.Router();
 
@@ -94,53 +94,17 @@ router.get('/:username', verifyToken, async (req, res, next) => {
 });
 
 /* Lobby Pages */
-router.get('/lobby/:lobbyId(\\d+)', authenticate, async (req, res, next) => {
+router.get('/lobbies/:lobbyId(\\d+)', authenticate, async (req, res, next) => {
   try {
     const { lobbyId } = req.params;
-    const requestedLobby = await findLobby(lobbyId);
+    if (!(await verifyHostOrGuest(req.user.id, lobbyId))) return res.redirect('/find-lobby');
+
+    const lobby = await findLobby(lobbyId);
   
-    if(requestedLobby && !requestedLobby.busy) {
-      const { hostId, name } = requestedLobby;
-      const asyncTasks = await Promise.all([UserDao.findUserById(hostId), findAllLobbyGuests(lobbyId)]);
-      const host = asyncTasks[0];
-      const lobbyGuests = asyncTasks[1];
-      const lobbyGuestTasks = [];
-      const leftList = [];
-      const rightList = [];
-      const guests = [{
-        host: true,
-        username: host.username,
-        avatar: host.pictureUrl,
-        id: host.id,
-      }];
-
-      lobbyGuests.forEach((lobbyGuest) => {
-        lobbyGuestTasks.push(UserDao.findUserById(lobbyGuest.userId));
-      });
-
-      const usersInfo = await Promise.all(lobbyGuestTasks);
-
-      for(let i = 0; i < usersInfo.length; i++) {
-        const guest = { 
-          username: usersInfo[i].username, 
-          avatar: usersInfo[i].pictureUrl,
-          ready: lobbyGuests[i].userReady,
-          id: lobbyGuests[i].userId
-        };
-        guests.push(guest);
-      }
-
-      while(guests.length < 10) {
-        guests.push({ empty: true })
-      }
-
-      for(let i = 0; i < 5 && i < guests.length; i++) {
-        leftList.push(guests[i]);
-      }
-
-      for(let i = 5; i < 10 && i < guests.length; i++) {
-        rightList.push(guests[i]);
-      }
+    if(lobby && !lobby.busy) {
+      const { hostId, name } = lobby;
+      const lobbyMembers = await findAllMembers(lobbyId);
+      const { leftList, rightList } = splitLobbyMembers(lobbyMembers);
 
       res.render('lobby', {
         layout: false,
@@ -153,7 +117,7 @@ router.get('/lobby/:lobbyId(\\d+)', authenticate, async (req, res, next) => {
         user: req.user
       });
     } 
-    else if (requestedLobby && requestedLobby.busy) {
+    else if (lobby && lobby.busy) {
       const game = await findGameWithLobby(lobbyId)
       res.redirect(`/games/${game.id}`);
     }

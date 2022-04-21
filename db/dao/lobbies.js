@@ -35,14 +35,17 @@ async function createPublic(userId, name, playerCapacity) {
   .catch((err) => Promise.reject(err));
 }
 
-async function deleteLobby(id) {
-  return db.query(`
-    DELETE FROM "Lobbies"
-    WHERE id = $1
-    RETURNING id`, [id])
-  .then((results) => {
-    if (results && results.length === 1) return Promise.resolve(results[0].id);
-    else return Promise.resolve(-1);
+async function deleteLobby(lobbyId) {
+  return db.any(`
+    DELETE FROM "LobbyMessages"
+    WHERE "lobbyId" = $1
+  `, [lobbyId])
+  .then(() => {
+    return db.one(`
+      DELETE FROM "Lobbies"
+      WHERE id = $1
+      RETURNING id
+    `, [lobbyId]);
   })
   .catch((err) => Promise.reject(err));
 }
@@ -112,6 +115,7 @@ async function findAllMembers(lobbyId) {
       SELECT "userId", "userReady"
       FROM "LobbyGuests"
       WHERE "lobbyId" = $1
+      ORDER BY "joinedAt" ASC
     `, [lobbyId])]);
   })
   .then((members) => {
@@ -179,7 +183,7 @@ async function verifyHostOrGuest(userId, lobbyId) {
     FROM $2:name
     WHERE id = $3`, ['hostId', 'Lobbies', lobbyId])
   .then((results) => {
-    if (result && results.length === 1 && results[0].hostId === userId) {
+    if (results && results.length === 1 && results[0].hostId === userId) {
       return Promise.resolve(true);
     } else return verifyGuest(userId, lobbyId);
   })

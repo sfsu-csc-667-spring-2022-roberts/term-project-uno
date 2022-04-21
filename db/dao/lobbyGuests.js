@@ -83,6 +83,24 @@ async function removeOldestGuest(lobbyId) {
   .catch((err) => Promise.reject(err));
 }
 
+async function toggleReady(userId, lobbyId) {
+  return db.one(`
+    SELECT "userReady"
+    FROM "LobbyGuests"
+    WHERE "userId" = $1 AND "lobbyId" = $2
+  `, [userId, lobbyId])
+  .then((lobbyGuest) => {
+    const toggledReady = !lobbyGuest.userReady;
+    return db.one(`
+      UPDATE "LobbyGuests"
+      SET "userReady" = $1
+      WHERE "userId" = $2 AND "lobbyId" = $3
+      RETURNING "userId"
+    `, [toggledReady, userId, lobbyId]);
+  })
+  .catch((err) => Promise.reject(err));
+}
+
 module.exports = {
   findLobbyGuests,
   findAllLobbyGuests,
@@ -90,5 +108,6 @@ module.exports = {
   addGuest,
   remove,
   verifyGuest,
-  removeOldestGuest
+  removeOldestGuest,
+  toggleReady
 };

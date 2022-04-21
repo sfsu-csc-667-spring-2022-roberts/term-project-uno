@@ -28,14 +28,11 @@ router.post('/', authenticate, async (req, res) => {
     const lobbyGuests = await LobbyGuestDao.findAllLobbyGuests(lobbyId);
     if (lobbyGuests.length === 0) throw new GameError('Mininum 2 Players', 400);
 
-    /*
-    // Implement later
     lobbyGuests.forEach((lobbyGuest) => {
       if(lobbyGuest.userReady == false) { 
         throw new GameError("Not All Players are ready", 400);
       }
     })
-    */
 
     const cards = await Promise.all([CardDao.getAllNormalCards(), CardDao.getAllSpecialCards()]);
     const normalCards = cards[0];
@@ -212,29 +209,6 @@ router.get('/:id/messages', authenticate, async (req, res) => {
       return res.status(401).json({ message: 'User is not part of the game' });
     }
     res.json({ messages: await MessageDao.findGameMessages(req.params.id)});
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Something went wrong' });
-  }
-});
-
-/* Send message */
-router.post('/:id/messages', authenticate, async (req, res) => {
-  try {
-    if (!PlayerDao.verifyUserInGame(req.params.id, req.user.id)) {
-      return res.status(401).json({ message: 'User is not part of the game' });
-    }
-    
-    const { message } = req.body;
-    const messageObj = await MessageDao.createGameMessage(message, req.user.id, req.params.id);
-  
-    messageObj.sender = req.user.username;
-    delete messageObj.userId;
-    delete messageObj.gameId;
-  
-    // TO DO - Somehow broadcast new message to rest of players ;)
-  
-    res.json({ messageObj });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Something went wrong' });
