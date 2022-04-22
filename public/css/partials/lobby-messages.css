@@ -1,0 +1,58 @@
+.message {
+  flex: 0.95;
+  margin: auto 1%;
+  font-family: inherit;
+  border-style: hidden;
+  background-color: transparent;
+}
+
+.message-container {
+  border-radius: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 3px, rgba(0, 0, 0, 0.24) 0px 1px 2px;
+  padding: 3% 1% 1% 1%;
+  margin-bottom: 2%;
+}
+
+.message-sender {
+  margin-bottom: 0.3125rem;
+  margin-left: 1%;
+}
+
+.message-time {
+  margin-left: auto;
+}
+
+#chat-container {
+  width: 60rem;
+}
+
+#messages {
+  height: 20rem;
+  padding: 0.5rem;
+  margin-bottom: auto;
+  overflow-y: scroll;
+  background: white;
+  box-shadow: rgba(50, 50, 93, 0.25) 0px 13px 27px -5px, rgba(0, 0, 0, 0.3) 0px 8px 16px -8px;
+}
+
+#message-input {
+  height: 2.5rem;
+  width: 100%;
+  box-shadow: rgba(50, 50, 93, 0.25) 0px 13px 27px -5px, rgba(0, 0, 0, 0.3) 0px 8px 16px -8px;
+  box-sizing: border-box;
+  border: 0.0625rem solid rgb(199, 199, 199);
+  resize: none;
+  border-bottom-left-radius: 0.5rem;
+  border-bottom-right-radius: 0.5rem;
+  vertical-align: center;
+  margin-bottom: .0625rem;
+  font-family: inherit;
+  padding-right: 2.8125rem !important;
+  padding: 0.625rem;
+}
+
+#message-input:focus {
+  outline: none;
+}

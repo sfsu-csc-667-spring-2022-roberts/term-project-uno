@@ -9,8 +9,8 @@ const PlayerDao = require('../db/dao/players');
 const PlayerCardDao = require('../db/dao/playerCards')
 const DrawCardDao = require('../db/dao/drawCards');
 const MessageDao = require('../db/dao/messages');
-
 const { authenticate } = require('../lib/utils/token');
+
 const router = express.Router();
 
 /* Create game */
@@ -19,27 +19,24 @@ router.post('/', authenticate, async (req, res) => {
   const hostId = req.user.id;
   const lobbyId = req.body.id;
 
-  LobbyDao.findLobby(lobbyId)
-  .then((lobby) => {
-    if(lobby.hostId != hostId) throw new GameError("Unauthorized: Not Lobby Host", 401);
-    return LobbyGuestDao.findAllLobbyGuests(lobbyId);
-  })
-  .then((lobbyGuests) => {
-    if(lobbyGuests.length == 0) throw new GameError("Mininum 2 Players", 400);
-    /*
-    // Implement later
+  try {
+    const lobby = await LobbyDao.findLobby(lobbyId);
+    if (lobby.hostId != hostId) throw new GameError('Unauthorized: Not Lobby Host', 401);
+
+    if (await GameDao.gameWithLobbyExists(lobbyId)) throw new GameError('Lobby is already in session', 400);
+
+    const lobbyGuests = await LobbyGuestDao.findAllLobbyGuests(lobbyId);
+    if (lobbyGuests.length === 0) throw new GameError('Mininum 2 Players', 400);
+
     lobbyGuests.forEach((lobbyGuest) => {
       if(lobbyGuest.userReady == false) { 
         throw new GameError("Not All Players are ready", 400);
       }
     })
-    */
-    return Promise.all([lobbyGuests, CardDao.getAllNormalCards(), CardDao.getAllSpecialCards()]);
-  })  
-  .then(async (results) => {
-    const lobbyMembers = results[0];
-    const normalCards = results[1];
-    const specialCards = results[2];
+
+    const cards = await Promise.all([CardDao.getAllNormalCards(), CardDao.getAllSpecialCards()]);
+    const normalCards = cards[0];
+    const specialCards = cards[1];
     const createPlayers = [];
     let turnIndex = 0;
 
@@ -54,24 +51,21 @@ router.post('/', authenticate, async (req, res) => {
     const shuffledCards = allCards.sort(() => Math.random() - 0.5);
     // Create game
     const game = await GameDao.createGame(firstCard.color, lobbyId);
+    LobbyDao.setBusy(lobbyId, true);
 
-    // Create full list of lobby members
-    lobbyMembers.push({ "userId": hostId });
-    // Shuffle list of lobby members
-    const shuffledLobbyMembers = lobbyMembers.sort(() => Math.random() - 0.5);
+    // Create full list of lobby members and shuffle
+    lobbyGuests.push({ 'userId': hostId });
+    const shuffledLobbyMembers = lobbyGuests.sort(() => Math.random() - 0.5);
     // Create a player out of each lobby member
     shuffledLobbyMembers.forEach((lobbyMember) => {
       createPlayers.push(PlayerDao.createPlayer(turnIndex, lobbyMember.userId, game.id));
       turnIndex += 1;
     });
-    
-    return Promise.all([
-      PlayedCardDao.createPlayedCard(firstCard.id, game.id), Promise.all(createPlayers), shuffledCards, game]);
-  })
-  .then((results) => {
-    const players = results[1];
-    const shuffledCards = results[2];
-    const game = results[3];
+
+    const createdEntities = await Promise.all([
+      PlayedCardDao.createPlayedCard(firstCard.id, game.id), Promise.all(createPlayers)
+    ]);
+    const players = createdEntities[1];
     const createPlayerCards = [];
     const createDrawCards = [];
     let shuffledCardsIdx = 0;
@@ -90,17 +84,14 @@ router.post('/', authenticate, async (req, res) => {
       createDrawCards.push(DrawCardDao.createDrawCard(card.id, game.id));
     }
 
-    return Promise.all([game, Promise.all(createPlayerCards), Promise.all(createDrawCards)]);
-  })
-  .then((results) => {
-    const game = results[0];
+    await Promise.all([Promise.all(createPlayerCards), Promise.all(createDrawCards)]);
+
     res.redirect(`/games/${game.id}`);
-  })
-  .catch((err) => {
+  } catch (err) {
     if (err instanceof GameError) return res.status(err.getStatus()).json({ message: err.getMessage() });
     console.error(err);
     res.status(500).json({ message: 'An unexpected error occured' });
-  });
+  }
 });
 
 /* Get game state */
@@ -218,29 +209,6 @@ router.get('/:id/messages', authenticate, async (req, res) => {
       return res.status(401).json({ message: 'User is not part of the game' });
     }
     res.json({ messages: await MessageDao.findGameMessages(req.params.id)});
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Something went wrong' });
-  }
-});
-
-/* Send message */
-router.post('/:id/messages', authenticate, async (req, res) => {
-  try {
-    if (!PlayerDao.verifyUserInGame(req.params.id, req.user.id)) {
-      return res.status(401).json({ message: 'User is not part of the game' });
-    }
-    
-    const { message } = req.body;
-    const messageObj = await MessageDao.createGameMessage(message, req.user.id, req.params.id);
-  
-    messageObj.sender = req.user.username;
-    delete messageObj.userId;
-    delete messageObj.gameId;
-  
-    // TO DO - Somehow broadcast new message to rest of players ;)
-  
-    res.json({ messageObj });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Something went wrong' });

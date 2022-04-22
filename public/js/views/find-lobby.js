@@ -1,3 +1,17 @@
+const socket = io();
+const baseURL = `${window.location.protocol}//${window.location.host}`;
+
+if (socket) {
+  socket.on('redirect', (message) => {
+    try {
+      const data = JSON.parse(message);
+      if (data.pathname) window.location.href = baseURL + data.pathname;
+    } catch (err) {
+      console.error(err);
+    }
+  })
+}
+
 window.addEventListener('load', () => {
   const url = window.location.protocol + '//' + window.location.host;
   fetch(url + '/api/lobbies/', {
@@ -44,19 +58,5 @@ window.addEventListener('load', () => {
 });
 
 async function joinLobby(lobbyId) {
-  const url = window.location.protocol + '//' + window.location.host;
-  fetch(url + '/api/lobbies/' + lobbyId + '/users', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  })
-  .then(async (res) => {
-    if (res.redirected) {
-      window.location.href = res.url;
-    }
-  })
-  .catch((err) => {
-    console.error(err);
-  })
+  socket.emit('lobby-join', JSON.stringify({ lobbyId }));
 }

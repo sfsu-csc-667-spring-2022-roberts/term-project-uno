@@ -173,22 +173,46 @@ async function findGame(gameId) {
   .catch((err) => Promise.reject(err));
 }
 
+async function findGameWithLobby(lobbyId) {
+  return db.one(`
+    SELECT *
+    FROM "Games"
+    WHERE "lobbyId" = $1
+  `, [lobbyId])
+  .catch((err) => Promise.reject(err));
+}
+
 async function createGame(currentColor, lobbyId){
   return db.any(`
-  INSERT INTO $1:name($2:name, "turnIndex", "playerOrderReversed", "active", $3:name)
-  VALUES($4, $5, $6, $7, $8)
-  RETURNING *`,
-  ['Games', 'currentColor', 'lobbyId', currentColor, 0, false, true, lobbyId])
-.then((result) => {
-  if (result) {
-    return Promise.resolve(result[0]);
-  } else return Promise.resolve(null);
-})
-.catch((err) => Promise.reject(err));
+    INSERT INTO $1:name($2:name, "turnIndex", "playerOrderReversed", "active", $3:name)
+    VALUES($4, $5, $6, $7, $8)
+    RETURNING *`,
+    ['Games', 'currentColor', 'lobbyId', currentColor, 0, false, true, lobbyId])
+  .then((result) => {
+    if (result) {
+      return Promise.resolve(result[0]);
+    } else return Promise.resolve(null);
+  })
+  .catch((err) => Promise.reject(err));
 }
+
+async function gameWithLobbyExists(lobbyId) {
+  return db.query(`
+    SELECT *
+    FROM "Games"
+    WHERE "lobbyId" = $1
+  `, [lobbyId])
+  .then((games) => {
+    if (games && games.length >= 1) return Promise.resolve(true);
+    else return Promise.resolve(false);
+  })
+  .catch((err) => Promise.reject(err));
+} 
 
 module.exports = {
   findGameState,
   findGame,
-  createGame
+  findGameWithLobby,
+  createGame,
+  gameWithLobbyExists
 }

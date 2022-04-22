@@ -1,0 +1,22 @@
+.alert {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #c33;
+  background: #fee;
+  border-radius: 0.25rem;
+  min-width: 5rem;
+  min-height: 3rem;
+  padding: 1rem;
+}
+
+#flash-message {
+  position: fixed;
+  left: 50%;
+  top: 5%;
+  transform: translate(-50%, 0);
+}
+
+#flash-message div {
+  text-align: center;
+}

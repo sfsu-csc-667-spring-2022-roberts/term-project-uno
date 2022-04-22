@@ -1,3 +1,6 @@
+// ------ socket variable
+const socket = io();
+
 // ------ game variables
 const playersLeftContainer = document.getElementById("players-left");
 const playersTopContainer = document.getElementById("players-top");
@@ -16,8 +19,14 @@ let playerOrderReversed = false;
 let currentIndex = 0;
 let mainIndex = 0;
 
-// ------ game listeners
+// ------ socket methods
+const joinGameRoom = () => {
+    const pathnames = window.location.pathname.split('/');
+    const gameId = pathnames[pathnames.length-1];
+    socket.emit('join-game-room', JSON.stringify({ gameId }));
+}
 
+// ------ game listeners
 leaveBtn.onclick = (e) => {
     leavePopUpDiv.setAttribute("id", "popup-div-container");
     leavePopUpDiv.innerHTML = "<div id='popup-div'><header><h2>Are you sure you want to leave the game?</h2></header><h5>This will count as a loss</h5><div id='leave-btns-container'><button id='leave-btn-cancel'>Cancel</button><button id='leave-btn-confirm'>Leave</button></div></div>";
@@ -295,12 +304,12 @@ const createCard = (card, type) => {
                 }
                 case "swap" : {
                     return (
-                        `<div class="card num-${card.value} ${card.color} draw-play-deck-item" >
+                        `<div style="width: 87px;" class="card ${card.value} ${card.color} draw-play-deck-item" >
                             <span class="inner">
-                                <span class="mark">
-                                    <div class="card-value">${card.value}</div>
-                                </span>
+                                <img class="wild-choose-img" src="/images/uno-swap.png" alt="swap"/>
                             </span>
+                            <img class="wild-img-small wild-img-small-top" src="/images/uno-wild.png" alt="swap"/>
+                            <img class="wild-img-small wild-img-small-bottom" src="/images/uno-wild.png" alt="swap"/>
                         </div>`
                     );
                 }
@@ -380,12 +389,12 @@ const createCard = (card, type) => {
                 }
                 case "swap" : {
                     return (
-                        `<div id="${card.id}" class="card num-${card.value} ${card.color}" onclick="playCard(this);">
+                        `<div id="${card.id}" style="width: 87px;" class="card ${card.value} ${card.color}" onclick="playCard(this);">
                             <span class="inner">
-                                <span class="mark">
-                                    <div class="card-value">${card.value}</div>
-                                </span>
+                                <img class="wild-choose-img" src="/images/uno-swap.png" alt="swap"/>
                             </span>
+                            <img class="wild-img-small wild-img-small-top" src="/images/uno-wild.png" alt="swap"/>
+                            <img class="wild-img-small wild-img-small-bottom" src="/images/uno-wild.png" alt="swap"/>
                         </div>`
                     );
                 }

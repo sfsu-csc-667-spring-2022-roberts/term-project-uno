@@ -26,14 +26,14 @@ async function createGameMessage(message, userId, gameId) {
 
 async function createLobbyMessage(message, userId, lobbyId) {
   return db.any(`
-    INSERT INTO "LobbyMessage"(message, "userId", "lobbyId")
+    INSERT INTO "LobbyMessages"(message, "userId", "lobbyId")
     VALUES($1, $2, $3)
     RETURNING *`, [message, userId, lobbyId])
   .then((messages) => {
     if (messages && messages.length === 1) {
       return Promise.all([messages[0], db.query(`
         SELECT count(*)
-        FROM "LobbyMessage"
+        FROM "LobbyMessages"
         WHERE "lobbyId" = $1
       `, [lobbyId])]);
     }

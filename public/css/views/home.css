@@ -42,22 +42,65 @@ main {
   -o-transform: scale(1.15);
 }
 
-.list-container {
-  overflow-y: scroll;
+.lobby {
+  background: #f1f1f1;
+  background: linear-gradient(0deg, rgba(241,241,241,1) 0%, rgba(255,255,255,1) 100%);
+  border-radius: 0.25rem;
+  outline: 1px solid #dedede;
+}
+
+.lobby:hover {
+  background: white;
+}
+
+.lobby-waiting {
+  font-weight: 700;
+  color: #18A849;
+}
+
+.lobby-busy {
+  font-weight: 700;
+  color: #ee161f;
+}
+
+.lobby-hostname {
+  font-weight: 600;
+}
+
+.lobby-name {
+  font-style: italic;
+}
+
+.lobby-capacity {
+  font-size: 1rem;
+}
+
+#lobby-header {
+  background: #00467e;
+  color: white;
+}
+
+#list-container {
+  overflow-y: auto;
   overflow-x: hidden;
   flex-grow: 0;
+  border-radius: 0.25rem;
 }
 
-.list-container ul {
-  min-height: 15rem;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  padding-top: 0.25rem;
+#list-container table {
+  width: 100%;
 }
 
-.list-container li {
-  padding: 0.5rem;
+#list-container a {
+  text-decoration: none;
+  color: inherit;
+}
+
+#list-container th, td {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: .375rem;
 }
 
 #menu {
@@ -115,8 +158,7 @@ main {
 }
 
 #menu-lists h3 {
-  border-bottom: 0.25rem solid #d6151d;
-  margin-bottom: 0;
+  margin-bottom: 0.5rem;
 }
 
 #menu-options {
@@ -128,4 +170,10 @@ main {
   display: flex;
   flex-direction: column;
   height: 15rem;
+}
+
+#user-lobby-list table {
+  background: #f1f1f1;
+  table-layout: fixed;
+  border-collapse: collapse;
 }
