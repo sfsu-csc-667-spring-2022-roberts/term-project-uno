@@ -1,48 +1,6 @@
+import timeSince from '../lib/timeSince.js';
+
 const baseURL = `${window.location.protocol}//${window.location.host}`;
-
-function timeSince(date) {
-  const seconds = Math.floor((new Date() - date) / 1000);
-  let interval = seconds / 31536000;
-
-  if (interval > 1) {
-    const year = Math.floor(interval);
-    if (year == 1) return year + " year";
-    return year + " years";
-  }
-
-  interval = seconds / 2592000;
-  if (interval > 1) {
-    const month = Math.floor(interval)
-    if (month == 1) return month + " month";
-    return month + " months";
-  }
-
-  interval = seconds / 86400;
-  if (interval > 1) {
-    const day = Math.floor(interval);
-    if (day == 1) return day + " day";
-    return day + " days";
-  }
-
-  interval = seconds / 3600;
-  if (interval > 1) {
-    const hour = Math.floor(interval);
-    if (hour == 1) return hour + " hour";
-    return hour + " hours";
-  }
-
-  interval = seconds / 60;
-  if (interval > 1) {
-    const minute = Math.floor(interval);
-    if (minute == 1) return minute + " minute";
-    return minute + " minutes";
-  }
-
-  const second = Math.floor(seconds);
-  if (isNaN(second)) return "0 seconds";
-  if (second == 1) return second + " second";
-  return second + " seconds";
-}
 
 function addEventListenersToInvitations() {
   const invitationListItems = document.getElementsByClassName('invitation');
@@ -58,16 +16,45 @@ function addEventListenersToInvitations() {
       event.preventDefault();
       event.stopPropagation();
 
-      socket.emit('lobby-join', JSON.stringify({ lobbyId }));
+      socket.emit('accept-invite', JSON.stringify({ lobbyId }));
     });
 
     declineButton.addEventListener('click', (event) => {
       event.preventDefault();
       event.stopPropagation();
 
-      socket.emit('lobby-decline', JSON.stringify({ lobbyId }));
+      socket.emit('decline-invite', JSON.stringify({ lobbyId }));
     });
   }
+}
+
+function setFlashMessageFadeOut(flashElement) {
+  flashElement.style.opacity = 0.9
+  setTimeout(() => {
+    let currentOpacity = 0.9;
+    let timer = setInterval(() => {
+      if (currentOpacity < 0.05) {
+        clearInterval(timer);
+        flashElement.remove();
+      }
+      currentOpacity *= 0.75;
+      flashElement.style.opacity = currentOpacity;
+    }, 50);
+  }, 4000);
+}
+
+function createFlashMessage(message) {
+  const flashMessageDiv = document.createElement('div');
+  const innerFlashDiv = document.createElement('div');
+  const innerTextNode = document.createTextNode(message);
+
+  innerFlashDiv.append(innerTextNode);
+  flashMessageDiv.append(innerFlashDiv);
+  flashMessageDiv.setAttribute('id', 'flash-message');
+  innerFlashDiv.setAttribute('class', 'alert');
+
+  document.getElementsByTagName('body')[0].appendChild(flashMessageDiv);
+  setFlashMessageFadeOut(flashMessageDiv);
 }
 
 function createInvitation(invitation) {
@@ -111,6 +98,15 @@ window.onload = function() {
 
         addEventListenersToInvitations();
       }
+    } catch (err) {
+      console.error(err);
+    }
+  });
+
+  socket.on('invite-error', (message) => {
+    try {
+      const data = JSON.parse(message);
+      createFlashMessage(data.message);
     } catch (err) {
       console.error(err);
     }

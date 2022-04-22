@@ -1,7 +1,5 @@
 const db = require('../index');
 const bcrypt = require('bcrypt');
-
-const LobbyError = require('../../helpers/error/LobbyError');
 const { verifyGuest } = require('../dao/lobbyGuests');
 
 async function createPrivate(userId, name, playerCapacity, password) {
@@ -111,14 +109,12 @@ async function findAllMembers(lobbyId) {
     FROM "Lobbies"
     WHERE id = $1
   `, [lobbyId])
-  .then((lobby) => {
-    return Promise.all([lobby.hostId, db.query(`
-      SELECT "userId", "userReady"
-      FROM "LobbyGuests"
-      WHERE "lobbyId" = $1
-      ORDER BY "joinedAt" ASC
-    `, [lobbyId])]);
-  })
+  .then((lobby) => Promise.all([lobby.hostId, db.query(`
+    SELECT "userId", "userReady"
+    FROM "LobbyGuests"
+    WHERE "lobbyId" = $1
+    ORDER BY "joinedAt" ASC
+  `, [lobbyId])]))
   .then((members) => {
     const hostId = members[0];
     const guests = members[1];
