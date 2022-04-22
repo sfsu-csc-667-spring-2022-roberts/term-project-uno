@@ -119,14 +119,18 @@
               <span id="invite-error" class="invite-error hidden"></span>
               <form>
                 <input type="text" placeholder="Username" id="username" name="username">
-                <button class="lobby-button">Invite</button>
+                <button id="invite-button" class="lobby-button">Invite</button>
               </form>
             </div>
             {{else}}
             {{/if}}
             <div id="lobby-options">
               {{#if isHost}}
-              <button id="start-button" class="lobby-button">Start</button>
+                {{#if guestsReady}}
+                  <button id="start-button" class="lobby-button">Start</button>
+                {{else}}
+                  <button disabled id="start-button" class="lobby-button">Start</button>
+                {{/if}}
               {{else}}
               <button id="ready-button" class="lobby-button">Ready</button>
               {{/if}}
@@ -141,7 +145,6 @@
         </div>
       </div>
     </main>
-    <script src="/socket.io/socket.io.js"></script>
     <script>
       const userId = "{{user.id}}"
       const lobbyName = "{{lobbyName}}"

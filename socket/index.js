@@ -7,6 +7,7 @@ const DrawCardDao = require('../db/dao/drawCards');
 const GameDao = require('../db/dao/games');
 const LobbyDao = require('../db/dao/lobbies');
 const LobbyGuestDao = require('../db/dao/lobbyGuests');
+const LobbyInvitationDao = require('../db/dao/lobbyInvitations');
 const PlayerDao = require('../db/dao/players');
 const MessageDao = require('../db/dao/messages');
 const { splitLobbyMembers } = require('../lib/utils/socket');
@@ -81,17 +82,70 @@ function init(app, server) {
       }
     });
 
+    socket.on('join-notifications-room', (message) => {
+      try {
+        data = JSON.parse(message);
+        if (!user) return;
+        socket.join(`notification/${user.id}`)
+      } catch (err) { 
+        console.error(err);
+      }
+    })
+
     socket.on('invite-to-lobby', async (message) => {
       try {
         data = JSON.parse(message);
 
         if (!user || !(await LobbyDao.verifyHost(user.id, data.lobbyId))) return;
 
-        /*
-          Create invitation for user if not already exists
-          Broadcast to user's clients
-          Respond to sender with success
-        */
+        if (await UserDao.usernameExists(data.username)) {
+          socket.emit('invite-to-lobby', JSON.stringify({ error: true, message: 'Cannot find user' }));
+          return;
+        }
+
+        const invitee = await UserDao.findUserByName(data.username);
+
+        if (await LobbyDao.verifyHostOrGuest(invitee.id, data.lobbyId)) {
+          socket.emit('invite-to-lobby', JSON.stringify({ error: true, message: 'This user is already in the lobby' }));
+          return;
+        }
+
+        if (await LobbyInvitationDao.checkInvitationExists(invitee.id, data.lobbyId)) {
+          socket.emit('invite-to-lobby', JSON.stringify({ error: true, message: 'This user has already been invited' }));
+          return;
+        }
+
+        await LobbyInvitationDao.create(invitee.id, data.lobbyId);
+
+        const userSockets = getSocketsFromUserSockets(invitee.id);
+        if (userSockets && userSockets.length > 0) {
+          const lobbyInvitations = await LobbyInvitationDao.findUsersInvitations(invitee.id);
+          const asyncTasks = [];
+          const invitations = [];
+
+          if (lobbyInvitations) {
+            lobbyInvitations.forEach((invitation) => {
+              asyncTasks.push(LobbyDao.findLobby(invitation.lobbyId));
+            })
+  
+            const lobbiesInfo = await Promise.all(asyncTasks);
+  
+            for (let i = 0; i < lobbiesInfo.length; i++) {
+              invitations.push({
+                lobbyId: lobbyInvitations[i].lobbyId,
+                lobbyName: lobbiesInfo[i].name,
+                createdAt: lobbyInvitations[i].createdAt
+              });
+            }
+          }
+
+          userSockets.forEach((userSocket) => {
+            userSocket.emit('notification', JSON.stringify({ invitations }));
+          })
+          io.to(`notification/${invitee.id}`).emit('update-notifications', JSON.stringify({ invitations }));
+        }
+
+        socket.emit('invite-to-lobby', JSON.stringify({ message: 'User successfully invited' }));
       } catch (err) {
         console.error(err);
       }
@@ -105,12 +159,13 @@ function init(app, server) {
 
         await LobbyGuestDao.toggleReady(user.id, data.lobbyId);
 
+        const guestsReady = await LobbyGuestDao.verifyAllGuestsReady(data.lobbyId);
         const lobbyMembers = await LobbyDao.findAllMembers(data.lobbyId);
         const { leftList, rightList } = splitLobbyMembers(lobbyMembers);
 
         io.to(`lobby-guest/${data.lobbyId}`).emit('lobby-update-guests', JSON.stringify({ leftList, rightList }));
         io.to(`lobby-host/${data.lobbyId}`).emit('lobby-update-guests', JSON.stringify({
-          host: true, leftList, rightList
+          host: true, leftList, rightList, guestsReady
         }));
       } catch (err) {
         console.error(err);
@@ -122,7 +177,7 @@ function init(app, server) {
         data = JSON.parse(message);
 
         const lobby = await LobbyDao.findLobby(data.lobbyId);
-        if (!lobby) return;
+        if (!lobby || lobby.busy) return;
 
         const lobbyGuests = await LobbyGuestDao.findAllLobbyGuests(data.lobbyId);
 
@@ -142,10 +197,12 @@ function init(app, server) {
         }
 
         await LobbyGuestDao.addGuest(user.id, data.lobbyId);
+        await LobbyInvitationDao.removeUserInvitation(user.id, data.lobbyId);
 
         const userInfo = await UserDao.findUserById(user.id);
         const lobbyMembers = await LobbyDao.findAllMembers(data.lobbyId);
         const { leftList, rightList } = splitLobbyMembers(lobbyMembers);
+        const guestsReady = await LobbyGuestDao.verifyAllGuestsReady(data.lobbyId);
         const notification = {
           notification: true,
           message: `${userInfo.username} joined the lobby`,
@@ -154,7 +211,7 @@ function init(app, server) {
 
         io.to(`lobby-guest/${data.lobbyId}`).emit('lobby-update-guests', JSON.stringify({ leftList, rightList }));
         io.to(`lobby-host/${data.lobbyId}`).emit('lobby-update-guests', JSON.stringify({
-          host: true, leftList, rightList
+          host: true, leftList, rightList, guestsReady
         }));
         io.to(`lobby/${data.lobbyId}`).emit('lobby-message-send', JSON.stringify(notification));
         socket.emit('redirect', JSON.stringify({ pathname: `/lobbies/${data.lobbyId}` }));
@@ -170,13 +227,19 @@ function init(app, server) {
         const lobby = await LobbyDao.findLobby(data.lobbyId);
         if (!lobby) return;
 
+        const userSockets = getSocketsFromUserSockets(user.id);
+
         if (user.id == lobby.hostId) {
           let nextHostId;
           try {
             nextHostId = await LobbyGuestDao.removeOldestGuest(data.lobbyId);
           } catch (err) {
             await LobbyDao.deleteLobby(data.lobbyId);
-            socket.emit('redirect', JSON.stringify({ pathname: `/find-lobby` }));
+            userSockets.forEach((userSocket) => {
+              if (userSocket.rooms.has(`lobby/${data.lobbyId}`)) {
+                userSocket.emit('redirect', JSON.stringify({ pathname: `/find-lobby` }));
+              }
+            })
             return;
           }
 
@@ -184,18 +247,24 @@ function init(app, server) {
 
           await LobbyDao.setHost(nextHostId, data.lobbyId);
 
+          const guestsReady = await LobbyGuestDao.verifyAllGuestsReady(data.lobbyId);
           nextHostSockets.forEach((hostSocket) => {
             if (hostSocket.rooms.has(`lobby-guest/${data.lobbyId}`)) {
               hostSocket.leave(`lobby-guest/${data.lobbyId}`);
               hostSocket.join(`lobby-host/${data.lobbyId}`)
-              hostSocket.emit('upgrade-to-lobby-host', JSON.stringify({ upgrade: true }));
+              hostSocket.emit('upgrade-to-lobby-host', JSON.stringify({ upgrade: true, guestsReady }));
             }
           });
         } else await LobbyGuestDao.remove(user.id, data.lobbyId);
 
-        socket.emit('redirect', JSON.stringify({ pathname: `/find-lobby` }));
+        userSockets.forEach((userSocket) => {
+          if (userSocket.rooms.has(`lobby/${data.lobbyId}`)) {
+            userSocket.emit('redirect', JSON.stringify({ pathname: `/find-lobby` }));
+          }
+        })
 
         const userInfo = await UserDao.findUserById(user.id);
+        const guestsReady = await LobbyGuestDao.verifyAllGuestsReady(data.lobbyId);
         const lobbyMembers = await LobbyDao.findAllMembers(data.lobbyId);
         const { leftList, rightList } = splitLobbyMembers(lobbyMembers);
         const notification = {
@@ -206,7 +275,7 @@ function init(app, server) {
 
         io.to(`lobby-guest/${data.lobbyId}`).emit('lobby-update-guests', JSON.stringify({ leftList, rightList }));
         io.to(`lobby-host/${data.lobbyId}`).emit('lobby-update-guests', JSON.stringify({
-          host: true, leftList, rightList
+          host: true, leftList, rightList, guestsReady
         }));
         io.to(`lobby/${data.lobbyId}`).emit('lobby-message-send', JSON.stringify(notification));
       } catch (err) {
@@ -222,6 +291,7 @@ function init(app, server) {
 
         await LobbyGuestDao.remove(data.userId, data.lobbyId);
         const kickedUser = await UserDao.findUserById(data.userId);
+        const guestsReady = await LobbyGuestDao.verifyAllGuestsReady(data.lobbyId);
         const lobbyMembers = await LobbyDao.findAllMembers(data.lobbyId);
         const { leftList, rightList } = splitLobbyMembers(lobbyMembers);
         const notification = {
@@ -232,13 +302,53 @@ function init(app, server) {
 
         io.to(`lobby-guest/${data.lobbyId}`).emit('lobby-kick-player', JSON.stringify({ leftList, rightList }));
         io.to(`lobby-host/${data.lobbyId}`).emit('lobby-kick-player', JSON.stringify({
-          host: true, leftList, rightList
+          host: true, leftList, rightList, guestsReady
         }));
         io.to(`lobby/${data.lobbyId}`).emit('lobby-message-send', JSON.stringify(notification));
       } catch (err) {
         console.error(err);
       }
     });
+
+    socket.on('lobby-decline', async (message) => {
+      try {
+        data = JSON.parse(message);
+
+        if (!user) return;
+
+        await LobbyInvitationDao.removeUserInvitation(user.id, data.lobbyId);
+
+        const userSockets = getSocketsFromUserSockets(user.id);
+        if (userSockets && userSockets.length > 0) {
+          const lobbyInvitations = await LobbyInvitationDao.findUsersInvitations(user.id);
+          const asyncTasks = [];
+          const invitations = [];
+
+          if (lobbyInvitations) {
+            lobbyInvitations.forEach((invitation) => {
+              asyncTasks.push(LobbyDao.findLobby(invitation.lobbyId));
+            })
+  
+            const lobbiesInfo = await Promise.all(asyncTasks);
+  
+            for (let i = 0; i < lobbiesInfo.length; i++) {
+              invitations.push({
+                lobbyId: lobbyInvitations[i].lobbyId,
+                lobbyName: lobbiesInfo[i].name,
+                createdAt: lobbyInvitations[i].createdAt
+              });
+            }
+          }
+
+          userSockets.forEach((userSocket) => {
+            userSocket.emit('notification', JSON.stringify({ invitations }));
+          });
+          io.to(`notification/${user.id}`).emit('update-notifications', JSON.stringify({ invitations }));
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    })
 
     socket.on('lobby-start-game', async (message) => {
       const NUM_STARTING_CARDS = 7;
@@ -311,9 +421,12 @@ function init(app, server) {
           createDrawCards.push(DrawCardDao.createDrawCard(card.id, game.id));
         }
     
-        await Promise.all([Promise.all(createPlayerCards), Promise.all(createDrawCards)]);
+        await Promise.all([
+          Promise.all(createPlayerCards), 
+          Promise.all(createDrawCards), 
+          LobbyInvitationDao.removeLobbyInvitations(data.lobbyId)
+        ]);
     
-        console.log('here');
         io.to(`lobby/${data.lobbyId}`).emit('redirect', JSON.stringify({ pathname: `/games/${game.id}` }));
       } catch (err) {
         console.error(err);

@@ -19,7 +19,11 @@
   </form>
   {{#if user}}
   <a href="/notifications" class="nav-icon" id="nav-notifications">
-    <img src="/images/notifications.png">
+    {{#if notifications}}
+      <img id="notifications-icon" src="/images/notifications-signal.png">
+    {{else}}
+      <img id="notifications-icon" src="/images/notifications.png">
+    {{/if}}
   </a>
   <div>
     <div class="nav-icon" id="nav-profile-pic">
@@ -51,5 +55,6 @@
     </li>
   </ul>
   {{/if}}
-  <script defer src="/js/partials/navbar.js" type="module"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script defer type="text/javascript" src="/js/partials/navbar.js"></script>
 </nav>

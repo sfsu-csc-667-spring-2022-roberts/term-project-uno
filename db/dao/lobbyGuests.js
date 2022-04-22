@@ -101,6 +101,23 @@ async function toggleReady(userId, lobbyId) {
   .catch((err) => Promise.reject(err));
 }
 
+async function verifyAllGuestsReady(lobbyId) {
+  return db.any(`
+    SELECT "userReady"
+    FROM "LobbyGuests"
+    WHERE "lobbyId" = $1
+  `, [lobbyId])
+  .then((lobbyGuests) => {
+    if (lobbyGuests && lobbyGuests.length > 0) {
+      for (let i = 0; i < lobbyGuests.length; i++) {
+        if (!lobbyGuests[i].userReady) return Promise.resolve(false);
+      }
+      return Promise.resolve(true);
+    } else return Promise.resolve(false);
+  })
+  .catch((err) => Promise.reject(err));
+}
+
 module.exports = {
   findLobbyGuests,
   findAllLobbyGuests,
@@ -109,5 +126,6 @@ module.exports = {
   remove,
   verifyGuest,
   removeOldestGuest,
-  toggleReady
+  toggleReady,
+  verifyAllGuestsReady
 };

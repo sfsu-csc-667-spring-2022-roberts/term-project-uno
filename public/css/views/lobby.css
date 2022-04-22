@@ -55,11 +55,17 @@ main {
   transition: all 0.15s ease-in-out;
 }
 
-.lobby-button:hover {
+.lobby-button:hover:enabled {
   transform: scale(1.15);
   -webkit-transform: scale(1.15);
   -moz-transform: scale(1.15);
   -o-transform: scale(1.15);
+}
+
+.lobby-button:disabled {
+  color: rgb(114, 114, 114);
+  background: #b59193;
+  cursor: default;
 }
 
 .lobby-guest {

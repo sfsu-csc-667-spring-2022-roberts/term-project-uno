@@ -50,11 +50,12 @@ async function deleteLobby(lobbyId) {
   .catch((err) => Promise.reject(err));
 }
 
-async function findLobby(id) {
+async function findLobby(lobbyId) {
   return db.query(`
     SELECT *
-    FROM $1:name
-    WHERE id = $2`, ['Lobbies', id])
+    FROM "Lobbies"
+    WHERE id = $1
+  `, [lobbyId])
   .then((results) => {
     if (results && results.length === 1) return Promise.resolve(results[0]);
     else return Promise.resolve(null);
