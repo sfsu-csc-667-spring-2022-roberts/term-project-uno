@@ -5,15 +5,20 @@ const LobbyInvitationDao = require('../db/dao/lobbyInvitations');
 const { broadcastUpdatedInvitationList, broadcastLobbyMemberJoin } = require('../lib/utils/socket');
 
 function initializeInvitationEndpoints(io, socket, user) {
-  socket.on('join-notifications-room', (message) => {
+  if (user) {
     try {
-      data = JSON.parse(message);
-      if (!user) return;
-      socket.join(`notification/${user.id}`)
-    } catch (err) { 
-      console.error(err);
+      const referer = socket.handshake.headers.referer;
+      if (referer) {
+        const requestUrl = new URL(referer);
+        const pathnameSplit = requestUrl.pathname.split('/');
+        if (pathnameSplit.length === 2 && pathnameSplit[1] === 'notifications') {
+          socket.join(`notification/${user.id}`)
+        }
+      }
+    } catch (err) {
+      console.error('Error occured when attempting to join socket lobby room\n', err);
     }
-  })
+  }
 
   socket.on('invite-to-lobby', async (message) => {
     try {

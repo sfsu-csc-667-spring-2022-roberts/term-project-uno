@@ -1,5 +1,4 @@
 const LobbyDao = require('../db/dao/lobbies');
-const LobbyInvitationDao = require('../db/dao/lobbyInvitations');
 const LobbyGuestDao = require('../db/dao/lobbyGuests');
 const GameDao = require('../db/dao/games');
 const CardDao = require('../db/dao/cards');
@@ -11,23 +10,29 @@ const MessageDao = require('../db/dao/messages');
 const { getSocketsFromUserSockets, broadcastLobbyMemberJoin, broadcastLobbyMemberLeave, 
   broadcastLobbyMemberKicked, broadcastLobbyMembers } = require('../lib/utils/socket');
 
-function initializeLobbyEndpoints(io, socket, user) {
-  socket.on('join-lobby-room', async (message) => {
+async function initializeLobbyEndpoints(io, socket, user) {
+  if (user) {
     try {
-      data = JSON.parse(message);
+      const referer = socket.handshake.headers.referer;
+      if (referer) {
+        const requestUrl = new URL(referer);
+        const pathnameSplit = requestUrl.pathname.split('/');
+        if (pathnameSplit.length === 3 && pathnameSplit[1] === 'lobbies') {
+          const lobbyId = pathnameSplit[2];
 
-      if (!user) return;
-      if (await LobbyDao.verifyHost(user.id, data.lobbyId)) {
-        socket.join(`lobby-host/${data.lobbyId}`);
-        socket.join(`lobby/${data.lobbyId}`);
-      } else if (await LobbyGuestDao.verifyGuest(user.id, data.lobbyId)) {
-        socket.join(`lobby-guest/${data.lobbyId}`);
-        socket.join(`lobby/${data.lobbyId}`);
+          if (await LobbyDao.verifyHost(user.id, lobbyId)) {
+            socket.join(`lobby-host/${lobbyId}`);
+            socket.join(`lobby/${lobbyId}`);
+          } else if (await LobbyGuestDao.verifyGuest(user.id, lobbyId)) {
+            socket.join(`lobby-guest/${lobbyId}`);
+            socket.join(`lobby/${lobbyId}`);
+          }
+        }
       }
     } catch (err) {
-      console.error(err);
+      console.error('Error occured when attempting to join socket lobby room\n', err);
     }
-  });
+  }
 
   socket.on('lobby-toggle-ready', async (message) => {
     try {
