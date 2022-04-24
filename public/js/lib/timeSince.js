@@ -33,10 +33,12 @@ export default function timeSince(dateObj) {
   if (interval > 1) {
     const minute = Math.floor(interval);
     if (minute == 1) return '1 minute';
+    else if (minute == 60) return '1 hour';
     return minute + ' minutes';
   }
 
   const second = Math.floor(seconds);
   if (isNaN(second) || second == 1) '1 second';
+  else if (second == 60) return '1 minute';
   return second + ' seconds';
 }

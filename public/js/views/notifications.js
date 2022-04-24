@@ -10,7 +10,11 @@ function addEventListenersToInvitations() {
     const acceptButton = invitationListItem.getElementsByClassName('accept').item(0);
     const declineButton = invitationListItem.getElementsByClassName('decline').item(0);
 
-    time.innerHTML = timeSince(new Date(time.innerHTML));
+    const date = new Date(time.innerHTML);
+    time.innerHTML = timeSince(date);
+    setInterval(() => {
+      time.innerHTML = timeSince(date);
+    }, 1000);
 
     acceptButton.addEventListener('click', (event) => {
       event.preventDefault();
@@ -60,7 +64,7 @@ function createFlashMessage(message) {
 function createInvitation(invitation) {
   return (
     `<li id="${invitation.lobbyId}" class="invitation">
-      <span>You were invited to "${invitation.lobbyName}" <time class="time-since">${timeSince(new Date(invitation.createdAt))}</time> ago...</span>
+      <span>You were invited to "${invitation.lobbyName}" <time class="time-since">${invitation.createdAt}</time> ago...</span>
       <div>
         <button class="invitation-button decline">Decline</button>
         <button class="invitation-button accept">Accept</button>
@@ -91,7 +95,7 @@ window.onload = function() {
         if (data.invitations.length > 0) {
           data.invitations.forEach((invitation) => {
             invitationList.innerHTML += createInvitation(invitation);
-          })
+          });
         } else {
           invitationList.innerHTML = createEmptyInvitation();
         }
@@ -125,7 +129,7 @@ window.onload = function() {
     const entries = performance.getEntriesByType('navigation');
     if (entries && entries.length > 0) {
       const navigationType = entries[0].type;
-      if ((navigationType === 'reload' || navigationType === 'back_forward') && socket.connected) {
+      if ((navigationType === 'reload' || navigationType === 'back_forward' || navigationType === 'navigate') && socket.connected) {
         window.location.reload();
       }
     }
