@@ -16,7 +16,7 @@ function initializeInvitationEndpoints(io, socket, user) {
         }
       }
     } catch (err) {
-      console.error('Error occured when attempting to join socket lobby room\n', err);
+      console.error('Error occured when attempting to join socket notification room\n', err);
     }
   }
 

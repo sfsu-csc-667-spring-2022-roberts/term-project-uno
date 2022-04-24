@@ -1,8 +1,8 @@
 const socketIo = require('socket.io');
 const PlayerDao = require('../db/dao/players');
 const MessageDao = require('../db/dao/messages');
-const { initializeLobbyEndpoints } = require('./lobbies');
 const { initializeInvitationEndpoints } = require('./invitations');
+const { initializeLobbyEndpoints } = require('./lobbies');
 const { parseToken } = require('../lib/utils/token');
 const { parseCookies } = require('../lib/utils/cookies');
 const { addToUserSockets, removeFromUserSockets } = require('../lib/utils/socket');
@@ -25,8 +25,8 @@ function init(app, server) {
       if (user) removeFromUserSockets(user.id, socket);
     });
 
-    initializeLobbyEndpoints(io, socket, user);
     initializeInvitationEndpoints(io, socket, user);
+    initializeLobbyEndpoints(io, socket, user);
 
     socket.on('join-game-room', async (message) => {
       try {

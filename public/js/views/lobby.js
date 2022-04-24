@@ -163,7 +163,7 @@ function initLobby() {
     try {
       const data = JSON.parse(message);
 
-      if (data.upgrade && lobbyMenu) {
+      if (lobbyMenu) {
         lobbyMenu.innerHTML = `<h3 id="lobby-title">${lobbyName}</h3>
         <div id="invitation-container">
           <span id="invite-error" class="invite-error hidden"></span>

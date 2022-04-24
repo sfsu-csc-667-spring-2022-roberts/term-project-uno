@@ -19,7 +19,6 @@ async function initializeLobbyEndpoints(io, socket, user) {
         const pathnameSplit = requestUrl.pathname.split('/');
         if (pathnameSplit.length === 3 && pathnameSplit[1] === 'lobbies') {
           const lobbyId = pathnameSplit[2];
-
           if (await LobbyDao.verifyHost(user.id, lobbyId)) {
             socket.join(`lobby-host/${lobbyId}`);
             socket.join(`lobby/${lobbyId}`);
@@ -110,7 +109,7 @@ async function initializeLobbyEndpoints(io, socket, user) {
           if (hostSocket.rooms.has(`lobby-guest/${data.lobbyId}`)) {
             hostSocket.leave(`lobby-guest/${data.lobbyId}`);
             hostSocket.join(`lobby-host/${data.lobbyId}`)
-            hostSocket.emit('upgrade-to-lobby-host', JSON.stringify({ upgrade: true, guestsReady }));
+            hostSocket.emit('upgrade-to-lobby-host', JSON.stringify({ guestsReady }));
           }
         });
       } else await LobbyGuestDao.remove(user.id, data.lobbyId);
