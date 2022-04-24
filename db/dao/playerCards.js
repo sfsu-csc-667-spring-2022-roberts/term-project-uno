@@ -10,8 +10,39 @@ async function createPlayerCard(cardId, playerId) {
       return Promise.resolve(result[0]);
     } else return Promise.resolve(null);
   })
+  .catch((err) => Promise.reject(err));
+}
+
+async function verifyPlayerCard(cardId, playerId) {
+  return db.any(`
+  SELECT *
+  FROM "PlayerCards"
+  WHERE "playerId" = $1 AND "cardId" = $2
+  `, [playerId, cardId])
+  .then((results) => {
+    if (results && results.length === 1) {
+      return Promise.resolve(true);
+    } else return Promise.resolve(false);
+  })
+  .catch((err) => Promise.reject(err));
+}
+
+async function removePlayerCard(cardId, playerId) {
+  return db.any(`
+  DELETE
+  FROM "PlayerCards"
+  WHERE "playerId" = $1 AND "cardId" = $2
+  `, [playerId, cardId])
+  .then((results) => {
+    if (results && results.length === 1) {
+      return Promise.resolve(result[0]);
+    } else return Promise.resolve(null);
+  })
+  .catch((err) => Promise.reject(err));
 }
 
 module.exports = {
-  createPlayerCard
+  createPlayerCard,
+  verifyPlayerCard,
+  removePlayerCard
 };

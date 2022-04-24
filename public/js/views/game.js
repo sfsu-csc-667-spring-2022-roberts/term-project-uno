@@ -19,6 +19,29 @@ let playerOrderReversed = false;
 let currentIndex = 0;
 let mainIndex = 0;
 
+// ------ socket events
+socket.on('play-card-number', (data) => {
+    console.log(data);
+});
+socket.on('play-card-skip', (data) => {
+    console.log(data);
+});
+socket.on('play-card-reverse', (data) => {
+    console.log(data);
+});
+socket.on('play-card-plus2', (data) => {
+    console.log(data);
+});
+socket.on('play-card-plus4choose', (data) => {
+    console.log(data);
+});
+socket.on('play-card-choose', (data) => {
+    console.log(data);
+});
+socket.on('play-card-swap', (data) => {
+    console.log(data);
+});
+
 // ------ socket methods
 const joinGameRoom = () => {
     const pathnames = window.location.pathname.split('/');
@@ -465,15 +488,25 @@ const getNextTurn = (newCurrentIndex) => {
 // ------ game actions
 const playCard = (element) => {
     if (mainIndex === currentIndex) {
-        fetch(`/api${window.location.pathname}/playCard`, {
-            method: 'PATCH',
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ id: element.id })
-        })
-            .then(response => response.json())
-            .then(data => data.success ? handlePlay(data, element) : null)
-            .catch(err => console.log(err));
+        const pathnames = window.location.pathname.split('/');
+        const gameId = pathnames[pathnames.length-1];
+        console.log("playing the card")
+        socket.emit('play-card', JSON.stringify({ cardId: element.id, gameId }))
+        // fetch(`/api${window.location.pathname}/playCard`, {
+        //     method: 'PATCH',
+        //     headers: { "Content-Type": "application/json" },
+        //     body: JSON.stringify({ id: element.id })
+        // })
+        //     .then(response => response.json())
+        //     .then(data => data.success ? handlePlay(data, element) : null)
+        //     .catch(err => console.log(err));
     }
+}
+
+const handlePlay = (data, element) => {
+    mainDeckDiv.removeChild(element);
+    playedDeckDiv.innerHTML = playedDeckDiv.innerHTML + createCard(data.card, "played");
+    getNextTurn(data.currentIndex)
 }
 
 const drawCard = (element) => {
@@ -483,12 +516,6 @@ const drawCard = (element) => {
             .then(data => data.success ? handleDraw(data, element) : null)
             .catch(err => console.log(err));
     }
-}
-
-const handlePlay = (data, element) => {
-    mainDeckDiv.removeChild(element);
-    playedDeckDiv.innerHTML = playedDeckDiv.innerHTML + createCard(data.card, "played");
-    getNextTurn(data.currentIndex)
 }
 
 const handleDraw = (data, element) => {
