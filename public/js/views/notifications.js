@@ -10,7 +10,8 @@ function addEventListenersToInvitations() {
     const acceptButton = invitationListItem.getElementsByClassName('accept').item(0);
     const declineButton = invitationListItem.getElementsByClassName('decline').item(0);
 
-    const date = new Date(time.innerHTML);
+    const date = new Date(time.getAttribute('datetime'));
+    console.log(time);
     time.innerHTML = timeSince(date);
     setInterval(() => {
       time.innerHTML = timeSince(date);
@@ -64,7 +65,7 @@ function createFlashMessage(message) {
 function createInvitation(invitation) {
   return (
     `<li id="${invitation.lobbyId}" class="invitation">
-      <span>You were invited to "${invitation.lobbyName}" <time class="time-since">${invitation.createdAt}</time> ago...</span>
+      <span>You were invited to "${invitation.lobbyName}" <time datetime="${invitation.createdAt}" class="time-since">${timeSince(invitation.createdAt)}</time> ago...</span>
       <div>
         <button class="invitation-button decline">Decline</button>
         <button class="invitation-button accept">Accept</button>

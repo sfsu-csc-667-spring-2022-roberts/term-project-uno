@@ -8,7 +8,7 @@ const { verifyAllGuestsReady } = require('../db/dao/lobbyGuests');
 const { checkUserHasInvitations, findUsersInvitations } = require('../db/dao/lobbyInvitations');
 const { findGameWithLobby } = require('../db/dao/games');
 const { verifyUserInGame } = require('../db/dao/players');
-const { formatAllLobbyInfo, calculateWinRate } = require('../lib/utils/index');
+const { formatAllLobbyInfo, calculateWinRate, timeSince } = require('../lib/utils/index');
 const { splitLobbyMembers } = require('../lib/utils/socket');
 
 const router = express.Router();
@@ -64,7 +64,8 @@ router.get('/notifications', authenticate, (req, res, next) => {
         invitations.push({
           lobbyId: lobbyInvitations[i].lobbyId,
           lobbyName: lobbiesInfo[i].name,
-          createdAt: lobbyInvitations[i].createdAt
+          createdAt: lobbyInvitations[i].createdAt,
+          timeSince: timeSince(new Date(lobbyInvitations[i].createdAt))
         });
       }
     }
