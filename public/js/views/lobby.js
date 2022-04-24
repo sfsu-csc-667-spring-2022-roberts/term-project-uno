@@ -9,10 +9,6 @@ let startButton = document.getElementById('start-button');
 let inviteInput = document.getElementById('username');
 let inviteButton = document.getElementById('invite-button');
 
-function joinLobbyRoom() {
-  socket.emit('join-lobby-room', JSON.stringify({ lobbyId }));
-}
-
 function addKickButtonListener() {
   if (kickButtons) {
     for (let button of kickButtons) {
@@ -264,6 +260,15 @@ function initLobby() {
     });
   }
 
-  joinLobbyRoom();
   addKickButtonListener();
+
+  window.addEventListener('pageshow', () => {
+    const entries = performance.getEntriesByType('navigation');
+    if (entries && entries.length > 0) {
+      const navigationType = entries[0].type;
+      if ((navigationType === 'reload' || navigationType === 'back_forward' || navigationType === 'navigate') && socket.connected) {
+        window.location.reload();
+      }
+    }
+  });
 }
