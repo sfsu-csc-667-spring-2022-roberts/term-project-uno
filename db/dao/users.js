@@ -115,6 +115,21 @@ async function changePassword(username, oldPassword, newPassword) {
   } else throw new UserError('Invalid password', 401);
 }
 
+async function changeAvatar(key, userId) {
+  return db.query(`
+        UPDATE $1:name
+        SET $2:name = $3
+        WHERE id = $4
+        RETURNING id`,
+        ['Users', 'pictureUrl', key, userId])
+    .then((results) => {
+      if (results && results.length === 1) return Promise.resolve(results[0].id);
+      else return Promise.resolve(-1);
+    })
+    .catch((err) => Promise.reject(err));
+}
+
+
 async function findUserBySimilarName(username) {
   return db.query(`
     SELECT id, username, $1:name, $2:name, $3:name, $4:name 
@@ -182,6 +197,7 @@ module.exports = {
   findUserById,
   findUserByName,
   findAllLobbies,
+  changeAvatar,
   changeUsername,
   changePassword,
   findUserBySimilarName,

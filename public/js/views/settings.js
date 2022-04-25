@@ -2,6 +2,7 @@ import serializeForm from '../lib/serializeForm.js';
 
 const changeUsernameForm = document.getElementById('changeUsername');
 const changePasswordForm = document.getElementById('changePassword');
+const pictureFileUpload = document.getElementById('fileUpload');
 
 function validateUsernameForm(data) {
   return /^[a-z0-9]+$/i.test(data.username) && data.username.length <= 16;
@@ -91,6 +92,40 @@ async function informPasswordError(res) {
  Handle Picture submission here!
  should be PUT request at /api/users/avatar
 */
+pictureFileUpload.addEventListener('change' , (event) => {
+  event.preventDefault();
+  event.stopPropagation();
+
+  const fileInfo = pictureFileUpload.files[0];
+
+  let formData = new FormData();
+  formData.append('file', fileInfo);
+
+  const url = window.location.protocol + '//' + window.location.host;
+  fetch(url + '/api/users/upload/', {
+    method: 'POST',
+    body: formData,
+  })
+  .then(async (res) => {
+    const data = await res.json();
+    await fetch(url + '/api/users/avatar/', {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({key: data}),
+    })
+    .then(async (res) => {
+      
+    })
+    .catch((err) => {
+      console.error(err);
+    })
+  })
+  .catch((err) => {
+    console.error(err);
+  })
+})
 
 // Handle change username submission
 changeUsernameForm.addEventListener('submit', (event) => {

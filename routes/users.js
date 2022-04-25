@@ -1,10 +1,33 @@
+require('dotenv').config();
 const express = require('express');
+const multer = require('multer');
+const aws = require('aws-sdk');
+const multerS3 = require('multer-s3');
 const UserDao = require('../db/dao/users');
 const UserError = require('../helpers/error/UserError');
 const { generateToken, authenticate } = require('../lib/utils/token');
 const { validateRegister, validateLogin, validateChangeUsername,
   validateChangePassword } = require('../lib/validation/users');
 
+const s3 = new aws.S3({
+    accessKeyId: process.env.AWS_ID,
+    secretAccessKey: process.env.AWS_SECRET,
+    region: process.env.AWS_REGION
+});
+
+const upload = multer({
+  storage: multerS3({
+    s3: s3,
+    contentType: multerS3.AUTO_CONTENT_TYPE,
+    bucket: process.env.AWS_BUCKET,
+    metadata: function (req, file, cb) {
+      cb(null, {fieldName: file.fieldname});
+    },
+    key: function (req, file, cb) {
+      cb(null, new Date().toISOString() + '-' + file.originalname)
+    }
+  })
+})
 const router = express.Router();
 
 /* Change user information */
@@ -116,6 +139,29 @@ router.post('/logout', authenticate, async(req, res) => {
 /* Get authenticated user info */
 router.get('/me', authenticate, async (req, res) => {
   res.redirect(`/${req.user.username}`);
+});
+
+
+router.post('/upload', authenticate, upload.single('file'), async(req,res) => {
+  return res.json(req.file.key);
+});
+
+router.patch('/avatar', authenticate, async(req,res) => {
+  const userId = req.user.id;
+  const { key } = req.body;
+  UserDao.changeAvatar(key,userId)
+  .then((userId) => {
+    if (userId > 0) {
+      return res.status(204).send();
+    } else throw new UserError('Could not change profile picture. Try again later', 500);
+  })
+  .catch((err) => {
+    if (err instanceof UserError) {
+      return res.status(err.getStatus()).json({ message: err.getMessage() });
+    }
+    console.error(err);
+    return res.status(500).json({ message: 'An unexpected error occured' });
+  });
 });
 
 module.exports = router;
