@@ -11,7 +11,7 @@ const { emitBasedOnCardType } = require('../lib/utils/socket');
 
 const init = (app, server) => {
   const io = socketIo(server);
-
+  
   app.set('io', io);
 
   io.on('connection', async (socket) => {
@@ -69,12 +69,11 @@ const init = (app, server) => {
 
         if (!card || !topOfPlayedCardsResult || !topOfPlayedCards || !games) return;
 
-        console.log(games[0])
         // if it is not the player's turn, or (the current color is not equal to the card's color, and 
         // the card value is not the same as the one at the top of the played cards, and the card is not a wild card) --> return
         if (games[0].turnIndex !== players[0].turnIndex || (games[0].currentColor !== card.color && card.value !== topOfPlayedCards.value && card.color !== "wild")) {console.log("WRONG MOVE"); return; }
 
-        emitBasedOnCardType(games[0], card, io);
+        emitBasedOnCardType(games[0], players[0].id, card, io);
 
       } catch (err) {
         console.error(err);

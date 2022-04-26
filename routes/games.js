@@ -9,7 +9,6 @@ const PlayerDao = require('../db/dao/players');
 const PlayerCardDao = require('../db/dao/playerCards')
 const DrawCardDao = require('../db/dao/drawCards');
 const MessageDao = require('../db/dao/messages');
-
 const { authenticate } = require('../lib/utils/token');
 const router = express.Router();
 

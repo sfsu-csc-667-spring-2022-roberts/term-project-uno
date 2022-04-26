@@ -18,7 +18,7 @@ async function findTopOfPlayedCards(gameId) {
   SELECT * 
   FROM "PlayedCards" 
   WHERE "gameId" = $1 
-  OFFSET ((SELECT COUNT(*) FROM "PlayedCards" WHERE "gameId" = $1)-1);
+  OFFSET ((SELECT COUNT(*) FROM "PlayedCards" WHERE "gameId" = $1)-1)
   `, [gameId])
   .then((results) => {
     if (results && results.length === 1) {
