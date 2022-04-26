@@ -5,6 +5,7 @@ const messagesDiv = document.getElementById("messages");
 const messageInput = document.getElementById("message-input");
 const messageIcon = document.getElementById("message-icon");
 
+
 // ------ socket events
 socket.on('game-message-send', (data) => {
     appendMessage(data);
