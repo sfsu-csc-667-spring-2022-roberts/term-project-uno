@@ -66,7 +66,6 @@ router.patch('/', authenticate, async (req, res) => {
     if (newPassword === confirmNewPassword) {
       UserDao.changePassword(req.user.username, oldPassword, newPassword)
       .then((userId) => {
-        console.log(userId);
         if (userId > 0) {
           return res.status(204).send();
         } else throw new UserError('Could not change password. Try again later', 500);

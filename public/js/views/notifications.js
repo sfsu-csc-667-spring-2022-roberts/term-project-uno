@@ -11,7 +11,6 @@ function addEventListenersToInvitations() {
     const declineButton = invitationListItem.getElementsByClassName('decline').item(0);
 
     const date = new Date(time.getAttribute('datetime'));
-    console.log(time);
     time.innerHTML = timeSince(date);
     setInterval(() => {
       time.innerHTML = timeSince(date);
@@ -21,14 +20,34 @@ function addEventListenersToInvitations() {
       event.preventDefault();
       event.stopPropagation();
 
-      socket.emit('accept-invite', JSON.stringify({ lobbyId }));
+      fetch(`/api/lobbies/${lobbyId}/invitations/accept`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      })
+      .then(async (res) => {
+        if (res.redirected) {
+          window.location.href = res.url;
+        } else {
+          const data = await res.json();
+          if (data.message) createFlashMessage(data.message);
+        }
+      })
+      .catch((err) => console.error(err));
     });
 
     declineButton.addEventListener('click', (event) => {
       event.preventDefault();
       event.stopPropagation();
 
-      socket.emit('decline-invite', JSON.stringify({ lobbyId }));
+      fetch(`/api/lobbies/${lobbyId}/invitations`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      })
+      .catch((err) => console.error(err));
     });
   }
 }
@@ -103,24 +122,6 @@ window.onload = function() {
 
         addEventListenersToInvitations();
       }
-    } catch (err) {
-      console.error(err);
-    }
-  });
-
-  socket.on('invite-error', (message) => {
-    try {
-      const data = JSON.parse(message);
-      createFlashMessage(data.message);
-    } catch (err) {
-      console.error(err);
-    }
-  });
-
-  socket.on('redirect', (message) => {
-    try {
-      const data = JSON.parse(message);
-      if (data.pathname) window.location.href = baseURL + data.pathname;
     } catch (err) {
       console.error(err);
     }

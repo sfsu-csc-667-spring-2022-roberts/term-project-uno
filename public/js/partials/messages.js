@@ -5,6 +5,7 @@ const messagesDiv = document.getElementById("messages");
 const messageInput = document.getElementById("message-input");
 const messageIcon = document.getElementById("message-icon");
 
+
 // ------ socket events
 socket.on('game-message-send', (data) => {
     appendMessage(data);
@@ -39,6 +40,7 @@ const getMessages = async () => {
     fetch(`/api${window.location.pathname}/messages`)
         .then(response => response.json())
         .then(data => {
+            console.log(data);
             if (data.messages) {
                 messagesDiv.innerHTML = "";
                 data.messages.forEach(message => {
@@ -57,8 +59,23 @@ const sendMessage = async () => {
         const pathnames = window.location.pathname.split('/');
         const gameId = pathnames[pathnames.length-1];
 
-        socket.emit('game-message-send', JSON.stringify({ message: messageInput.value, gameId }))
-        messageInput.value = "";
+        fetch(`/api/games/${gameId}/messages`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ message: messageInput.value })
+          })
+          .then(async (res) => {
+            const data = await res.json();
+            if (res.status != 201 && data.message) {
+              console.log(data.message);
+            }
+          })
+          .catch((err) => console.error(err))
+          .finally(() => {
+            messageInput.value = '';
+          });
     }
 };
 

@@ -37,8 +37,23 @@ async function verifyUserInGame(gameId, userId) {
   .catch((err) => Promise.reject(err));
 }
 
+async function findPlayersCount(gameId) {
+  return db.query(`
+    SELECT * FROM "Players"
+    WHERE "gameId" = $1
+  `, [gameId])
+  .then((results) => {
+    if (results && results.length > 0) return Promise.resolve(results.length);
+    else return Promise.resolve(-1);
+  })
+  .catch((err) => Promise.reject(err));
+}
+
+
+
 module.exports = {
   findPlayers,
   createPlayer,
-  verifyUserInGame
+  verifyUserInGame,
+  findPlayersCount
 }

@@ -208,11 +208,51 @@ async function gameWithLobbyExists(lobbyId) {
   })
   .catch((err) => Promise.reject(err));
 } 
+async function updateColor(color, gameId) {
+  return db.any(`
+  UPDATE "Games"
+  SET "currentColor" = $1
+  WHERE "id" = $2
+  `, [color, gameId])
+  .then((results) => {
+    if (results) return Promise.resolve(true);
+    else return Promise.resolve(false);
+  })
+  .catch((err) => Promise.reject(err));
+}
+
+async function updateTurn(turnIndex, gameId) {
+  return db.any(`
+  UPDATE "Games"
+  SET "turnIndex" = $1
+  WHERE "id" = $2
+  `, [turnIndex, gameId])
+  .then((results) => {
+    if (results) return Promise.resolve(true);
+    else return Promise.resolve(false);
+  })
+  .catch((err) => Promise.reject(err));
+}
+async function updateReversed(playerOrderReversed, gameId) {
+  return db.any(`
+  UPDATE "Games"
+  SET "playerOrderReversed" = $1
+  WHERE "id" = $2
+  `, [playerOrderReversed, gameId])
+  .then((results) => {
+    if (results) return Promise.resolve(true);
+    else return Promise.resolve(false);
+  })
+  .catch((err) => Promise.reject(err));
+}
 
 module.exports = {
   findGameState,
   findGame,
   findGameWithLobby,
   createGame,
-  gameWithLobbyExists
+  gameWithLobbyExists,
+  updateColor,
+  updateTurn,
+  updateReversed
 }

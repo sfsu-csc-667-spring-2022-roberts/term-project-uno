@@ -10,8 +10,25 @@ async function createPlayedCard(cardId, gameId) {
       return Promise.resolve(result[0]);
     } else return Promise.resolve(null);
   })
+  .catch((err) => Promise.reject(err));
+}
+
+async function findTopOfPlayedCards(gameId) {
+  return db.any(`
+  SELECT * 
+  FROM "PlayedCards" 
+  WHERE "gameId" = $1 
+  OFFSET ((SELECT COUNT(*) FROM "PlayedCards" WHERE "gameId" = $1)-1)
+  `, [gameId])
+  .then((results) => {
+    if (results && results.length === 1) {
+      return Promise.resolve(results[0]);
+    } else return Promise.resolve(false);
+  })
+  .catch((err) => Promise.reject(err));
 }
 
 module.exports = {
-  createPlayedCard
+  createPlayedCard,
+  findTopOfPlayedCards
 };

@@ -32,8 +32,23 @@ async function getAllNormalCards() {
   .catch((err) => Promise.reject(err));
 }
 
+async function getCard(id) {
+  return db.any(`
+  SELECT *
+  FROM "Cards"
+  WHERE "id" = $1
+  `, [id])
+  .then((results) => {
+    if (results && results.length === 1) {
+      return Promise.resolve(results[0]);
+    } else return Promise.resolve(false);
+  })
+  .catch((err) => Promise.reject(err));
+}
+
 module.exports = {
   getAllCards,
   getAllSpecialCards,
-  getAllNormalCards
+  getAllNormalCards,
+  getCard
 };

@@ -3,8 +3,23 @@ const messageInput = document.getElementById('message-input');
 
 function sendMessage() {
   if (messageInput.value.trim().length > 0) {   
-    socket.emit('lobby-message-send', JSON.stringify({ message: messageInput.value, lobbyId }))
-    messageInput.value = '';
+    fetch(`/api/lobbies/${lobbyId}/messages`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ message: messageInput.value })
+    })
+    .then(async (res) => {
+      const data = await res.json();
+      if (res.status != 201 && data.message) {
+        console.log(data.message);
+      }
+    })
+    .catch((err) => console.error(err))
+    .finally(() => {
+      messageInput.value = '';
+    });
   }
 }
 
