@@ -13,6 +13,24 @@ const { splitLobbyMembers } = require('../lib/utils/socket');
 
 const router = express.Router();
 
+router.get('/leaderboard', verifyToken, (req, res) => {
+  res.render('leaderboard', {layout: false, title: 'Leaderboard'})
+});
+
+router.get('/leaderboardData', verifyToken, async (req, res) => {
+
+  UserDao.getScores()
+  .then((result) => {
+    console.log(result)
+    res.send(result)
+  })
+  .catch((err) => {
+    console.error(err);
+    next(new IndexError('An unexpected error occured', 500));
+  })
+
+});
+
 router.get('/', verifyToken, (req, res) => {
   if (req.user) {
     UserDao.findAllLobbies(req.user.id)

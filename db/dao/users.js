@@ -16,6 +16,19 @@ async function usernameExists(username) {
   .catch((e) => Promise.reject(e));
 }
 
+async function getScores() {
+  return db.query(`
+    SELECT id, $2:name, $3:name, ($3:name - ($2:name - $3:name)) AS score, $4:name
+    FROM $1:name 
+    WHERE $2:name > 0
+    ORDER BY score DESC
+    LIMIT 10`, ['Users', "gamesPlayed", "gamesWon", "username"])
+  .then((results) => {
+    if (results && results.length < 12) return Promise.resolve(results);
+  })
+  .catch((e) => Promise.reject(e));
+}
+
 async function create(username, password) {
   return bcrypt.hash(password, 8)
   .then((hashedPassword) => {
@@ -185,5 +198,6 @@ module.exports = {
   changeUsername,
   changePassword,
   findUserBySimilarName,
-  verifyUserExists
+  verifyUserExists,
+  getScores
 };
