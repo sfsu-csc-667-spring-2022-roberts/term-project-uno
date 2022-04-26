@@ -21,6 +21,11 @@ main {
   height: 100%;
 }
 
+thead {
+  position: sticky;
+  top: 0;
+}
+
 .button {
   display: block;
   background: #ee161f;
@@ -42,22 +47,66 @@ main {
   -o-transform: scale(1.15);
 }
 
-.list-container {
-  overflow-y: scroll;
+.lobby {
+  background: #f1f1f1;
+  background: linear-gradient(0deg, rgba(241,241,241,1) 0%, rgba(255,255,255,1) 100%);
+  border-radius: 0.25rem;
+  outline: 1px solid #dedede;
+}
+
+.lobby:hover {
+  background: white;
+}
+
+.lobby-waiting {
+  font-weight: 700;
+  color: #18A849;
+}
+
+.lobby-busy {
+  font-weight: 700;
+  color: #ee161f;
+}
+
+.lobby-hostname {
+  font-weight: 600;
+}
+
+.lobby-name {
+  font-style: italic;
+}
+
+.lobby-capacity {
+  font-size: 1rem;
+}
+
+#lobby-header {
+  background: #00467e;
+  color: white;
+}
+
+#list-container {
+  overflow-y: auto;
   overflow-x: hidden;
   flex-grow: 0;
+  border-radius: 0.25rem;
+  height: 15rem;
 }
 
-.list-container ul {
-  min-height: 15rem;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  padding-top: 0.25rem;
+#list-container table {
+  width: 100%;
 }
 
-.list-container li {
-  padding: 0.5rem;
+#list-container a {
+  text-decoration: none;
+  color: inherit;
+}
+
+#list-container th, td {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: .375rem;
 }
 
 #menu {
@@ -92,8 +141,7 @@ main {
 
 #menu-container {
   display: flex;
-  justify-content: center;
-  align-items: center;
+  margin: 0;
 }
 
 #menu-container div {
@@ -103,10 +151,9 @@ main {
 #menu-lists {
   display: flex;
   flex-direction: column;
-  justify-content: space-evenly;
-  align-items: center;
   width: 100%;
-  margin: 0;
+  background: #f1f1f1;
+  background: linear-gradient(180deg, rgba(241,241,241,1) 0%, rgba(255,255,255,1) 100%);
 }
 
 #menu-lists div {
@@ -114,18 +161,13 @@ main {
   width: 100%;
 }
 
-#menu-lists h3 {
-  border-bottom: 0.25rem solid #d6151d;
-  margin-bottom: 0;
+#menu-lists table {
+  background: #f1f1f1;
+  table-layout: fixed;
+  border-collapse: collapse;
 }
 
 #menu-options {
   width: 50% !important;
-  margin: 0;
-}
-
-#user-lobby-list {
-  display: flex;
-  flex-direction: column;
-  height: 15rem;
+  margin: auto 0;
 }

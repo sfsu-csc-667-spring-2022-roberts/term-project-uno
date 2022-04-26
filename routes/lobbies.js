@@ -3,9 +3,11 @@ const LobbyDao = require('../db/dao/lobbies');
 const LobbyGuestsDao = require('../db/dao/lobbyGuests');
 const LobbyInvitationsDao = require('../db/dao/lobbyInvitations');
 const UserDao = require('../db/dao/users');
+const MessageDao = require('../db/dao/messages');
 const LobbyError = require('../helpers/error/LobbyError');
 const { authenticate } = require('../lib/utils/token');
 const { validateUsername } = require('../lib/validation/users');
+const io = require('../socket/index');
 
 const router = express.Router();
 
@@ -84,11 +86,11 @@ router.post('/', authenticate, async (req, res) => {
     return LobbyDao.createPrivate(hostId, lobbyName, maxPlayers, password)
     .then((result) => {
       if(result){
-        res.redirect("/lobby/"+result.id);
+        res.redirect("/lobbies/"+result.id);
       }
     })
     .catch((err) => {
-      console.error("ERROR",err);
+      console.error(err);
       res.status(500).json({ message: 'An unexpected error occured' });
     });
   }
@@ -96,58 +98,27 @@ router.post('/', authenticate, async (req, res) => {
     return LobbyDao.createPublic(hostId, lobbyName, maxPlayers)
     .then((result) => {
       if(result){
-        res.redirect("/lobby/"+result.id);
+        res.redirect("/lobbies/"+result.id);
       }
     })
     .catch((err) => {
-      console.error("ERROR",err);
+      console.error(err);
       res.status(500).json({ message: 'An unexpected error occured' });
     });
   }
-
 });
 
-/* Join Lobby */
-router.post("/:id(\\d+)/users", authenticate, async (req, res) => {
-  const user = req.user.id;
-  const { id } = req.params;
-  let data;
-  LobbyDao.findLobby(id)
-  .then((lobby) => {
-    if(lobby.password) {
-      lobby.type = "true";
+/* Get messages */
+router.get('/:lobbyId(\\d+)/messages', authenticate, async (req, res) => {
+  try {
+    if (!(await LobbyDao.verifyHostOrGuest(req.user.id, req.params.lobbyId))) {
+      return res.status(401).json({ message: 'User is not part of the game' });
     }
-    else {
-      lobby.type = "false";
-    }
-    delete lobby.password;
-    data = lobby;
-
-    return LobbyGuestsDao.findAllLobbyGuests(id);
-  })
-  .then((result) => {
-    if(result.length + 2 > data.playerCapacity) {
-      return res.status(400).json({ message: 'Lobby is full'});
-    }
-    for(let i = 0; i<result.length; i++) {
-      if(result[i].userId == user) {
-        return res.status(400).json({ message: 'Already in this lobby'});
-      }
-    }
-    if(user == data.hostId) {
-      return res.status(400).json({ message: 'Already in this lobby'});
-    }
-    return LobbyGuestsDao.addGuest(user,id)
-    .then((result) => {
-      if(result){
-        res.redirect("/lobby/"+id);
-      }
-    })
-  })
-  .catch((err) => {
-    console.error("ERROR",err);
-    res.status(500).json({ message: 'An unexpected error occured' });
-  });
+    res.json({ messages: await MessageDao.findLobbyMessages(req.params.lobbyId)});
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Something went wrong' });
+  }
 });
 
 /* Create invitation */
@@ -199,5 +170,29 @@ router.delete('/:lobbyId(\\d+)/invitations', authenticate, (req, res) => {
     res.status(500).json({ message: 'An unexpected error occured' });
   });
 })
+
+router.post('/:lobbyId(\\d+)/messages', authenticate, async (req, res) => {
+  const { lobbyId } = req.params;
+  const { message } = req.body;
+
+  try {
+    if (!req.user || !(await LobbyDao.verifyHostOrGuest(req.user.id, lobbyId))) {
+      return res.status(401).json({ message: 'You are not a member of the lobby' });
+    }
+
+    const messageObj = await MessageDao.createLobbyMessage(message, req.user.id, lobbyId);
+
+    messageObj.sender = req.user.username;
+    delete messageObj.userId;
+    delete messageObj.lobbyId;
+
+    io.to(`lobby/${lobbyId}`).emit('lobby-message-send', JSON.stringify(messageObj));
+
+    res.status(201).json({ message: 'Successfully created new lobby message' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Something went wrong' });
+  }
+});
 
 module.exports = router;

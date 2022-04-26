@@ -15,7 +15,7 @@
       {{#if user}}
       <form id="menu">
         <header>
-          <h2>Play Now</h2>
+          <h2>My Lobbies</h2>
         </header>
         <div id="menu-container">
           <div id="menu-options">
@@ -23,27 +23,40 @@
             <a href="/find-lobby" class="button">Find New Lobby</a>
           </div>
           <div id="menu-lists">
-            <div id="user-lobby-list">
-              <h3>My Lobbies</h3>
-              <div class="list-container">
-                <ul>
+              <div id="list-container">
+                <table>
+                  <thead>
+                    <tr id="lobby-header">
+                      <th>Status</th>
+                      <th>Host</th>
+                      <th>Name</th>
+                      <th>Players</th>
+                    </tr>
+                  </thead>
                   {{#each lobbies}}
-                  <li class="lobby">
-                    <a href="/lobby/{{this.id}}">
-                      {{#equals this.busy true}}
-                      <span>In-Game</span>
-                      {{else}}
-                      <span>Waiting</span>
-                      {{/equals}}
-                      <span class="host-name">{{this.hostName}}</span>
-                      <span class="lobby-name">{{this.name}}</span>
-                      <span class="capacity">{{inc this.guestLength}}/{{this.playerCapacity}}</span>
-                    </a>
-                  </li>
+                  <tr class="lobby">
+                    {{#equals this.busy true}}
+                    <td class="lobby-busy">
+                      <a href="/lobbies/{{this.id}}">In-Game</a>
+                    </td>
+                    {{else}}
+                    <td class="lobby-waiting">
+                      <a href="/lobbies/{{this.id}}">Waiting</a>
+                    </td>
+                    {{/equals}}
+                    <td class="lobby-hostname">
+                      <a href="/lobbies/{{this.id}}">{{this.hostName}}</a>
+                    </td>
+                    <td class="lobby-name">
+                      <a href="/lobbies/{{this.id}}">{{this.name}}</a>
+                    </td>
+                    <td class="lobby-capacity">
+                      <a href="/lobbies/{{this.id}}">{{inc this.guestLength}}/{{this.playerCapacity}}</a>
+                    </td>
+                  </tr>
                   {{/each}}
-                </ul>
+                </table>
               </div>
-            </div>
           </div>
         </div>
       </form>

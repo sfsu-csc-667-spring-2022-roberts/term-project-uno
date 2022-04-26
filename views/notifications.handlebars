@@ -6,10 +6,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" type="text/css" href="/css/views/notifications.css" />
     <link rel="stylesheet" type="text/css" href="/css/partials/navbar.css" />
+    <link rel="stylesheet" type="text/css" href="/css/partials/flash.css" />
+    <link rel="stylesheet" type="text/css" href="/css/scrollbar.css">
+    <script defer type="module" src="/js/views/notifications.js"></script>
     <title>{{title}}</title>
   </head>
   <body>
     {{> navbar}}
-    
+    <main>
+      <h2 id="title">Notifications</h2>
+      <ul id="notification-list">
+      {{#if invitations}}
+        {{#each invitations}}
+          <li id="{{this.lobbyId}}" class="invitation">
+            <span>You were invited to "{{this.lobbyName}}" <time datetime="{{this.createdAt}}" class="time-since">{{this.timeSince}}</time> ago...</span>
+            <div>
+              <button class="invitation-button decline">Decline</button>
+              <button class="invitation-button accept">Accept</button>
+            </div>
+          </li>
+        {{/each}}
+      {{else}}
+        <li class="empty-invitation">
+          It looks empty here...
+        </li>
+      {{/if}}
+      </ul>
+    </main>
   </body>
 </html>

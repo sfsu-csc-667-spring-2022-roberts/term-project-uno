@@ -1,6 +1,8 @@
+const socket = io();
 const navProfilePic = document.getElementById('nav-profile-pic');
 const logout = document.getElementById('logout');
 const searchForm = document.getElementById('search-form')
+const notificationIcon = document.getElementById('notifications-icon');
 
 if (navProfilePic) {
   navProfilePic.addEventListener('click', (event) => {
@@ -52,3 +54,19 @@ if (searchForm) {
     }
   })
 }
+
+socket.on('notification', (message) => {
+  try {
+    const data = JSON.parse(message);
+
+    if (notificationIcon && notificationIcon.src) {
+      if (data.invitations && data.invitations.length > 0) {
+        notificationIcon.src = '/images/notifications-signal.png';
+      } else {
+        notificationIcon.src = '/images/notifications.png';
+      }
+    }
+  } catch (err) {
+    console.error(err);
+  }
+})

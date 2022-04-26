@@ -1,7 +1,6 @@
 import serializeForm from '../lib/serializeForm.js';
 
 const createLobbyForm = document.getElementById('createLobbyForm');
-
 const privateCheckBox = document.getElementById('private-checkbox');
 
 if (privateCheckBox) {

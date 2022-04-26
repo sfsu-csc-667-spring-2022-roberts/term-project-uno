@@ -32,7 +32,7 @@ async function create(username, password) {
   })
   .catch((err) => Promise.reject(err));
 }
-``
+
 async function authenticate(username, password) {
   let userId;
   return db.query(`
@@ -162,6 +162,19 @@ async function findAllLobbies(userId) {
   .catch((err) => Promise.reject(err));
 }
 
+async function verifyUserExists(userId) {
+  return db.query(`\
+    SELECT id 
+    FROM "Users"
+    WHERE id = $1
+  `, [userId])
+  .then((users) => {
+    if (users && users.length > 0) return Promise.resolve(true);
+    else return Promise.resolve(false);
+  })
+  .catch((err) => Promise.reject(err));
+}
+
 module.exports = {
   usernameExists,
   create,
@@ -171,5 +184,6 @@ module.exports = {
   findAllLobbies,
   changeUsername,
   changePassword,
-  findUserBySimilarName
+  findUserBySimilarName,
+  verifyUserExists
 };
