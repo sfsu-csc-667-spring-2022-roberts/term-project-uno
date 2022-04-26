@@ -7,6 +7,7 @@ const MessageDao = require('../db/dao/messages');
 const LobbyError = require('../helpers/error/LobbyError');
 const { authenticate } = require('../lib/utils/token');
 const { validateUsername } = require('../lib/validation/users');
+const io = require('../socket/index');
 
 const router = express.Router();
 
@@ -169,5 +170,29 @@ router.delete('/:lobbyId(\\d+)/invitations', authenticate, (req, res) => {
     res.status(500).json({ message: 'An unexpected error occured' });
   });
 })
+
+router.post('/:lobbyId(\\d+)/messages', authenticate, async (req, res) => {
+  const { lobbyId } = req.params;
+  const { message } = req.body;
+
+  try {
+    if (!req.user || !(await LobbyDao.verifyHostOrGuest(req.user.id, lobbyId))) {
+      return res.status(401).json({ message: 'You are not a member of the lobby' });
+    }
+
+    const messageObj = await MessageDao.createLobbyMessage(message, req.user.id, lobbyId);
+
+    messageObj.sender = req.user.username;
+    delete messageObj.userId;
+    delete messageObj.lobbyId;
+
+    io.to(`lobby/${lobbyId}`).emit('lobby-message-send', JSON.stringify(messageObj));
+
+    res.status(201).json({ message: 'Successfully created new lobby message' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Something went wrong' });
+  }
+});
 
 module.exports = router;
