@@ -14,18 +14,22 @@
       <div id="settingsForm">
         <header><h2>Settings</h2></header>
         <section id="settings">
-          <form id="pictureForm" enctype="multipart/form-data">
+          <form id="changePicture" enctype="multipart/form-data">
               <div id="profile-pic">
                 {{#if user.pictureUrl}}
-                <img src="https://csc665-term-project-uno.s3.us-west-1.amazonaws.com/{{user.pictureUrl}}">
+                <img id="profileImage" src="https://csc665-term-project-uno.s3.us-west-1.amazonaws.com/{{user.pictureUrl}}">
                 {{else}}
-                <img src="/images/default-profile-pic.png">
+                <img id="profileImage" src="/images/default-profile-pic.png">
                 {{/if}}
               </div>
               <label id="upload-pic">
                 <input type="file" accept="image/*" id="fileUpload" name="avatar">
                 Upload Profile Picture
               </label>
+              <div id="editOptions">
+                <button type="reset">Cancel</button>
+                <button type="submit">Save</button>
+              </div>
           </form>
           <div id="profile-info-container">
               <form id="changeUsername">

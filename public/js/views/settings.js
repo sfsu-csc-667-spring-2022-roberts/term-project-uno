@@ -3,6 +3,8 @@ import serializeForm from '../lib/serializeForm.js';
 const changeUsernameForm = document.getElementById('changeUsername');
 const changePasswordForm = document.getElementById('changePassword');
 const pictureFileUpload = document.getElementById('fileUpload');
+const changePictureForm = document.getElementById('changePicture');
+const profilePictureSrc = document.getElementById('profileImage').src;
 
 function validateUsernameForm(data) {
   return /^[a-z0-9]+$/i.test(data.username) && data.username.length <= 16;
@@ -92,7 +94,33 @@ async function informPasswordError(res) {
  Handle Picture submission here!
  should be PUT request at /api/users/avatar
 */
-pictureFileUpload.addEventListener('change' , (event) => {
+pictureFileUpload.addEventListener('change', (event) => {
+  event.preventDefault();
+  event.stopPropagation();
+
+  const profileImage = document.getElementById('profileImage');
+  const editOptions = document.getElementById('editOptions');
+  const fileUploadLabel = document.getElementById('upload-pic');
+  const fileInfo = pictureFileUpload.files[0];
+  editOptions.style = "display:block";
+  fileUploadLabel.style = "display:none";
+  profileImage.src = URL.createObjectURL(fileInfo);
+})
+
+changePictureForm.addEventListener('reset' , (event) => {
+  event.preventDefault();
+  event.stopPropagation();
+
+  const editOptions = document.getElementById('editOptions');
+  const fileUploadLabel = document.getElementById('upload-pic');
+  const profileImage = document.getElementById('profileImage');
+  editOptions.style = "display:none";
+  fileUploadLabel.style = "display:block";
+  profileImage.src = profilePictureSrc;
+  
+})
+
+changePictureForm.addEventListener('submit' , (event) => {
   event.preventDefault();
   event.stopPropagation();
 
@@ -116,7 +144,12 @@ pictureFileUpload.addEventListener('change' , (event) => {
       body: JSON.stringify({key: data}),
     })
     .then(async (res) => {
-      
+      if(res) {
+        const editOptions = document.getElementById('editOptions');
+        const fileUploadLabel = document.getElementById('upload-pic');
+        editOptions.style = "display:none";
+        fileUploadLabel.style = "display:block";
+      }
     })
     .catch((err) => {
       console.error(err);
@@ -126,6 +159,7 @@ pictureFileUpload.addEventListener('change' , (event) => {
     console.error(err);
   })
 })
+
 
 // Handle change username submission
 changeUsernameForm.addEventListener('submit', (event) => {

@@ -117,11 +117,11 @@ async function changePassword(username, oldPassword, newPassword) {
 
 async function changeAvatar(key, userId) {
   return db.query(`
-        UPDATE $1:name
-        SET $2:name = $3
-        WHERE id = $4
-        RETURNING id`,
-        ['Users', 'pictureUrl', key, userId])
+    UPDATE $1:name
+    SET $2:name = $3
+    WHERE id = $4
+    RETURNING id`,
+    ['Users', 'pictureUrl', key, userId])
     .then((results) => {
       if (results && results.length === 1) return Promise.resolve(results[0].id);
       else return Promise.resolve(-1);
