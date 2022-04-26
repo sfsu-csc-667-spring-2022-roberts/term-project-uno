@@ -1,9 +1,4 @@
-const LobbyDao = require('../db/dao/lobbies');
-const LobbyGuestDao = require('../db/dao/lobbyGuests');
-const LobbyInvitationDao = require('../db/dao/lobbyInvitations');
-const { broadcastUpdatedInvitationList, broadcastLobbyMemberJoin } = require('../lib/utils/socket');
-
-function initializeInvitationEndpoints(io, socket, user) {
+function joinSocketInvitationRoom(socket, user) {
   if (user) {
     try {
       const referer = socket.handshake.headers.referer;
@@ -18,69 +13,6 @@ function initializeInvitationEndpoints(io, socket, user) {
       console.error('Error occured when attempting to join socket notification room\n', err);
     }
   }
-
-  socket.on('accept-invite', async (message) => {
-    try {
-      data = JSON.parse(message);
-
-      const lobby = await LobbyDao.findLobby(data.lobbyId);
-      if (!lobby) {
-        await LobbyInvitationDao.removeUserInvitation(user.id, data.lobbyId);
-        broadcastUpdatedInvitationList(io, user.id);
-        return socket.emit('invite-error', JSON.stringify({ message: 'The lobby no longer exists' }));
-      }
-
-      if (lobby.busy) {
-        await LobbyInvitationDao.removeUserInvitation(user.id, data.lobbyId);
-        broadcastUpdatedInvitationList(io, user.id);
-        return socket.emit('invite-error', JSON.stringify({ message: 'The lobby is already in-session' }));
-      }
-
-      const lobbyGuests = await LobbyGuestDao.findAllLobbyGuests(data.lobbyId);
-
-      // Full Lobby
-      if (lobbyGuests.length + 2 > lobby.playerCapacity) {
-        await LobbyInvitationDao.removeUserInvitation(user.id, data.lobbyId);
-        broadcastUpdatedInvitationList(io, user.id);
-        return socket.emit('invite-error', JSON.stringify({ message: 'The lobby is already full' }));
-      }
-
-      // Already a lobby member
-      if (user.id == lobby.hostId) {
-        await LobbyInvitationDao.removeUserInvitation(user.id, data.lobbyId);
-        broadcastUpdatedInvitationList(io, user.id);
-        return socket.emit('redirect', JSON.stringify({ pathname: `/lobbies/${data.lobbyId}` }));
-      }
-      for (let i = 0; i < lobbyGuests.length; i++) {
-        if (user.id == lobbyGuests[i].userId) {
-          await LobbyInvitationDao.removeUserInvitation(user.id, data.lobbyId);
-          broadcastUpdatedInvitationList(io, user.id);
-          return socket.emit('redirect', JSON.stringify({ pathname: `/lobbies/${data.lobbyId}` }));
-        }
-      }
-
-      await LobbyGuestDao.addGuest(user.id, data.lobbyId);
-      LobbyInvitationDao.removeUserInvitation(user.id, data.lobbyId);
-
-      await broadcastLobbyMemberJoin(io, user.id, data.lobbyId);
-      socket.emit('redirect', JSON.stringify({ pathname: `/lobbies/${data.lobbyId}` }));
-    } catch (err) {
-      console.error(err);
-    }
-  });
-
-  socket.on('decline-invite', async (message) => {
-    try {
-      data = JSON.parse(message);
-
-      if (!user) return;
-
-      await LobbyInvitationDao.removeUserInvitation(user.id, data.lobbyId);
-      broadcastUpdatedInvitationList(io, user.id);
-    } catch (err) {
-      console.error(err);
-    }
-  })
 }
 
-module.exports = { initializeInvitationEndpoints };
+module.exports = { joinSocketInvitationRoom };

@@ -66,7 +66,6 @@ router.patch('/', authenticate, async (req, res) => {
     if (newPassword === confirmNewPassword) {
       UserDao.changePassword(req.user.username, oldPassword, newPassword)
       .then((userId) => {
-        console.log(userId);
         if (userId > 0) {
           return res.status(204).send();
         } else throw new UserError('Could not change password. Try again later', 500);
@@ -152,33 +151,40 @@ router.patch('/avatar', authenticate, async(req,res) => {
   const { key } = req.body;
   const bucketParams = {Bucket: process.env.AWS_BUCKET, Key: ""};
   UserDao.findUserById(userId)
-  .then(async (result) => {
+  .then((result) => {
     if((result)) {
       if(result.pictureUrl) {
         bucketParams.Key = result.pictureUrl;
-        return s3.getObject(bucketParams).promise()
+        s3.getObject(bucketParams).promise()
+        .then(async ()=> {
+          await s3.deleteObject(bucketParams).promise();
+          s3.getObject(bucketParams).promise()
+          .then(() => {
+            return res.status(500).json({ message: 'Object failed to delete' });
+          })
+          .catch(async(error) => {
+            if(error.code == "NoSuchKey") {
+              return await UserDao.changeAvatar(key,userId);
+            }
+            else return res.status(500).json({ message: 'An unexpected error occured' });
+          })
+          .then((userId) => {
+              if (userId > 0) {
+                return res.status(204).send();
+              } else throw new UserError('Could not change profile picture. Try again later', 500);
+          })
+        })
       }
-      else return UserDao.changeAvatar(key,userId)
+      else {
+        UserDao.changeAvatar(key,userId)
+        .then((userId) => {
+            if (userId > 0) {
+              return res.status(204).send();
+            } else throw new UserError('Could not change profile picture. Try again later', 500);
+        })
+      }
     }
     else throw new UserError('Could not find user.', 400);
-  })
-  .then(async ()=> {
-    await s3.deleteObject(bucketParams).promise();
-    await s3.getObject(bucketParams).promise()
-    .then(() => {
-      return res.status(500).json({ message: 'Object failed to delete' });
-    })
-    .catch((error) => {
-      if(error.code == "NoSuchKey") {
-        return UserDao.changeAvatar(key,userId)
-      }
-      else return res.status(500).json({ message: 'An unexpected error occured' });
-    })
-    .then((userId) => {
-        if (userId > 0) {
-          return res.status(204).send();
-        } else throw new UserError('Could not change profile picture. Try again later', 500);
-    })
   })
   .catch((err) => {
     if (err instanceof UserError) {

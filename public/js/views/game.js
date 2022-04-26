@@ -197,7 +197,9 @@ const createPlayer = (player, placement, position, currentIndex, reversed) => {
                         ${cardsString}
                     </div>
                     <div class="player-avatar-div-left">
-                        <img alt="player avatar" class="player-avatar" src="${player.avatar ? player.avatar : defaultAvatar}" />
+                        <div class='avatar-container'>
+                            <img alt="player avatar" class="player-avatar" src="${player.avatar ? `https://csc665-term-project-uno.s3.us-west-1.amazonaws.com/${player.avatar}` : defaultAvatar}" />
+                        </div>
                         <label class="player-username">${player.username} <label style="display:inline; color: #FFFFFF; text-shadow: 2px 1px 2px #000000; font-size: 12px; margin-left: 5px; z-index:3;">${player.cards}</label></label>
                     </div>
                     <div class="arrow-container arrow-left-container ${player.turnIndex === currentIndex ? "" : "hidden"} ${reversed ? "reverse-left" : ""}">
@@ -216,7 +218,9 @@ const createPlayer = (player, placement, position, currentIndex, reversed) => {
                         ${cardsString}
                     </div>
                     <div class="player-avatar-div">
-                        <img alt="player avatar" class="player-avatar" src="${player.avatar ? player.avatar : defaultAvatar}" />
+                        <div class='avatar-container'>
+                            <img alt="player avatar" class="player-avatar" src="${player.avatar ? `https://csc665-term-project-uno.s3.us-west-1.amazonaws.com/${player.avatar}` : defaultAvatar}" />
+                        </div>
                         <label class="player-username">${player.username} <label style="display:inline; color: #FFFFFF; text-shadow: 2px 1px 2px #000000; font-size: 12px; margin-left: 5px; z-index:3;">${player.cards}</label></label>
                     </div>
                     <div class="arrow-container arrow-top-container ${player.turnIndex === currentIndex ? "" : "hidden"} ${reversed ? "reverse-top" : ""}">
@@ -235,7 +239,9 @@ const createPlayer = (player, placement, position, currentIndex, reversed) => {
                         ${cardsString}
                     </div>
                     <div class="player-avatar-div-right">
-                        <img alt="player avatar" class="player-avatar" src="${player.avatar ? player.avatar : defaultAvatar}" />
+                        <div class='avatar-container'>
+                            <img alt="player avatar" class="player-avatar" src="${player.avatar ? `https://csc665-term-project-uno.s3.us-west-1.amazonaws.com/${player.avatar}` : defaultAvatar}" />
+                        </div>
                         <label class="player-username"><label style="color: #FFFFFF; text-shadow: 2px 1px 2px #000000; font-size: 12px; margin-right: 5px;">${player.cards}</label> ${player.username}</label>
                     </div>
                     <div class="arrow-container arrow-right-container ${player.turnIndex === currentIndex ? "" : "hidden"} ${reversed ? "reverse-right" : ""}">

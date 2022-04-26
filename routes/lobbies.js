@@ -303,21 +303,70 @@ router.post('/:lobbyId(\\d+)/invitations', authenticate, async (req, res) => {
   }
 });
 
-router.delete('/:lobbyId(\\d+)/invitations', authenticate, (req, res) => {
+/* Decline invitation */
+router.delete('/:lobbyId(\\d+)/invitations', authenticate, async (req, res) => {
   const { lobbyId } = req.params;
-
-  LobbyInvitationsDao.removeUserInvitation(req.user.id, lobbyId)
-  .then((removed) => {
-    if (removed) return res.status(204).send();
-    else throw new LobbyError('Invitation was not found', 404);
-  })
-  .catch((err) => {
-    if (err instanceof LobbyError) {
-      return res.status(err.getStatus()).json({ message: err.getMessage() });
+  try {
+    if (!(await LobbyInvitationDao.removeUserInvitation(req.user.id, lobbyId))) {
+      return res.status(404).json({ message: 'Invitation was not found' });
     }
+    broadcastUpdatedInvitationList(io, req.user.id);
+    res.json({ message: 'Invitation successfully declined' });
+  } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'An unexpected error occured' });
-  });
+  }
+})
+
+/* Accept invitation */
+router.delete('/:lobbyId(\\d+)/invitations/accept', authenticate, async (req, res) => {
+  const { lobbyId } = req.params;
+  try {
+    const lobby = await LobbyDao.findLobby(lobbyId);
+    if (!lobby) {
+      await LobbyInvitationDao.removeUserInvitation(req.user.id, lobbyId);
+      broadcastUpdatedInvitationList(io, req.user.id);
+      return res.status(404).json({ message: 'The lobby no longer exists' });
+    }
+
+    if (lobby.busy) {
+      await LobbyInvitationDao.removeUserInvitation(req.user.id, lobbyId);
+      broadcastUpdatedInvitationList(io, req.user.id);
+      return res.status(409).json({ message: 'The lobby is already in session' });
+    }
+
+    const lobbyGuests = await LobbyGuestsDao.findAllLobbyGuests(lobbyId);
+
+    // Full Lobby
+    if (lobbyGuests.length + 2 > lobby.playerCapacity) {
+      await LobbyInvitationDao.removeUserInvitation(req.user.id, lobbyId);
+      broadcastUpdatedInvitationList(io, req.user.id);
+      return res.status(409).json({ message: 'The lobby is already full' });
+    }
+
+    // Already a lobby member
+    if (req.user.id == lobby.hostId) {
+      await LobbyInvitationDao.removeUserInvitation(req.user.id, lobbyId);
+      broadcastUpdatedInvitationList(io, req.user.id);
+      return res.redirect(`/lobbies/${lobbyId}`);
+    }
+    for (let i = 0; i < lobbyGuests.length; i++) {
+      if (req.user.id == lobbyGuests[i].userId) {
+        await LobbyInvitationDao.removeUserInvitation(req.user.id, lobbyId);
+        broadcastUpdatedInvitationList(io, req.user.id);
+        return res.redirect(`/lobbies/${lobbyId}`);
+      }
+    }
+
+    await LobbyGuestsDao.addGuest(req.user.id, lobbyId);
+    LobbyInvitationDao.removeUserInvitation(req.user.id, lobbyId);
+
+    await broadcastLobbyMemberJoin(io, req.user.id, lobbyId);
+    res.redirect(`/lobbies/${lobbyId}`);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'An unexpected error occured' });
+  }
 })
 
 module.exports = router;

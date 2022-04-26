@@ -1,5 +1,5 @@
 const socketIo = require('socket.io');
-const { initializeInvitationEndpoints } = require('./invitations');
+const { joinSocketInvitationRoom } = require('./invitations');
 const {  joinSocketLobbyRoom } = require('./lobbies');
 const { initializeGameEndpoints } = require('./games');
 const { parseToken } = require('../lib/utils/token');
@@ -20,7 +20,7 @@ io.on('connection', async (socket) => {
     if (user) removeFromUserSockets(user.id, socket);
   });
 
-  initializeInvitationEndpoints(io, socket, user);
+  joinSocketInvitationRoom(socket, user);
   joinSocketLobbyRoom(socket, user);
   initializeGameEndpoints(io, socket, user);
 });

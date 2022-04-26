@@ -66,7 +66,7 @@ router.get('/notifications', authenticate, (req, res, next) => {
           lobbyName: lobbiesInfo[i].name,
           createdAt: lobbyInvitations[i].createdAt,
           timeSince: timeSince(new Date(lobbyInvitations[i].createdAt))
-        });s
+        });
       }
     }
 
