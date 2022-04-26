@@ -155,7 +155,7 @@ router.post('/:lobbyId(\\d+)/users', authenticate, async (req, res) => {
     const lobby = await LobbyDao.findLobby(lobbyId);
     if (!lobby) return res.status(404).json({ message: 'Lobby does not exist' });
     if (lobby.busy) return res.status(409).json({ message: 'Lobby is busy' });
-
+    
     const lobbyGuests = await LobbyGuestsDao.findAllLobbyGuests(lobbyId);
 
     // Full Lobby

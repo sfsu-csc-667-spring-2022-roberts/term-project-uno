@@ -74,3 +74,7 @@ async function joinLobby(lobbyId) {
   })
   .catch((err) => console.error(err));
 }
+
+async function authenticate(lobbyId) {
+  
+}
