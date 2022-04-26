@@ -1,10 +1,34 @@
+require('dotenv').config();
 const express = require('express');
+const multer = require('multer');
+const aws = require('aws-sdk');
+const {  GetObjectCommand, DeleteObjectCommand } = require('@aws-sdk/client-s3');
+const multerS3 = require('multer-s3');
 const UserDao = require('../db/dao/users');
 const UserError = require('../helpers/error/UserError');
 const { generateToken, authenticate } = require('../lib/utils/token');
 const { validateRegister, validateLogin, validateChangeUsername,
   validateChangePassword } = require('../lib/validation/users');
 
+const s3 = new aws.S3({
+    accessKeyId: process.env.AWS_ID,
+    secretAccessKey: process.env.AWS_SECRET,
+    region: process.env.AWS_REGION
+});
+
+const upload = multer({
+  storage: multerS3({
+    s3: s3,
+    contentType: multerS3.AUTO_CONTENT_TYPE,
+    bucket: process.env.AWS_BUCKET,
+    metadata: function (req, file, cb) {
+      cb(null, {fieldName: file.fieldname});
+    },
+    key: function (req, file, cb) {
+      cb(null, new Date().toISOString() + '-' + file.originalname)
+    }
+  })
+})
 const router = express.Router();
 
 /* Change user information */
@@ -43,6 +67,7 @@ router.patch('/', authenticate, async (req, res) => {
     if (newPassword === confirmNewPassword) {
       UserDao.changePassword(req.user.username, oldPassword, newPassword)
       .then((userId) => {
+        console.log(userId);
         if (userId > 0) {
           return res.status(204).send();
         } else throw new UserError('Could not change password. Try again later', 500);
@@ -116,6 +141,56 @@ router.post('/logout', authenticate, async(req, res) => {
 /* Get authenticated user info */
 router.get('/me', authenticate, async (req, res) => {
   res.redirect(`/${req.user.username}`);
+});
+
+
+router.post('/upload', authenticate, upload.single('file'), async(req,res) => {
+  return res.json(req.file.key);
+});
+
+router.patch('/avatar', authenticate, async(req,res) => {
+  const userId = req.user.id;
+  const { key } = req.body;
+  const bucketParams = {Bucket: process.env.AWS_BUCKET, Key: ""};
+  UserDao.findUserById(userId)
+  .then(async (result) => {
+    if((result)) {
+      if(result.pictureUrl) {
+        bucketParams.Key = result.pictureUrl;
+        return s3.getObject(bucketParams).promise()
+      }
+      else return UserDao.changeAvatar(key,userId)
+    }
+    else throw new UserError('Could not find user.', 400);
+  })
+  .then(async ()=> {
+    await s3.deleteObject(bucketParams).promise();
+    await s3.getObject(bucketParams).promise()
+    .then(() => {
+      return res.status(500).json({ message: 'Object failed to delete' });
+    })
+    .catch((error) => {
+      if(error.code == "NoSuchKey") {
+        return UserDao.changeAvatar(key,userId)
+      }
+      else return res.status(500).json({ message: 'An unexpected error occured' });
+    })
+    .then((userId) => {
+        if (userId > 0) {
+          return res.status(204).send();
+        } else throw new UserError('Could not change profile picture. Try again later', 500);
+    })
+  })
+  .catch((err) => {
+    if (err instanceof UserError) {
+      return res.status(err.getStatus()).json({ message: err.getMessage() });
+    }
+    else if (err.code == "NoSuchKey") {
+      return es.status(500).json({ message: 'Key to delete is invalid.' });
+    }
+    console.error(err);
+    return res.status(500).json({ message: 'An unexpected error occured' });
+  });
 });
 
 module.exports = router;

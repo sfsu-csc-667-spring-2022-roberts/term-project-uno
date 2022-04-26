@@ -2,6 +2,9 @@ import serializeForm from '../lib/serializeForm.js';
 
 const changeUsernameForm = document.getElementById('changeUsername');
 const changePasswordForm = document.getElementById('changePassword');
+const pictureFileUpload = document.getElementById('fileUpload');
+const changePictureForm = document.getElementById('changePicture');
+const profilePictureSrc = document.getElementById('profileImage').src;
 
 function validateUsernameForm(data) {
   return /^[a-z0-9]+$/i.test(data.username) && data.username.length <= 16;
@@ -91,6 +94,72 @@ async function informPasswordError(res) {
  Handle Picture submission here!
  should be PUT request at /api/users/avatar
 */
+pictureFileUpload.addEventListener('change', (event) => {
+  event.preventDefault();
+  event.stopPropagation();
+
+  const profileImage = document.getElementById('profileImage');
+  const editOptions = document.getElementById('editOptions');
+  const fileUploadLabel = document.getElementById('upload-pic');
+  const fileInfo = pictureFileUpload.files[0];
+  editOptions.style = "display:block";
+  fileUploadLabel.style = "display:none";
+  profileImage.src = URL.createObjectURL(fileInfo);
+})
+
+changePictureForm.addEventListener('reset' , (event) => {
+  event.preventDefault();
+  event.stopPropagation();
+
+  const editOptions = document.getElementById('editOptions');
+  const fileUploadLabel = document.getElementById('upload-pic');
+  const profileImage = document.getElementById('profileImage');
+  editOptions.style = "display:none";
+  fileUploadLabel.style = "display:block";
+  profileImage.src = profilePictureSrc;
+  
+})
+
+changePictureForm.addEventListener('submit' , (event) => {
+  event.preventDefault();
+  event.stopPropagation();
+
+  const fileInfo = pictureFileUpload.files[0];
+
+  let formData = new FormData();
+  formData.append('file', fileInfo);
+
+  const url = window.location.protocol + '//' + window.location.host;
+  fetch(url + '/api/users/upload/', {
+    method: 'POST',
+    body: formData,
+  })
+  .then(async (res) => {
+    const data = await res.json();
+    await fetch(url + '/api/users/avatar/', {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({key: data}),
+    })
+    .then(async (res) => {
+      if(res) {
+        const editOptions = document.getElementById('editOptions');
+        const fileUploadLabel = document.getElementById('upload-pic');
+        editOptions.style = "display:none";
+        fileUploadLabel.style = "display:block";
+      }
+    })
+    .catch((err) => {
+      console.error(err);
+    })
+  })
+  .catch((err) => {
+    console.error(err);
+  })
+})
+
 
 // Handle change username submission
 changeUsernameForm.addEventListener('submit', (event) => {
