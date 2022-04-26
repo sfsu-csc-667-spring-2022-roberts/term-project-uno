@@ -2,7 +2,6 @@ require('dotenv').config();
 const express = require('express');
 const multer = require('multer');
 const aws = require('aws-sdk');
-const {  GetObjectCommand, DeleteObjectCommand } = require('@aws-sdk/client-s3');
 const multerS3 = require('multer-s3');
 const UserDao = require('../db/dao/users');
 const UserError = require('../helpers/error/UserError');
