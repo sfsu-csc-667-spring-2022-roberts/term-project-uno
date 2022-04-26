@@ -170,7 +170,6 @@ router.patch('/avatar', authenticate, async(req,res) => {
             else return res.status(500).json({ message: 'An unexpected error occured' });
           })
           .then((userId) => {
-            console.log(userId);
               if (userId > 0) {
                 return res.status(204).send();
               } else throw new UserError('Could not change profile picture. Try again later', 500);
@@ -180,7 +179,6 @@ router.patch('/avatar', authenticate, async(req,res) => {
       else {
         UserDao.changeAvatar(key,userId)
         .then((userId) => {
-          console.log(userId);
             if (userId > 0) {
               return res.status(204).send();
             } else throw new UserError('Could not change profile picture. Try again later', 500);
