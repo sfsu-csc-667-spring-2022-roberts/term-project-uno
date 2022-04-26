@@ -1,6 +1,6 @@
 const socketIo = require('socket.io');
 const { initializeInvitationEndpoints } = require('./invitations');
-const { initializeLobbyEndpoints } = require('./lobbies');
+const {  joinSocketLobbyRoom } = require('./lobbies');
 const { initializeGameEndpoints } = require('./games');
 const { parseToken } = require('../lib/utils/token');
 const { parseCookies } = require('../lib/utils/cookies');
@@ -21,7 +21,7 @@ io.on('connection', async (socket) => {
   });
 
   initializeInvitationEndpoints(io, socket, user);
-  initializeLobbyEndpoints(io, socket, user);
+  joinSocketLobbyRoom(socket, user);
   initializeGameEndpoints(io, socket, user);
 });
 

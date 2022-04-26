@@ -13,10 +13,13 @@ function addKickButtonListener() {
   if (kickButtons) {
     for (let button of kickButtons) {
       button.addEventListener('click', (e) => {
-        socket.emit('lobby-kick-player', JSON.stringify({
-          lobbyId,
-          userId: button.id,
-        }));
+        fetch(`/api/lobbies/${lobbyId}/users/${button.id}`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        })
+        .catch((err) => console.error(err));
       });
     }
   }
@@ -140,25 +143,6 @@ function initLobby() {
     }
   });
 
-  socket.on('invite-to-lobby', (message) => {
-    try {
-      const data = JSON.parse(message);
-      const inviteError = document.getElementById('invite-error');
-
-      if (data.message) {
-        inviteError.innerHTML = data.message;
-      }
-
-      if (data.error && inviteError) {
-        inviteError.className = 'invite-error';
-      } else if (inviteError) {
-        inviteError.className = 'invite-success';
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  });
-
   socket.on('upgrade-to-lobby-host', (message) => {
     try {
       const data = JSON.parse(message);
@@ -181,14 +165,35 @@ function initLobby() {
         startButton = document.getElementById('start-button');
         if (leaveButton) {
           leaveButton.addEventListener('click', (e) => {
-            socket.emit('leave-lobby', JSON.stringify({
-              lobbyId
-            }));
+            e.preventDefault();
+            e.stopPropagation();
+      
+            fetch(`/api/lobbies/${lobbyId}/users`, {
+              method: 'DELETE',
+              headers: {
+                'Content-Type': 'application/json',
+              }
+            })
+            .then(res => res.json())
+            .catch((err) => console.error(err));
           })
         }
         if (startButton) {
           startButton.addEventListener('click', (e) => {
-            socket.emit('lobby-start-game', JSON.stringify({ lobbyId }));
+            fetch(`/api/games/`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ lobbyId })
+            })
+            .then(async (res) => {
+              if (res.status != 200) {
+                const data = await res.json();
+                console.log(data);
+              }
+            })
+            .catch((err) => console.error(err));
           });
         }
       }
@@ -208,7 +213,13 @@ function initLobby() {
     
   if (readyButton) {
     readyButton.addEventListener('click', (e) => {
-      socket.emit('lobby-toggle-ready', JSON.stringify({ lobbyId }));
+      fetch(`/api/lobbies/${lobbyId}/users`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      })
+      .catch((err) => console.error(err));
     });
   }
   
@@ -237,15 +248,36 @@ function initLobby() {
         }
       }
 
-      socket.emit('lobby-start-game', JSON.stringify({ lobbyId }));
+      fetch(`/api/games/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ lobbyId })
+      })
+      .then(async (res) => {
+        if (res.status != 200) {
+          const data = res.json();
+          console.log(data);
+        }
+      })
+      .catch((err) => console.error(err));
     });
   }
   
   if (leaveButton) {
     leaveButton.addEventListener('click', (e) => {
-      socket.emit('leave-lobby', JSON.stringify({
-        lobbyId
-      }));
+      e.preventDefault();
+      e.stopPropagation();
+
+      fetch(`/api/lobbies/${lobbyId}/users`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      })
+      .then(res => res.json())
+      .catch((err) => console.error(err));
     });
   }
 
@@ -255,7 +287,25 @@ function initLobby() {
       e.stopPropagation();
 
       if (inviteInput.value.trim().length > 0) {
-        socket.emit('invite-to-lobby', JSON.stringify({ lobbyId, username: inviteInput.value }));
+        fetch(`/api/lobbies/${lobbyId}/invitations`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ username: inviteInput.value })
+        })
+        .then(async (res) => {
+          const data = await res.json();
+          const inviteError = document.getElementById('invite-error');
+          if (res.status != 201 && data.message) {
+            inviteError.className = 'invite-error';
+            inviteError.innerHTML = data.message;
+          } else if (data.message) {
+            inviteError.className = 'invite-success';
+            inviteError.innerHTML = data.message;
+          }
+        })
+        .catch((err) => console.error(err));
       }
     });
   }

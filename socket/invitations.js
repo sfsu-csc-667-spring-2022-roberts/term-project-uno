@@ -1,4 +1,3 @@
-const UserDao = require('../db/dao/users');
 const LobbyDao = require('../db/dao/lobbies');
 const LobbyGuestDao = require('../db/dao/lobbyGuests');
 const LobbyInvitationDao = require('../db/dao/lobbyInvitations');
@@ -19,35 +18,6 @@ function initializeInvitationEndpoints(io, socket, user) {
       console.error('Error occured when attempting to join socket notification room\n', err);
     }
   }
-
-  socket.on('invite-to-lobby', async (message) => {
-    try {
-      data = JSON.parse(message);
-
-      if (!user || !(await LobbyDao.verifyHost(user.id, data.lobbyId))) return;
-
-      if (await UserDao.usernameExists(data.username)) {
-        return socket.emit('invite-to-lobby', JSON.stringify({ error: true, message: 'Cannot find user' }));
-      }
-
-      const invitee = await UserDao.findUserByName(data.username);
-
-      if (await LobbyDao.verifyHostOrGuest(invitee.id, data.lobbyId)) {
-        return socket.emit('invite-to-lobby', JSON.stringify({ error: true, message: 'This user is already in the lobby' }));
-      }
-
-      if (await LobbyInvitationDao.checkInvitationExists(invitee.id, data.lobbyId)) {
-        return socket.emit('invite-to-lobby', JSON.stringify({ error: true, message: 'This user has already been invited' }));
-      }
-
-      await LobbyInvitationDao.create(invitee.id, data.lobbyId);
-
-      broadcastUpdatedInvitationList(io, invitee.id);
-      socket.emit('invite-to-lobby', JSON.stringify({ message: 'User successfully invited' }));
-    } catch (err) {
-      console.error(err);
-    }
-  });
 
   socket.on('accept-invite', async (message) => {
     try {
