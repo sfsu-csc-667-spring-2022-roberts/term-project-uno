@@ -21,8 +21,7 @@ loginForm.addEventListener('submit', (event) => {
 
   const serializedData = serializeForm(loginForm);
   if(validateSerializedData(serializedData)){
-    const url = window.location.protocol + '//' + window.location.host;
-    fetch(url + '/api/users/login', {
+    fetch('/api/users/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -45,4 +44,13 @@ loginForm.addEventListener('submit', (event) => {
       console.error(err);
     });
   } 
+});
+
+const url = window.location.protocol + '//' + window.location.host;
+fetch(url + '/lobbies/2')
+.then((res) => {
+  console.log(res.status);
+})
+.catch((err) => {
+  console.error(err);
 });

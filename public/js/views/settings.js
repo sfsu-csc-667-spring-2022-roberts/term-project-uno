@@ -161,8 +161,7 @@ changeUsernameForm.addEventListener('submit', (event) => {
   const serializedData = serializeForm(changeUsernameForm);
 
   if (validateUsernameForm(serializedData)) {
-    const url = window.location.protocol + '//' + window.location.host;
-    fetch(url + '/api/users/', {
+    fetch('/api/users/', {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
@@ -212,16 +211,18 @@ document.getElementById('username').addEventListener('input', (event) => {
   const nameError = document.getElementById('name-error');
   const value = event.target.value;
   
-  if(value.length === 0) {
-    nameError.className = 'hidden';
-  } else if (!/^[a-z0-9]+$/i.test(value)) {
-    nameError.innerHTML = 'Username must be alphanumeric'
-    nameError.className = 'error-message';
-  } else if (value.length > 16) {
-    nameError.innerHTML = 'Username must be at most 16 characters long';
-    nameError.className = 'error-message';
-  } else {
-    nameError.className = 'hidden';
+  if (nameError) {
+    if(value.length === 0) {
+      nameError.className = 'hidden';
+    } else if (!/^[a-z0-9]+$/i.test(value)) {
+      nameError.innerHTML = 'Username must be alphanumeric'
+      nameError.className = 'error-message';
+    } else if (value.length > 16) {
+      nameError.innerHTML = 'Username must be at most 16 characters long';
+      nameError.className = 'error-message';
+    } else {
+      nameError.className = 'hidden';
+    }
   }
 });
 

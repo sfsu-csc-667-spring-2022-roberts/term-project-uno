@@ -42,13 +42,6 @@ socket.on('play-card-swap', (data) => {
     console.log(data);
 });
 
-// ------ socket methods
-const joinGameRoom = () => {
-    const pathnames = window.location.pathname.split('/');
-    const gameId = pathnames[pathnames.length-1];
-    socket.emit('join-game-room', JSON.stringify({ gameId }));
-}
-
 // ------ game listeners
 leaveBtn.onclick = (e) => {
     leavePopUpDiv.setAttribute("id", "popup-div-container");
@@ -57,8 +50,19 @@ leaveBtn.onclick = (e) => {
     document.getElementById("leave-btn-cancel").onclick = (e) => {
         document.body.removeChild(leavePopUpDiv);
     }
-    document.getElementById("leave-btn-confirm").onclick = (e) => {
-        window.location.replace("/");
+    document.getElementById("leave-btn-confirm").onclick = async (e) => {
+        // window.location.replace("/");
+        const pathnames = window.location.pathname.split('/');
+        const gameId = pathnames[pathnames.length-1];
+        await fetch(`/api/games/${gameId}/players`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .catch((err) => {
+            console.error(err);
+        })
     }
 }
 

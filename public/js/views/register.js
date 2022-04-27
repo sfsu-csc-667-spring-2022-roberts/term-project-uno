@@ -20,8 +20,7 @@ registerForm.addEventListener('submit', (event) => {
   error.className = 'hidden';
 
   if(validateSerializedData(serializedData)){
-    const url = window.location.protocol + '//' + window.location.host;
-    fetch(url + '/api/users/', {
+    fetch('/api/users/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

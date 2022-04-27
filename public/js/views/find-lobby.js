@@ -13,8 +13,7 @@ if (socket) {
 }
 
 window.addEventListener('load', () => {
-  const url = window.location.protocol + '//' + window.location.host;
-  fetch(url + '/api/lobbies/', {
+  fetch('/api/lobbies/', {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',

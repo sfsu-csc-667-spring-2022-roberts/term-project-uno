@@ -49,9 +49,28 @@ async function findPlayersCount(gameId) {
   .catch((err) => Promise.reject(err));
 }
 
+async function remove(userId, gameId) {
+  return db.one(`
+    DELETE FROM "Players"
+    WHERE "userId" = $1 AND "gameId" = $2
+    RETURNING "userId"
+  `, [userId, gameId])
+  .catch((err) => Promise.reject(err));
+}
+
+async function findPlayersByGameId(gameId) {
+  return db.query(`
+    SELECT * FROM "Players"
+    WHERE "gameId" = $1
+  `, [gameId])
+  .catch((err) => Promise.reject(err));
+}
+
 module.exports = {
   findPlayers,
   createPlayer,
   verifyUserInGame,
-  findPlayersCount
+  findPlayersCount,
+  findPlayersByGameId,
+  remove,
 }

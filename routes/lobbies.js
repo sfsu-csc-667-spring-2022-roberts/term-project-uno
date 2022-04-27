@@ -195,9 +195,9 @@ router.delete('/:lobbyId(\\d+)/users', authenticate, async (req, res) => {
       let nextHostId;
       try {
         nextHostId = await LobbyGuestsDao.removeOldestGuest(lobbyId);
-      } catch (err) {
+      } catch (e) {
         // If there are no more guests, then delete the lobby
-        await LobbyDao.deleteLobby(lobbyId);
+        LobbyDao.deleteLobby(lobbyId);
         userSockets.forEach((userSocket) => {
           if (userSocket.rooms.has(`lobby/${lobbyId}`)) {
             userSocket.emit('redirect', JSON.stringify({ pathname: `/find-lobby` }));

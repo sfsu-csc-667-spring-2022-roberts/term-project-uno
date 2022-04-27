@@ -1,7 +1,5 @@
 import timeSince from '../lib/timeSince.js';
 
-const baseURL = `${window.location.protocol}//${window.location.host}`;
-
 function addEventListenersToInvitations() {
   const invitationListItems = document.getElementsByClassName('invitation');
   for (const invitationListItem of invitationListItems) {

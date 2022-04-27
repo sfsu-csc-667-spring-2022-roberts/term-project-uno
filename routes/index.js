@@ -38,7 +38,7 @@ router.get('/login', verifyToken, async (req, res, next) => {
   try {
     const avatar = req.user ? await AvatarDao.find(req.user.avatar) : null;
     const portrait = avatar ? avatar.height > avatar.width : true;
-  
+
     res.render('login', {
       layout: false, title: 'Login', user: req.user, portrait,
       notifications: (req.user ? (await checkUserHasInvitations(req.user.id)) : false)
@@ -193,7 +193,7 @@ router.get('/:username', verifyToken, async (req, res, next) => {
     const user = await UserDao.findUserByName(username);
     if (!user) return next(new IndexError(`Cannot find user "${username}"`, 404));
     const userAvatar = await AvatarDao.find(user.avatar);
-    const userPortrait = userAvatar.height > userAvatar.width;
+    const userPortrait = userAvatar ? userAvatar.height > userAvatar.width : true;
     user['winRate'] = calculateWinRate(user);
 
     res.render('profile', { 
@@ -215,6 +215,7 @@ router.get('/lobbies/:lobbyId(\\d+)', authenticate, async (req, res, next) => {
     const avatar = await AvatarDao.find(req.user.avatar);
     const portrait = avatar ? avatar.height > avatar.width : true;
     const lobby = await findLobby(lobbyId);
+    if (!lobby) return res.status(404).json({ message: 'Lobby not found' });
   
     if(lobby && !lobby.busy) {
       const { hostId, name } = lobby;
