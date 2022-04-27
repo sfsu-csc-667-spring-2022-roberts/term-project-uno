@@ -1,4 +1,4 @@
-const kickButtons = document.getElementsByClassName('kick')
+
 const leftTableBody = document.getElementById('list-1');
 const rightTableBody = document.getElementById('list-2');
 const lobbyMenu = document.getElementById('lobby-menu');
@@ -10,6 +10,7 @@ let inviteInput = document.getElementById('username');
 let inviteButton = document.getElementById('invite-button');
 
 function addKickButtonListener() {
+  const kickButtons = document.querySelectorAll('.kick')
   if (kickButtons) {
     for (let button of kickButtons) {
       button.addEventListener('click', (e) => {
@@ -40,7 +41,7 @@ function createGuestRow(guest) {
     `<tr class="lobby-guest">
       <td class="lobby-guest-icon-col">
         <div class="lobby-guest-icon">
-          <img src="${guest.avatar ? `https://csc665-term-project-uno.s3.us-west-1.amazonaws.com/${guest.avatar}` : '/images/default-profile-pic.png'}" />
+        <img class="${guest.portrait ? 'lobby-avatar-portrait' : 'lobby-avatar-landscape'}" src="${guest.avatar ? guest.avatar : '/images/default-profile-pic.png'}" />
         </div>
       </td>
       <td class="lobby-guest-name">${guest.username}</td>
@@ -67,7 +68,7 @@ function createGuestRowAsHost(guest) {
     `<tr class="lobby-guest">
       <td class="lobby-guest-icon-col">
         <div class="lobby-guest-icon">
-        <img src="${guest.avatar ? `https://csc665-term-project-uno.s3.us-west-1.amazonaws.com/${guest.avatar}` : '/images/default-profile-pic.png'}" />
+        <img class="${guest.portrait ? 'lobby-avatar-portrait' : 'lobby-avatar-landscape'}" src="${guest.avatar ? guest.avatar : '/images/default-profile-pic.png'}" />
         </div>
       </td>
       <td class="lobby-guest-name">${guest.username}</td>

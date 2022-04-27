@@ -16,10 +16,14 @@
         <section id="settings">
           <form id="changePicture" enctype="multipart/form-data">
               <div id="profile-pic">
-                {{#if user.pictureUrl}}
-                <img id="profileImage" src="https://csc665-term-project-uno.s3.us-west-1.amazonaws.com/{{user.pictureUrl}}">
+                {{#if user.avatar}}
+                  {{#if portrait}}
+                  <img id="profileImage" class="profile-pic-portrait" src="{{user.avatar}}">
+                  {{else}}
+                  <img id="profileImage" class="profile-pic-landscape" src="{{user.avatar}}">
+                  {{/if}}
                 {{else}}
-                <img id="profileImage" src="/images/default-profile-pic.png">
+                <img id="profileImage" class="profile-pic-portrait" src="/images/default-profile-pic.png">
                 {{/if}}
               </div>
               <label id="upload-pic">

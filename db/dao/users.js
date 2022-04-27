@@ -57,7 +57,7 @@ async function findUserById(id) {
     SELECT id, username, $1:name, $2:name, $3:name, $4:name 
     FROM $5:name 
     WHERE id = $6`,
-    ['pictureUrl', 'gamesWon', 'gamesPlayed', 'createdAt', 'Users', id])
+    ['avatar', 'gamesWon', 'gamesPlayed', 'createdAt', 'Users', id])
   .then((results) => {
     if (results && results.length === 1) return Promise.resolve(results[0]);
     else return Promise.resolve(null);
@@ -70,7 +70,7 @@ async function findUserByName(username) {
     SELECT id, username, $1:name, $2:name, $3:name, $4:name 
     FROM $5:name 
     WHERE username = $6`,
-    ['pictureUrl', 'gamesWon', 'gamesPlayed', 'createdAt', 'Users', username])
+    ['avatar', 'gamesWon', 'gamesPlayed', 'createdAt', 'Users', username])
   .then((results) => {
     if (results && results.length === 1) return Promise.resolve(results[0]);
     else return Promise.resolve(null);
@@ -116,17 +116,13 @@ async function changePassword(username, oldPassword, newPassword) {
 }
 
 async function changeAvatar(key, userId) {
-  return db.query(`
-    UPDATE $1:name
-    SET $2:name = $3
-    WHERE id = $4
-    RETURNING id`,
-    ['Users', 'pictureUrl', key, userId])
-    .then((results) => {
-      if (results && results.length === 1) return Promise.resolve(results[0].id);
-      else return Promise.resolve(-1);
-    })
-    .catch((err) => Promise.reject(err));
+  return db.one(`
+    UPDATE "Users"
+    SET avatar = $1
+    WHERE id = $2
+    RETURNING id
+  `, [key, userId])
+  .catch((err) => Promise.reject(err));
 }
 
 
@@ -136,7 +132,7 @@ async function findUserBySimilarName(username) {
     FROM $5:name 
     WHERE username
     LIKE $6`,
-    ['pictureUrl', 'gamesWon', 'gamesPlayed', 'createdAt', 'Users', `%${username}%`])
+    ['avatar', 'gamesWon', 'gamesPlayed', 'createdAt', 'Users', `%${username}%`])
   .then((results) => {
     if (results && results.length > 0) return Promise.resolve(results);
     else return Promise.resolve(null);

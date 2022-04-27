@@ -1,4 +1,5 @@
 const db = require('../index');
+const AvatarDao = require('./avatars');
 
 async function findGameState(gameId, userId) {
   /* Set up db queries */
@@ -77,16 +78,19 @@ async function findGameState(gameId, userId) {
       }
       else return Promise.reject(`Could not find player ${playerId}`);
     })
-    .then((results) => {
+    .then(async (results) => {
       const userInfo = results[0][0];
       const playerCards = results[1];
+      const avatar = await AvatarDao.find(userInfo.avatar);
+
       return Promise.resolve({
         id: playerId,
         userID: userInfo.id,
         turnIndex: player.turnIndex,
         username: userInfo.username,
         cards: playerCards.length,
-        avatar: userInfo.pictureUrl
+        portrait: avatar ? avatar.height > avatar.width : true,
+        avatar: userInfo.avatar,
       });
     })
     .catch((err) => Promise.reject(err));

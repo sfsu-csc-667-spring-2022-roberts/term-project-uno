@@ -49,8 +49,6 @@ async function findPlayersCount(gameId) {
   .catch((err) => Promise.reject(err));
 }
 
-
-
 module.exports = {
   findPlayers,
   createPlayer,

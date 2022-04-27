@@ -40,7 +40,6 @@ const getMessages = async () => {
     fetch(`/api${window.location.pathname}/messages`)
         .then(response => response.json())
         .then(data => {
-            console.log(data);
             if (data.messages) {
                 messagesDiv.innerHTML = "";
                 data.messages.forEach(message => {
@@ -48,7 +47,7 @@ const getMessages = async () => {
                 });
             }
         })
-        .catch(err => console.log(err))
+        .catch(err => console.error(err))
         .finally(() => {
             if (messagePopUpToggle) messagesDiv.scrollTop = messagesDiv.scrollHeight;
         });

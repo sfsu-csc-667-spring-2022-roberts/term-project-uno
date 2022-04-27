@@ -8,6 +8,7 @@ const { create } = require('express-handlebars');
 
 const IndexError = require('./helpers/error/IndexError');
 const { verifyToken } = require('./lib/utils/token');
+const AvatarDao = require('./db/dao/avatars');
 const testRouter = require('./routes/test');
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
@@ -80,6 +81,16 @@ app.use(async (err, req, res, next) => {
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
+  
+  let portrait = true;
+  if (err.status === 404) {
+    try {
+      const avatar = req.user ? await AvatarDao.find(req.user.avatar) : null;
+      portrait = avatar ? avatar.height > avatar.width : true;
+    } catch (err) {
+      console.error(err);
+    }
+  }
 
   // render the error page
   res.status(err.status || 500);
@@ -89,17 +100,18 @@ app.use(async (err, req, res, next) => {
       status: err.status || 500,
       message: err.message,
       authenticated: req.user != undefined,
-      user: req.user
+      user: req.user,
+      portrait
     });
   } else {
     res.render('error', { 
       layout: false, 
       status: err.status || 500, 
       authenticated: req.user != undefined,
-      user: req.user
+      user: req.user,
+      portrait
     });
   }
-
 
   if (!err.status || err.status === 500) {
     console.error(err);

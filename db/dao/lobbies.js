@@ -1,5 +1,6 @@
 const db = require('../index');
 const bcrypt = require('bcrypt');
+const AvatarDao = require ('./avatars');
 const { verifyGuest } = require('../dao/lobbyGuests');
 
 async function createPrivate(userId, name, playerCapacity, password) {
@@ -99,7 +100,7 @@ async function findAllFreeLobbies() {
 
 async function findAllMembers(lobbyId) {
   const findUserInfo = (userId) => db.one(`
-    SELECT id, username, "pictureUrl"
+    SELECT id, username, "avatar"
     FROM "Users"
     WHERE id = $1
   `, [userId]);
@@ -126,24 +127,34 @@ async function findAllMembers(lobbyId) {
 
     return Promise.all([Promise.all(usersInfo), guests]);
   })
-  .then((results) => {
+  .then(async (results) => {
     const users = results[0];
     const guests = results[1];
-    const host = users[0];
-    const members = [{
-      host: true,
-      username: host.username,
-      avatar: host.pictureUrl,
-      id: host.id
-    }];
+    const members = [];
+    const asyncTasks = [];
 
-    for (let i = 1; i < users.length; i++) {
-      members.push({
+    users.forEach((user) => {
+      asyncTasks.push(AvatarDao.find(user.avatar));
+    });
+
+    const avatars = await Promise.allSettled(asyncTasks);
+
+    for (let i = 0; i < users.length; i++) {
+      const member = {
         username: users[i].username,
-        avatar: users[i].pictureUrl,
-        ready: guests[i - 1].userReady,
+        avatar: users[i].avatar,
         id: users[i].id
-      });
+      };
+
+      if (avatars[i].status === 'fulfilled' && avatars[i].value) {
+        const avatar = avatars[i].value;
+        member.portrait = avatar.height > avatar.width;
+      }
+
+      if (i != 0) member.ready = guests[i - 1].userReady;
+      else member.host = true;
+
+      members.push(member);
     }
 
     return Promise.resolve(members);

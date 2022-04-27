@@ -18,7 +18,7 @@ const router = express.Router();
 router.post('/', authenticate, async (req, res) => {
   const NUM_STARTING_CARDS = 7;
   const { lobbyId } = req.body;
-  console.log(req.body);
+
   try {
     if (!(await LobbyDao.verifyHost(req.user.id, lobbyId))) {
       return res.status(401).json({ message: 'You must be the host to start the game' });

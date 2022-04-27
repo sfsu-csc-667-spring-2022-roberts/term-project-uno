@@ -201,6 +201,7 @@ body {
 }
 
 .avatar-container {
+  position: relative;
   margin: 0 1.5%;
   height: 2.5rem;
   width: 40px !important;
@@ -214,9 +215,26 @@ body {
   box-shadow: rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px;
 }
 
-.player-avatar {
+.player-avatar-portrait {
   width: 100%;
   height: auto;
+  position: absolute;
+  left: -1000%;
+  right: -1000%;
+  top: -1000%;
+  bottom: -1000%;
+  margin: auto;
+}
+
+.player-avatar-landscape {
+  width: auto;
+  height: 100%;
+  position: absolute;
+  left: -1000%;
+  right: -1000%;
+  top: -1000%;
+  bottom: -1000%;
+  margin: auto;
 }
 
 .player-username {

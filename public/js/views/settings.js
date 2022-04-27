@@ -4,7 +4,9 @@ const changeUsernameForm = document.getElementById('changeUsername');
 const changePasswordForm = document.getElementById('changePassword');
 const pictureFileUpload = document.getElementById('fileUpload');
 const changePictureForm = document.getElementById('changePicture');
-const profilePictureSrc = document.getElementById('profileImage').src;
+const profilePicture = document.getElementById('profileImage');
+let originalSrc = profilePicture.src;
+let originalClass = profilePicture.className;
 
 function validateUsernameForm(data) {
   return /^[a-z0-9]+$/i.test(data.username) && data.username.length <= 16;
@@ -90,21 +92,25 @@ async function informPasswordError(res) {
   }
 }
 
-/*
- Handle Picture submission here!
- should be PUT request at /api/users/avatar
-*/
 pictureFileUpload.addEventListener('change', (event) => {
   event.preventDefault();
   event.stopPropagation();
 
-  const profileImage = document.getElementById('profileImage');
+  const fileInfo = pictureFileUpload.files[0];
+  const imgUrl = URL.createObjectURL(fileInfo);
+  const img = new Image();
   const editOptions = document.getElementById('editOptions');
   const fileUploadLabel = document.getElementById('upload-pic');
-  const fileInfo = pictureFileUpload.files[0];
   editOptions.style = "display:block";
   fileUploadLabel.style = "display:none";
-  profileImage.src = URL.createObjectURL(fileInfo);
+  img.src = imgUrl;
+  profileImage.src = imgUrl;
+
+  img.onload = function(e) {
+    if (e.target.height > this.width) {
+      profileImage.className = 'profile-pic-portrait';
+    } else profileImage.className = 'profile-pic-landscape';
+  }
 })
 
 changePictureForm.addEventListener('reset' , (event) => {
@@ -113,11 +119,11 @@ changePictureForm.addEventListener('reset' , (event) => {
 
   const editOptions = document.getElementById('editOptions');
   const fileUploadLabel = document.getElementById('upload-pic');
-  const profileImage = document.getElementById('profileImage');
   editOptions.style = "display:none";
   fileUploadLabel.style = "display:block";
-  profileImage.src = profilePictureSrc;
-  
+  pictureFileUpload.value = '';
+  profileImage.src = originalSrc;
+  profileImage.className = originalClass;
 })
 
 changePictureForm.addEventListener('submit' , (event) => {
@@ -130,36 +136,22 @@ changePictureForm.addEventListener('submit' , (event) => {
   formData.append('file', fileInfo);
 
   const url = window.location.protocol + '//' + window.location.host;
-  fetch(url + '/api/users/upload/', {
-    method: 'POST',
+  fetch(url + '/api/users/avatar', {
+    method: 'PATCH',
     body: formData,
-  })
-  .then(async (res) => {
-    const data = await res.json();
-    await fetch(url + '/api/users/avatar/', {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({key: data}),
-    })
-    .then(async (res) => {
-      if(res) {
-        const editOptions = document.getElementById('editOptions');
-        const fileUploadLabel = document.getElementById('upload-pic');
-        editOptions.style = "display:none";
-        fileUploadLabel.style = "display:block";
-      }
-    })
-    .catch((err) => {
-      console.error(err);
-    })
   })
   .catch((err) => {
     console.error(err);
   })
+  .finally(() => {
+    const editOptions = document.getElementById('editOptions');
+    const fileUploadLabel = document.getElementById('upload-pic');
+    editOptions.style = 'display: none';
+    fileUploadLabel.style = 'display: block';
+    originalSrc = URL.createObjectURL(fileInfo);
+    originalClass = profileImage.className;
+  })
 })
-
 
 // Handle change username submission
 changeUsernameForm.addEventListener('submit', (event) => {
