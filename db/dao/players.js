@@ -50,11 +50,39 @@ async function findPlayersCount(gameId) {
 }
 
 async function remove(userId, gameId) {
-  return db.one(`
-    DELETE FROM "Players"
-    WHERE "userId" = $1 AND "gameId" = $2
-    RETURNING "userId"
-  `, [userId, gameId])
+  return db.query(`
+    SELECT * FROM "Players"
+    WHERE "gameId" = $1
+    ORDER BY "turnIndex" ASC
+  `, [gameId])
+  .then((players) => {
+    let playerToBeRemovedIdx = -1;
+
+    for (let i = 0; i < players.length; i++) {
+      if (players[i].userId == userId) {
+        playerToBeRemovedIdx = i;
+        break;
+      }
+    }
+
+    if (playerToBeRemovedIdx < 0) return Promise.reject('Could not find player');
+    const asyncTasks = [db.one(`
+      DELETE FROM "Players"
+      WHERE id = $1
+      RETURNING id
+    `, [players[playerToBeRemovedIdx].id])];
+
+    for (let i = playerToBeRemovedIdx + 1; i < players.length; i++) {
+      asyncTasks.push(db.one(`
+        UPDATE "Players"
+        SET "turnIndex" = $1
+        WHERE id = $2
+        RETURNING id
+      `, [players[i].turnIndex - 1, players[i].id]));
+    }
+
+    return Promise.all(asyncTasks);
+  })
   .catch((err) => Promise.reject(err));
 }
 

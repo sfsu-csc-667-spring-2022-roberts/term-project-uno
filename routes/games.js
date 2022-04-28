@@ -165,7 +165,7 @@ router.delete('/:gameId(\\d+)/players', authenticate, async (req, res) => {
 
     const players = await PlayerDao.findPlayersByGameId(gameId);
 
-    if (players.length == 1) { // declare remaining player as the winner!
+    if (players.length == 1) { // declare remaining player as the winner & end game!
       const lastPlayer = players[0];
       await Promise.all([
         UserDao.addWin(lastPlayer.userId), 
