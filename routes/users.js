@@ -1,11 +1,37 @@
+require('dotenv').config();
 const express = require('express');
+const fs = require('fs');
+const multer = require('multer');
+const aws = require('aws-sdk');
+const multerS3 = require('multer-s3');
+const sizeOf = require('image-size');
 const UserDao = require('../db/dao/users');
+const AvatarDao = require('../db/dao/avatars');
 const UserError = require('../helpers/error/UserError');
 const { generateToken, authenticate } = require('../lib/utils/token');
 const { validateRegister, validateLogin, validateChangeUsername,
   validateChangePassword } = require('../lib/validation/users');
 
 const router = express.Router();
+const s3 = new aws.S3({
+    accessKeyId: process.env.AWS_ID,
+    secretAccessKey: process.env.AWS_SECRET,
+    region: process.env.AWS_REGION
+});
+const uploadTemp = multer({ dest: './tmp/' }).single('file');
+const upload = multer({
+  storage: multerS3({
+    s3: s3,
+    contentType: multerS3.AUTO_CONTENT_TYPE,
+    bucket: process.env.AWS_BUCKET,
+    metadata: function (req, file, cb) {
+      cb(null, {fieldName: file.fieldname});
+    },
+    key: function (req, file, cb) {
+      cb(null, new Date().toISOString() + '-' + file.originalname)
+    }
+  })
+}).single('file');
 
 /* Change user information */
 router.patch('/', authenticate, async (req, res) => {
@@ -108,7 +134,7 @@ router.post('/login', async (req, res) => {
   })
 });
 
-router.post('/logout', authenticate, async(req, res) => {
+router.post('/logout', authenticate, async (req, res) => {
   res.cookie('token', '', { httpOnly: true, maxAge: 1});
   return res.json();
 });
@@ -116,6 +142,67 @@ router.post('/logout', authenticate, async(req, res) => {
 /* Get authenticated user info */
 router.get('/me', authenticate, async (req, res) => {
   res.redirect(`/${req.user.username}`);
+});
+
+
+router.patch('/avatar', authenticate, uploadTemp, async (req, res) => {
+  try {
+    const { height, width } = sizeOf(req.file.path);
+    const blob = fs.readFileSync(req.file.path);
+    const key = new Date().toISOString() + '-' + req.file.originalname;
+
+    // delete file from temp folder
+    await fs.unlink(req.file.path, (e) => { if (e) console.error(e) });
+
+    if ((!height || isNaN(height)) || (!width || isNaN(width))) {
+      return res.status(400).json({ message: 'Could not calculate avatar dimensions' });
+    }
+
+    const uploadedImage = await s3.upload({
+      Bucket: process.env.AWS_BUCKET,
+      Key: key,
+      Body: blob
+    }).promise();
+
+    if (!uploadedImage.Location) {
+      return res.status(500).json({ message: 'Failed to upload avatar' });
+    }
+
+    const user = await UserDao.findUserById(req.user.id);
+
+    Promise.all([
+      AvatarDao.create(uploadedImage.Location, height, width),
+      UserDao.changeAvatar(uploadedImage.Location, req.user.id)
+    ]);
+
+    if (user.avatar) {
+      const url = new URL(user.avatar);
+      const pathnameSplit = url.pathname.split('/');
+      const oldKey = pathnameSplit[pathnameSplit.length - 1];
+
+      await s3.deleteObject({
+        Bucket: process.env.AWS_BUCKET, Key: oldKey
+      }).promise();
+
+      try {
+        await s3.getObject({
+          Bucket: process.env.AWS_BUCKET, Key: oldKey
+        }).promise();
+        return res.status(500).json({ message: 'Failed to delete old avatar' });
+      } catch (e) {
+        if (e.code === 'NoSuchKey') {
+          return res.json({ message: 'Successfully uploaded new avatar' });
+        }
+        console.error(e);
+        return res.status(500).json({ message: 'An unexpected error occured' });
+      }
+    }
+
+    res.json({ message: 'Successfully uploaded new avatar' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'An unexpected error occured' });
+  }
 });
 
 module.exports = router;

@@ -13,8 +13,7 @@ if (socket) {
 }
 
 window.addEventListener('load', () => {
-  const url = window.location.protocol + '//' + window.location.host;
-  fetch(url + '/api/lobbies/', {
+  fetch('/api/lobbies/', {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -58,5 +57,19 @@ window.addEventListener('load', () => {
 });
 
 async function joinLobby(lobbyId) {
-  socket.emit('lobby-join', JSON.stringify({ lobbyId }));
+  fetch(`/api/lobbies/${lobbyId}/users`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    }
+  })
+  .then(async (res) => {
+    if (res.redirected) {
+      window.location.href = res.url;
+    } else {
+      const data = await res.json();
+      console.log(data);
+    }
+  })
+  .catch((err) => console.error(err));
 }

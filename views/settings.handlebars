@@ -14,18 +14,26 @@
       <div id="settingsForm">
         <header><h2>Settings</h2></header>
         <section id="settings">
-          <form id="pictureForm">
+          <form id="changePicture" enctype="multipart/form-data">
               <div id="profile-pic">
-                {{#if user.pictureUrl}}
-                <img src="{{user.pictureUrl}}">
+                {{#if user.avatar}}
+                  {{#if portrait}}
+                  <img id="profileImage" class="profile-pic-portrait" src="{{user.avatar}}">
+                  {{else}}
+                  <img id="profileImage" class="profile-pic-landscape" src="{{user.avatar}}">
+                  {{/if}}
                 {{else}}
-                <img src="/images/default-profile-pic.png">
+                <img id="profileImage" class="profile-pic-portrait" src="/images/default-profile-pic.png">
                 {{/if}}
               </div>
               <label id="upload-pic">
-                <input type="file" accept="image/*" id="fileUpload">
+                <input type="file" accept="image/*" id="fileUpload" name="avatar">
                 Upload Profile Picture
               </label>
+              <div id="editOptions">
+                <button type="reset">Cancel</button>
+                <button type="submit">Save</button>
+              </div>
           </form>
           <div id="profile-info-container">
               <form id="changeUsername">

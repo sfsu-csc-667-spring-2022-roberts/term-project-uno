@@ -1,5 +1,6 @@
 const express = require('express');
 const GameError = require('../helpers/error/GameError');
+const UserDao = require('../db/dao/users');
 const CardDao = require('../db/dao/cards');
 const LobbyDao = require('../db/dao/lobbies');
 const LobbyGuestDao = require('../db/dao/lobbyGuests');
@@ -10,29 +11,34 @@ const PlayerCardDao = require('../db/dao/playerCards')
 const DrawCardDao = require('../db/dao/drawCards');
 const MessageDao = require('../db/dao/messages');
 const { authenticate } = require('../lib/utils/token');
+const { getSocketsFromUserSockets } = require('../lib/utils/socket');
+const io = require('../socket/index');
 
 const router = express.Router();
 
 /* Create game */
 router.post('/', authenticate, async (req, res) => {
   const NUM_STARTING_CARDS = 7;
-  const hostId = req.user.id;
-  const lobbyId = req.body.id;
+  const { lobbyId } = req.body;
 
   try {
-    const lobby = await LobbyDao.findLobby(lobbyId);
-    if (lobby.hostId != hostId) throw new GameError('Unauthorized: Not Lobby Host', 401);
-
-    if (await GameDao.gameWithLobbyExists(lobbyId)) throw new GameError('Lobby is already in session', 400);
+    if (!(await LobbyDao.verifyHost(req.user.id, lobbyId))) {
+      return res.status(401).json({ message: 'You must be the host to start the game' });
+    }
+    if (await GameDao.gameWithLobbyExists(lobbyId)) {
+      return res.status(409).json({ message: 'Lobby is already in a game session' });
+    }
 
     const lobbyGuests = await LobbyGuestDao.findAllLobbyGuests(lobbyId);
-    if (lobbyGuests.length === 0) throw new GameError('Mininum 2 Players', 400);
+    if (lobbyGuests.length === 0) {
+      return res.status(409).json({ message: 'Minimum of 2 players needed to start game' });
+    }
 
-    lobbyGuests.forEach((lobbyGuest) => {
-      if(lobbyGuest.userReady == false) { 
-        throw new GameError("Not All Players are ready", 400);
+    for (let i = 0; i < lobbyGuests.length; i++) {
+      if(lobbyGuests[i].userReady === false) { 
+        return res.status(401).json({ message: 'Not all players are ready' });
       }
-    })
+    }
 
     const cards = await Promise.all([CardDao.getAllNormalCards(), CardDao.getAllSpecialCards()]);
     const normalCards = cards[0];
@@ -54,7 +60,7 @@ router.post('/', authenticate, async (req, res) => {
     LobbyDao.setBusy(lobbyId, true);
 
     // Create full list of lobby members and shuffle
-    lobbyGuests.push({ 'userId': hostId });
+    lobbyGuests.push({ 'userId': req.user.id });
     const shuffledLobbyMembers = lobbyGuests.sort(() => Math.random() - 0.5);
     // Create a player out of each lobby member
     shuffledLobbyMembers.forEach((lobbyMember) => {
@@ -86,22 +92,30 @@ router.post('/', authenticate, async (req, res) => {
 
     await Promise.all([Promise.all(createPlayerCards), Promise.all(createDrawCards)]);
 
-    res.redirect(`/games/${game.id}`);
+    io.to(`lobby/${lobbyId}`).emit('redirect', JSON.stringify({ pathname: `/games/${game.id}` }));
+    res.status(201).json({ message: 'Game successfully started' });
   } catch (err) {
-    if (err instanceof GameError) return res.status(err.getStatus()).json({ message: err.getMessage() });
     console.error(err);
     res.status(500).json({ message: 'An unexpected error occured' });
   }
 });
 
 /* Get game state */
-router.get('/:id', authenticate, async (req, res) => {
+router.get('/:gameId(\\d+)', authenticate, async (req, res) => {
+  const { gameId } = req.params;
   try {
-    const user = req.user;
-    const gameState = await GameDao.findGameState(req.params.id, req.user.id);
+    if (!(await PlayerDao.verifyUserInGame(gameId, req.user.id))) {
+      return res.status(401).json({ message: 'You are not a player in the game' });
+    }
+
+    const gameState = await GameDao.findGameState(gameId, req.user.id);
     gameState.players.sort((a, b) => a.turnIndex - b.turnIndex);
-    const mainPlayer = gameState.players.find(p => p.userID === user.id);
-    if (!mainPlayer) throw new GameError("Unauthorized to join the game", 401);
+
+    const mainPlayer = gameState.players.find(p => p.userID === req.user.id);
+    if (!mainPlayer) {
+      return res.status(500).json({ message: 'Something went wrong' });
+    }
+
     const mainPlayerIndex = gameState.players.indexOf(mainPlayer);
     const players = [mainPlayer];
     for (let i = mainPlayerIndex; i < gameState.players.length; i++) {
@@ -111,35 +125,60 @@ router.get('/:id', authenticate, async (req, res) => {
         if (i !== mainPlayerIndex) players.push(gameState.players[i])
     }
     gameState.players = players;
+
     res.json({ gameState });
   } catch (err) {
-    if (err instanceof GameError) return res.status(err.getStatus()).json({ message: err.getMessage() });
     console.error(err);
-    res.status(500).json({message: "Something went wrong"});
-  }
-});
-
-/* Delete game */
-router.delete('/:id', authenticate, async (req, res) => {
-  try {
-    const user = req.user;
-    res.json({ message: "Left the game" });
-  } catch (err) {
-    if (err instanceof GameError) return res.status(err.getStatus()).json({ message: err.getMessage() });
-    console.error(err);
-    res.status(500).json({message: "Something went wrong"});
+    res.status(500).json({message: 'An unexpected error occured'});
   }
 });
 
 /* Leave game */
-router.delete('/:id/players', authenticate, async (req, res) => {
+router.delete('/:gameId(\\d+)/players', authenticate, async (req, res) => {
+  const { gameId } = req.params;
   try {
-    const user = req.user;
-    res.json({ message: "Left the game" });
+    const game = await GameDao.findGame(gameId);
+    if (!game) return res.status(404).json({ message: 'Game not found' });
+
+    if (!(await PlayerDao.verifyUserInGame(gameId, req.user.id))) {
+      return res.status(401).json({ message: 'You are not a player in the game' });
+    }
+
+    const lobby = await LobbyDao.findLobby(game.lobbyId);
+
+    // If user isn't the host then simply remove them from the guest list
+    if(req.user.id != lobby.hostId) {
+      await Promise.all([
+        PlayerDao.remove(req.user.id, gameId),
+        UserDao.addLoss(req.user.id),
+        LobbyGuestDao.remove(req.user.id, lobby.id)
+      ]);
+    } else {
+      // If the host is leaving the game, we must assign a new host to the lobby!
+      const nextHostId = await LobbyGuestDao.removeOldestGuest(lobby.id);
+      await Promise.all([
+        PlayerDao.remove(req.user.id, gameId),
+        UserDao.addLoss(req.user.id),
+        LobbyDao.setHost(nextHostId, lobby.id)
+      ]);
+    }
+
+    const players = await PlayerDao.findPlayersByGameId(gameId);
+
+    if (players.length == 1) { // declare remaining player as the winner & end game!
+      const lastPlayer = players[0];
+      await Promise.all([
+        UserDao.addWin(lastPlayer.userId), 
+        GameDao.deleteGame(gameId), 
+        PlayerDao.remove(lastPlayer.userId, gameId),
+        LobbyDao.setBusy(lobby.id, false)
+      ]);
+    }
+
+    res.json({ message: 'Successfully left the game' });
   } catch (err) {
-    if (err instanceof GameError) return res.status(err.getStatus()).json({ message: err.getMessage() });
     console.error(err);
-    res.status(500).json({message: "Something went wrong"});
+    res.status(500).json({message: 'Something went wrong'});
   }
 });
 
@@ -209,6 +248,31 @@ router.get('/:id/messages', authenticate, async (req, res) => {
       return res.status(401).json({ message: 'User is not part of the game' });
     }
     res.json({ messages: await MessageDao.findGameMessages(req.params.id)});
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Something went wrong' });
+  }
+});
+
+/* Send game messasge */
+router.post('/:gameId(\\d+)/messages', authenticate, async (req, res) => {
+  const { gameId } = req.params;
+  const { message } = req.body;
+
+  try {
+    if (!(await PlayerDao.verifyUserInGame(gameId, req.user.id))) {
+      return res.status(401).json({ message: 'You are not a player in the game' });
+    }
+
+    const messageObj = await MessageDao.createGameMessage(message, req.user.id, gameId);
+
+    messageObj.sender = req.user.username;
+    delete messageObj.userId;
+    delete messageObj.gameId;
+
+    io.to(`game/${gameId}`).emit('game-message-send', messageObj);
+
+    res.status(201).json({ message: 'Successfully created new game message' });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Something went wrong' });

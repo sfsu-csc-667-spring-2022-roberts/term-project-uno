@@ -42,13 +42,6 @@ socket.on('play-card-swap', (data) => {
     console.log(data);
 });
 
-// ------ socket methods
-const joinGameRoom = () => {
-    const pathnames = window.location.pathname.split('/');
-    const gameId = pathnames[pathnames.length-1];
-    socket.emit('join-game-room', JSON.stringify({ gameId }));
-}
-
 // ------ game listeners
 leaveBtn.onclick = (e) => {
     leavePopUpDiv.setAttribute("id", "popup-div-container");
@@ -57,8 +50,19 @@ leaveBtn.onclick = (e) => {
     document.getElementById("leave-btn-cancel").onclick = (e) => {
         document.body.removeChild(leavePopUpDiv);
     }
-    document.getElementById("leave-btn-confirm").onclick = (e) => {
-        window.location.replace("/");
+    document.getElementById("leave-btn-confirm").onclick = async (e) => {
+        // window.location.replace("/");
+        const pathnames = window.location.pathname.split('/');
+        const gameId = pathnames[pathnames.length-1];
+        await fetch(`/api/games/${gameId}/players`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .catch((err) => {
+            console.error(err);
+        })
     }
 }
 
@@ -126,7 +130,6 @@ const getGameState = async () => {
 }
 
 const buildGameBoard = async (players, currentIndex, reversed) => {
-    console.log(players);
     switch (players.length) {
         case 2: {
             playersTopContainer.innerHTML = playersTopContainer.innerHTML + createPlayer(players[1], "top", "middle", currentIndex, reversed);
@@ -197,7 +200,9 @@ const createPlayer = (player, placement, position, currentIndex, reversed) => {
                         ${cardsString}
                     </div>
                     <div class="player-avatar-div-left">
-                        <img alt="player avatar" class="player-avatar" src="${player.avatar ? player.avatar : defaultAvatar}" />
+                        <div class='avatar-container'>
+                        <img alt="player avatar" class="${player.portrait ? 'player-avatar-portrait' : 'player-avatar-landscape'}" src="${player.avatar ? player.avatar : defaultAvatar}" />
+                        </div>
                         <label class="player-username">${player.username} <label style="display:inline; color: #FFFFFF; text-shadow: 2px 1px 2px #000000; font-size: 12px; margin-left: 5px; z-index:3;">${player.cards}</label></label>
                     </div>
                     <div class="arrow-container arrow-left-container ${player.turnIndex === currentIndex ? "" : "hidden"} ${reversed ? "reverse-left" : ""}">
@@ -216,7 +221,9 @@ const createPlayer = (player, placement, position, currentIndex, reversed) => {
                         ${cardsString}
                     </div>
                     <div class="player-avatar-div">
-                        <img alt="player avatar" class="player-avatar" src="${player.avatar ? player.avatar : defaultAvatar}" />
+                        <div class='avatar-container'>
+                        <img alt="player avatar" class="${player.portrait ? 'player-avatar-portrait' : 'player-avatar-landscape'}" src="${player.avatar ? player.avatar : defaultAvatar}" />
+                        </div>
                         <label class="player-username">${player.username} <label style="display:inline; color: #FFFFFF; text-shadow: 2px 1px 2px #000000; font-size: 12px; margin-left: 5px; z-index:3;">${player.cards}</label></label>
                     </div>
                     <div class="arrow-container arrow-top-container ${player.turnIndex === currentIndex ? "" : "hidden"} ${reversed ? "reverse-top" : ""}">
@@ -235,7 +242,9 @@ const createPlayer = (player, placement, position, currentIndex, reversed) => {
                         ${cardsString}
                     </div>
                     <div class="player-avatar-div-right">
-                        <img alt="player avatar" class="player-avatar" src="${player.avatar ? player.avatar : defaultAvatar}" />
+                        <div class='avatar-container'>
+                        <img alt="player avatar" class="${player.portrait ? 'player-avatar-portrait' : 'player-avatar-landscape'}" src="${player.avatar ? player.avatar : defaultAvatar}" />
+                        </div>
                         <label class="player-username"><label style="color: #FFFFFF; text-shadow: 2px 1px 2px #000000; font-size: 12px; margin-right: 5px;">${player.cards}</label> ${player.username}</label>
                     </div>
                     <div class="arrow-container arrow-right-container ${player.turnIndex === currentIndex ? "" : "hidden"} ${reversed ? "reverse-right" : ""}">

@@ -17,10 +17,14 @@
         </header>
         <section>
           <div id="profile-pic">
-            {{#if requestedUser.pictureUrl}}
-            <img src="{{requestedUser.pictureUrl}}">
+            {{#if requestedUser.avatar}}
+              {{#if userPortrait}}
+              <img id="profile-avatar-portrait" src="{{requestedUser.avatar}}">
+              {{else}}
+              <img id="profile-avatar-landscape" src="{{requestedUser.avatar}}">
+              {{/if}}
             {{else}}
-            <img src="/images/default-profile-pic.png">
+            <img id="profile-avatar-portrait" src="/images/default-profile-pic.png">
             {{/if}}
           </div>
           <div id="profile-info">
@@ -43,6 +47,6 @@
         </section>
       </summary>
     </main>
+    <script src="/js/views/profile.js" type="module"></script>
   </body>
-  <script defer src="/js/views/profile.js" type="module"></script>
 </html>

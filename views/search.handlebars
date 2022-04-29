@@ -22,10 +22,14 @@
         {{#each results}}
           <li class="search-result">
             <a class="search-result-pic" href="/{{this.username}}">
-              {{#if this.pictureUrl}}
-              <img src="{{this.pictureUrl}}">
+              {{#if this.avatar}}
+                {{#if this.portrait}}
+                  <img class="img-portrait" src="{{this.avatar}}">
+                {{else}}
+                  <img class="img-landscape" src="{{this.avatar}}">
+                {{/if}}
               {{else}}
-              <img src="/images/default-profile-pic.png">
+              <img class="img-portrait" src="/images/default-profile-pic.png">
               {{/if}}
             </a>
             <a href="/{{this.username}}"><h3>{{this.username}}</h3></a>

@@ -34,9 +34,13 @@
                     <td class="lobby-guest-icon-col">
                       <div class="lobby-guest-icon">
                         {{#if this.avatar}}
-                          <img src="{{this.avatar}}">
+                          {{#if this.portrait}}
+                          <img class="lobby-avatar-portrait" src="{{this.avatar}}">
+                          {{else}}
+                          <img class="lobby-avatar-landscape" src="{{this.avatar}}">
+                          {{/if}}
                         {{else}}
-                          <img src="/images/default-profile-pic.png">
+                          <img class="lobby-avatar-portrait" src="/images/default-profile-pic.png">
                         {{/if}}
                       </div>
                     </td>
@@ -81,7 +85,7 @@
                     <td class="lobby-guest-icon-col">
                       <div class="lobby-guest-icon">
                         {{#if this.avatar}}
-                          <img src="{{this.avatar}}">
+                          <img src="https://csc665-term-project-uno.s3.us-west-1.amazonaws.com/{{this.avatar}}">
                         {{else}}
                           <img src="/images/default-profile-pic.png">
                         {{/if}}

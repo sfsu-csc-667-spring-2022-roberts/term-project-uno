@@ -200,14 +200,41 @@ body {
   z-index: 2;
 }
 
-.player-avatar {
-  width: 50px;
-  height: 50px;
-  align-self: center;
-  border-radius: 50%;
-  object-fit: fill;
-  box-shadow:0 0 5px #aaaaaa;
+.avatar-container {
+  position: relative;
+  margin: 0 1.5%;
+  height: 2.5rem;
+  width: 40px !important;
   background: white;
+  border-radius: 100%;
+  cursor: pointer;
+  overflow: hidden;
+  flex-shrink: 0;
+  justify-self: center;
+  align-self: center;
+  box-shadow: rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px;
+}
+
+.player-avatar-portrait {
+  width: 100%;
+  height: auto;
+  position: absolute;
+  left: -1000%;
+  right: -1000%;
+  top: -1000%;
+  bottom: -1000%;
+  margin: auto;
+}
+
+.player-avatar-landscape {
+  width: auto;
+  height: 100%;
+  position: absolute;
+  left: -1000%;
+  right: -1000%;
+  top: -1000%;
+  bottom: -1000%;
+  margin: auto;
 }
 
 .player-username {

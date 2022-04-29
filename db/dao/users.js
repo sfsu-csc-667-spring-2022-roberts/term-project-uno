@@ -57,7 +57,7 @@ async function findUserById(id) {
     SELECT id, username, $1:name, $2:name, $3:name, $4:name 
     FROM $5:name 
     WHERE id = $6`,
-    ['pictureUrl', 'gamesWon', 'gamesPlayed', 'createdAt', 'Users', id])
+    ['avatar', 'gamesWon', 'gamesPlayed', 'createdAt', 'Users', id])
   .then((results) => {
     if (results && results.length === 1) return Promise.resolve(results[0]);
     else return Promise.resolve(null);
@@ -70,7 +70,7 @@ async function findUserByName(username) {
     SELECT id, username, $1:name, $2:name, $3:name, $4:name 
     FROM $5:name 
     WHERE username = $6`,
-    ['pictureUrl', 'gamesWon', 'gamesPlayed', 'createdAt', 'Users', username])
+    ['avatar', 'gamesWon', 'gamesPlayed', 'createdAt', 'Users', username])
   .then((results) => {
     if (results && results.length === 1) return Promise.resolve(results[0]);
     else return Promise.resolve(null);
@@ -115,13 +115,23 @@ async function changePassword(username, oldPassword, newPassword) {
   } else throw new UserError('Invalid password', 401);
 }
 
+async function changeAvatar(key, userId) {
+  return db.one(`
+    UPDATE "Users"
+    SET avatar = $1
+    WHERE id = $2
+    RETURNING id
+  `, [key, userId])
+  .catch((err) => Promise.reject(err));
+}
+
 async function findUserBySimilarName(username) {
   return db.query(`
     SELECT id, username, $1:name, $2:name, $3:name, $4:name 
     FROM $5:name 
     WHERE username
     LIKE $6`,
-    ['pictureUrl', 'gamesWon', 'gamesPlayed', 'createdAt', 'Users', `%${username}%`])
+    ['avatar', 'gamesWon', 'gamesPlayed', 'createdAt', 'Users', `%${username}%`])
   .then((results) => {
     if (results && results.length > 0) return Promise.resolve(results);
     else return Promise.resolve(null);
@@ -175,6 +185,45 @@ async function verifyUserExists(userId) {
   .catch((err) => Promise.reject(err));
 }
 
+async function addWin(userId) {
+  return db.one(`
+    UPDATE "Users"
+    SET "gamesPlayed" = "gamesPlayed" + 1, "gamesWon" = "gamesWon" + 1
+    WHERE id = $1
+    RETURNING id
+  `, [userId])
+  .catch((err) => Promise.reject(err));
+}
+
+async function addLoss(userId) {
+  return db.one(`
+    UPDATE "Users"
+    SET "gamesPlayed" = "gamesPlayed" + 1
+    WHERE id = $1
+    RETURNING id
+  `, [userId])
+  .catch((err) => Promise.reject(err));
+}
+
+/*
+async function changeUsername(oldUsername, newUsername, password) {
+  const userId = await authenticate(oldUsername, password);
+  if (userId > 0) {
+    return db.query(`
+      UPDATE $1:name
+      SET username = replace(username, $2, $3)
+      WHERE id = $4
+      RETURNING id`,
+      ['Users', oldUsername, newUsername, userId])
+    .then((results) => {
+      if (results && results.length === 1) return Promise.resolve(results[0].id);
+      else return Promise.resolve(-1);
+    })
+    .catch((err) => Promise.reject(err));
+  } else throw new UserError('Invalid password', 401);
+}
+*/
+
 module.exports = {
   usernameExists,
   create,
@@ -182,8 +231,11 @@ module.exports = {
   findUserById,
   findUserByName,
   findAllLobbies,
+  changeAvatar,
   changeUsername,
   changePassword,
   findUserBySimilarName,
-  verifyUserExists
+  verifyUserExists,
+  addWin,
+  addLoss
 };

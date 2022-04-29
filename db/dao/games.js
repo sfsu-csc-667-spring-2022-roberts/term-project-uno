@@ -1,4 +1,5 @@
 const db = require('../index');
+const AvatarDao = require('./avatars');
 
 async function findGameState(gameId, userId) {
   /* Set up db queries */
@@ -77,16 +78,19 @@ async function findGameState(gameId, userId) {
       }
       else return Promise.reject(`Could not find player ${playerId}`);
     })
-    .then((results) => {
+    .then(async (results) => {
       const userInfo = results[0][0];
       const playerCards = results[1];
+      const avatar = await AvatarDao.find(userInfo.avatar);
+
       return Promise.resolve({
         id: playerId,
         userID: userInfo.id,
         turnIndex: player.turnIndex,
         username: userInfo.username,
         cards: playerCards.length,
-        avatar: userInfo.pictureUrl
+        portrait: avatar ? avatar.height > avatar.width : true,
+        avatar: userInfo.avatar,
       });
     })
     .catch((err) => Promise.reject(err));
@@ -113,7 +117,7 @@ async function findGameState(gameId, userId) {
   ];
 
   return Promise.all(asyncTasks).then(async (results) => {
-    const gameInfo = results[0][0];
+    const gameInfo = results[0];
     const players = results[1];
     const playedCards = results[2];
     const playerCards = results[3];
@@ -166,19 +170,23 @@ async function findGame(gameId) {
     SELECT *
     FROM $1:name
     WHERE id = $2`, ['Games', gameId])
-  .then((results) => {
-    if (results && results.length === 1) return Promise.resolve(results);
+  .then((games) => {
+    if (games && games.length === 1) return Promise.resolve(games[0]);
     else return Promise.resolve(null);
   })
   .catch((err) => Promise.reject(err));
 }
 
 async function findGameWithLobby(lobbyId) {
-  return db.one(`
+  return db.query(`
     SELECT *
     FROM "Games"
     WHERE "lobbyId" = $1
   `, [lobbyId])
+  .then((games) => {
+    if (games && games.length === 1) return Promise.resolve(games[0]);
+    else return Promise.resolve(null);
+  })
   .catch((err) => Promise.reject(err));
 }
 
@@ -208,6 +216,7 @@ async function gameWithLobbyExists(lobbyId) {
   })
   .catch((err) => Promise.reject(err));
 } 
+
 async function updateColor(color, gameId) {
   return db.any(`
   UPDATE "Games"
@@ -233,6 +242,7 @@ async function updateTurn(turnIndex, gameId) {
   })
   .catch((err) => Promise.reject(err));
 }
+
 async function updateReversed(playerOrderReversed, gameId) {
   return db.any(`
   UPDATE "Games"
@@ -246,6 +256,19 @@ async function updateReversed(playerOrderReversed, gameId) {
   .catch((err) => Promise.reject(err));
 }
 
+async function deleteGame(gameId) {
+  return db.any(`
+    DELETE FROM "GameMessages"
+    WHERE "gameId" = $1
+  `, [gameId])
+  .then(() => db.one(`
+    DELETE FROM "Games"
+    WHERE id = $1
+    RETURNING id
+  `, [gameId]))
+  .catch((err) => Promise.reject(err));
+}
+
 module.exports = {
   findGameState,
   findGame,
@@ -254,5 +277,6 @@ module.exports = {
   gameWithLobbyExists,
   updateColor,
   updateTurn,
-  updateReversed
+  updateReversed,
+  deleteGame
 }

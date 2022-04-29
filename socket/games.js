@@ -1,5 +1,4 @@
 const PlayerDao = require('../db/dao/players');
-const MessageDao = require('../db/dao/messages');
 const PlayerCardsDao = require('../db/dao/playerCards');
 const PlayedCardsDao = require('../db/dao/playedCards');
 const CardsDao = require('../db/dao/cards');
@@ -15,7 +14,7 @@ async function initializeGameEndpoints(io, socket, user) {
         const pathnameSplit = requestUrl.pathname.split('/');
         if (pathnameSplit.length === 3 && pathnameSplit[1] === 'games') {
           const gameId = pathnameSplit[2];
-          if (await PlayerDao.verifyUserInGame(data.gameId, user.id)) {
+          if (await PlayerDao.verifyUserInGame(gameId, user.id)) {
             socket.join(`game/${gameId}`);
           }
         }
@@ -24,24 +23,6 @@ async function initializeGameEndpoints(io, socket, user) {
       console.error('Error occured when attempting to join socket game room\n', err);
     }
   }
-
-  socket.on('game-message-send', async (message) => {
-    try {
-      data = JSON.parse(message);
-      
-      if (!user || !(await PlayerDao.verifyUserInGame(data.gameId, user.id))) return;
-
-      const messageObj = await MessageDao.createGameMessage(data.message, user.id, data.gameId);
-
-      messageObj.sender = user.username;
-      delete messageObj.userId;
-      delete messageObj.gameId;
-
-      io.to(`game/${data.gameId}`).emit('game-message-send', messageObj);
-    } catch (err) {
-      console.error(err);
-    }
-  });
 
   socket.on('play-card', async (message) => {
     try {
