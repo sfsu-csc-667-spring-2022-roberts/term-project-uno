@@ -155,7 +155,7 @@ router.patch('/avatar', authenticate, uploadTemp, async (req, res) => {
     await fs.unlink(req.file.path, (e) => { if (e) console.error(e) });
 
     if ((!height || isNaN(height)) || (!width || isNaN(width))) {
-      return res.status(400).json({ message: 'Could not calculate avatar dimensions' });
+      return res.status(400).json({ message: 'Could not calculate avatar dimensions from uploaded file' });
     }
 
     const uploadedImage = await s3.upload({

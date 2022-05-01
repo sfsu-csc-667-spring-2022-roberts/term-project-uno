@@ -1,6 +1,5 @@
 const db = require('../index');
 const bcrypt = require('bcrypt');
-const AvatarDao = require ('./avatars');
 const { verifyGuest } = require('../dao/lobbyGuests');
 
 async function createPrivate(userId, name, playerCapacity, password) {
@@ -99,11 +98,22 @@ async function findAllFreeLobbies() {
 }
 
 async function findAllMembers(lobbyId) {
-  const findUserInfo = (userId) => db.one(`
-    SELECT id, username, "avatar"
-    FROM "Users"
+  const findUserById = async (userId) => db.one(`
+    SELECT id, username, "gamesWon", "gamesPlayed", "createdAt", avatar, portrait 
+    FROM "Users" 
+    FULL JOIN (
+      SELECT location, (
+      CASE 
+        WHEN height > width 
+        THEN TRUE 
+        ELSE FALSE 
+      END) AS portrait 
+      FROM "Avatars"
+    ) AS avatars 
+    ON location = avatar
     WHERE id = $1
-  `, [userId]);
+  `, [userId])
+  .catch((e) => Promise.reject(e));
 
   return db.one(`
     SELECT "hostId"
@@ -116,40 +126,25 @@ async function findAllMembers(lobbyId) {
     WHERE "lobbyId" = $1
     ORDER BY "joinedAt" ASC
   `, [lobbyId])]))
-  .then((members) => {
-    const hostId = members[0];
-    const guests = members[1];
-    const usersInfo = [findUserInfo(hostId)];
+  .then(async (lobbyMembers) => {
+    const hostId = lobbyMembers[0];
+    const guests = lobbyMembers[1];
+    const asyncTasks = [findUserById(hostId)];
+    const members = [];
 
     guests.forEach((guest) => {
-      usersInfo.push(findUserInfo(guest.userId));
+      asyncTasks.push(findUserById(guest.userId));
     })
 
-    return Promise.all([Promise.all(usersInfo), guests]);
-  })
-  .then(async (results) => {
-    const users = results[0];
-    const guests = results[1];
-    const members = [];
-    const asyncTasks = [];
-
-    users.forEach((user) => {
-      asyncTasks.push(AvatarDao.find(user.avatar));
-    });
-
-    const avatars = await Promise.allSettled(asyncTasks);
+    const users = await Promise.all(asyncTasks);
 
     for (let i = 0; i < users.length; i++) {
       const member = {
         username: users[i].username,
         avatar: users[i].avatar,
+        portrait: users[i].portrait,
         id: users[i].id
       };
-
-      if (avatars[i].status === 'fulfilled' && avatars[i].value) {
-        const avatar = avatars[i].value;
-        member.portrait = avatar.height > avatar.width;
-      }
 
       if (i != 0) member.ready = guests[i - 1].userReady;
       else member.host = true;

@@ -109,20 +109,14 @@ router.get('/:gameId(\\d+)', authenticate, async (req, res) => {
     }
 
     const gameState = await GameDao.findGameState(gameId, req.user.id);
-    gameState.players.sort((a, b) => a.turnIndex - b.turnIndex);
+    const mainPlayerIndex = gameState.players.findIndex(p => p.userID === req.user.id);
 
-    const mainPlayer = gameState.players.find(p => p.userID === req.user.id);
-    if (!mainPlayer) {
-      return res.status(500).json({ message: 'Something went wrong' });
-    }
-
-    const mainPlayerIndex = gameState.players.indexOf(mainPlayer);
-    const players = [mainPlayer];
+    const players = [];
     for (let i = mainPlayerIndex; i < gameState.players.length; i++) {
-      if (i !== mainPlayerIndex) players.push(gameState.players[i])
+      players.push(gameState.players[i])
     }
     for (let i = 0; i < mainPlayerIndex; i++) {
-      if (i !== mainPlayerIndex) players.push(gameState.players[i])
+      players.push(gameState.players[i])
     }
     gameState.players = players;
 

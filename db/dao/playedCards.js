@@ -28,7 +28,19 @@ async function findTopOfPlayedCards(gameId) {
   .catch((err) => Promise.reject(err));
 }
 
+async function findAllPlayedCards(gameId) {
+  return db.query(`
+    SELECT id, color, value, special
+    FROM "PlayedCards"
+    INNER JOIN "Cards"
+    ON "cardId" = id
+    WHERE "gameId" = $1
+  `, [gameId])
+  .catch(err => Promise.reject(err));
+}
+
 module.exports = {
   createPlayedCard,
-  findTopOfPlayedCards
+  findTopOfPlayedCards,
+  findAllPlayedCards
 };

@@ -1,5 +1,30 @@
 const db = require('../index');
 
+async function findPlayerCardsByUserId(userId, gameId) {
+  return db.query(`
+    SELECT id, color, value, special 
+    FROM (
+      SELECT "cardId" 
+      FROM (
+        SELECT id AS player_id 
+        FROM "Players" 
+        WHERE "userId" = $1 AND "gameId" = $2
+      ) 
+      AS players 
+      INNER JOIN (
+        SELECT * FROM "PlayerCards"
+      ) 
+      AS p_cards 
+      ON player_id = "playerId"
+    ) 
+    AS player_cards 
+    INNER JOIN "Cards" 
+    ON "Cards".id = "cardId"
+    ORDER BY color
+  `, [userId, gameId])
+  .catch(err => Promise.reject(err));
+}
+
 async function createPlayerCard(cardId, playerId) {
   return db.any(`
   INSERT INTO $1:name($2:name, $3:name)
@@ -51,6 +76,7 @@ async function deleteAndGetCards(playerId) {
 }
 
 module.exports = {
+  findPlayerCardsByUserId,
   createPlayerCard,
   verifyPlayerCard,
   removePlayerCard,
