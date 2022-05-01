@@ -89,7 +89,7 @@ async function findGameState(gameId, userId) {
         turnIndex: player.turnIndex,
         username: userInfo.username,
         cards: playerCards.length,
-        portrait: avatar ? avatar.height > avatar.width : true,
+        portrait: avatar ? avatar.portrait : true,
         avatar: userInfo.avatar,
       });
     })

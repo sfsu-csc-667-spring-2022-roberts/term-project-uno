@@ -119,10 +119,10 @@ router.get('/:gameId(\\d+)', authenticate, async (req, res) => {
     const mainPlayerIndex = gameState.players.indexOf(mainPlayer);
     const players = [mainPlayer];
     for (let i = mainPlayerIndex; i < gameState.players.length; i++) {
-        if (i !== mainPlayerIndex) players.push(gameState.players[i])
+      if (i !== mainPlayerIndex) players.push(gameState.players[i])
     }
     for (let i = 0; i < mainPlayerIndex; i++) {
-        if (i !== mainPlayerIndex) players.push(gameState.players[i])
+      if (i !== mainPlayerIndex) players.push(gameState.players[i])
     }
     gameState.players = players;
 
@@ -147,7 +147,7 @@ router.delete('/:gameId(\\d+)/players', authenticate, async (req, res) => {
     const lobby = await LobbyDao.findLobby(game.lobbyId);
 
     // If user isn't the host then simply remove them from the guest list
-    if(req.user.id != lobby.hostId) {
+    if (req.user.id != lobby.hostId) {
       await Promise.all([
         PlayerDao.remove(req.user.id, gameId),
         UserDao.addLoss(req.user.id),
@@ -163,17 +163,56 @@ router.delete('/:gameId(\\d+)/players', authenticate, async (req, res) => {
       ]);
     }
 
-    const players = await PlayerDao.findPlayersByGameId(gameId);
+    const userSockets = getSocketsFromUserSockets(req.user.id);
+    const players = await PlayerDao.findPlayersWithFullInfo(gameId);
 
     if (players.length == 1) { // declare remaining player as the winner & end game!
       const lastPlayer = players[0];
+      const playerSockets = getSocketsFromUserSockets(lastPlayer.userID);
+      await PlayerDao.remove(lastPlayer.userID, gameId);
       await Promise.all([
-        UserDao.addWin(lastPlayer.userId), 
-        GameDao.deleteGame(gameId), 
-        PlayerDao.remove(lastPlayer.userId, gameId),
+        UserDao.addWin(lastPlayer.userID),
+        GameDao.deleteGame(gameId),
         LobbyDao.setBusy(lobby.id, false)
       ]);
+
+      playerSockets.forEach((socket) => {
+        if (socket.rooms.has(`game/${gameId}`)) {
+          socket.emit('redirect', JSON.stringify({ pathname: `/lobbies/${game.lobbyId}` }));
+        }
+      });
+    } else {
+      const drawDeckCount = await DrawCardDao.findDrawCardsCount(gameId);
+      players.forEach((player) => {
+        const playerSockets = getSocketsFromUserSockets(player.userID);
+        if (playerSockets && playerSockets.length > 0) {
+          const mainPlayerIndex = players.findIndex(p => p.userID == player.userID);
+          const playerList = [];
+          for (let i = mainPlayerIndex; i < players.length; i++) {
+            playerList.push(players[i]);
+          }
+          for (let i = 0; i < mainPlayerIndex; i++) {
+            playerList.push(players[i]);
+          }
+          playerSockets.forEach((socket) => {
+            if (socket.rooms.has(`game/${gameId}`)) {
+              socket.emit('leave', JSON.stringify({ 
+                drawDeckCount, 
+                players: playerList, 
+                turnIndex: game.turnIndex,
+                playerOrderReversed: game.playerOrderReversed
+              }));
+            }
+          });
+        }
+      });
     }
+
+    userSockets.forEach((socket) => {
+      if (socket.rooms.has(`game/${gameId}`)) {
+        socket.emit('redirect', JSON.stringify({ pathname: '/' }));
+      }
+    })
 
     res.json({ message: 'Successfully left the game' });
   } catch (err) {

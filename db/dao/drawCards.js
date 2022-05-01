@@ -12,6 +12,18 @@ async function createDrawCard(cardId, gameId) {
   })
 }
 
+async function findDrawCardsCount(gameId) {
+  return db.query(`
+    SELECT count(*) AS "count" FROM "DrawCards"
+    WHERE "gameId" = $1`, [gameId])
+  .then((results) => {
+    if (results) return Promise.resolve(results[0].count);
+    return Promise.resolve(0);
+  })
+  .catch((err) => Promise.reject(err));
+};
+
 module.exports = {
-  createDrawCard
+  createDrawCard,
+  findDrawCardsCount
 };

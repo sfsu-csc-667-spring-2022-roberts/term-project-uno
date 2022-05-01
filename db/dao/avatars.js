@@ -11,7 +11,11 @@ async function create(location, height, width) {
 
 async function find(location) {
   return db.query(`
-    SELECT *
+    SELECT location, height, width,
+      (CASE
+        WHEN height > width THEN TRUE
+        ELSE FALSE
+      END) AS portrait
     FROM "Avatars"
     WHERE location = $1
   `, [location])

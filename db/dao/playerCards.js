@@ -41,8 +41,18 @@ async function removePlayerCard(cardId, playerId) {
   .catch((err) => Promise.reject(err));
 }
 
+async function deleteAndGetCards(playerId) {
+  return db.query(`
+    DELECT FROM "PlayerCards"
+    WHERE "playerId" = $1
+    RETURNING *
+  `, [playerId])
+  .catch((err) => Promise.reject(err));
+}
+
 module.exports = {
   createPlayerCard,
   verifyPlayerCard,
-  removePlayerCard
+  removePlayerCard,
+  deleteAndGetCards
 };

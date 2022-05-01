@@ -41,6 +41,26 @@ socket.on('play-card-choose', (data) => {
 socket.on('play-card-swap', (data) => {
     console.log(data);
 });
+socket.on('leave', (message) => {
+    try {
+        const data = JSON.parse(message);
+        getDrawDeck(data.drawDeckCount);
+        buildGameBoard(data.players, data.turnIndex, data.playerOrderReversed);
+    } catch (err) {
+        console.error(err);
+    }
+});
+socket.on('redirect', (message) => {
+    try {
+        const data = JSON.parse(message);
+        if (data.pathname) {
+            const baseURL = `${window.location.protocol}//${window.location.host}`;
+            window.location.href = baseURL + data.pathname;
+        }
+    } catch (err) {
+        console.error(err);
+    }
+});
 
 // ------ game listeners
 leaveBtn.onclick = (e) => {
@@ -126,10 +146,15 @@ const getGameState = async () => {
                 getPlayedDeck(data.gameState.playedDeck);
             } else window.location.replace("/");
         })
-        .catch(err => console.log(err))
+        .catch(err => console.error(err))
 }
 
 const buildGameBoard = async (players, currentIndex, reversed) => {
+    // Clear out player containers
+    playersLeftContainer.innerHTML = '';
+    playersTopContainer.innerHTML = '';
+    playersRightContainer.innerHTML = '';
+
     switch (players.length) {
         case 2: {
             playersTopContainer.innerHTML = playersTopContainer.innerHTML + createPlayer(players[1], "top", "middle", currentIndex, reversed);
@@ -523,7 +548,7 @@ const drawCard = (element) => {
         fetch(`/api${window.location.pathname}/drawCard`, { method: 'PATCH' })
             .then(response => response.json())
             .then(data => data.success ? handleDraw(data, element) : null)
-            .catch(err => console.log(err));
+            .catch(err => console.error(err));
     }
 }
 
