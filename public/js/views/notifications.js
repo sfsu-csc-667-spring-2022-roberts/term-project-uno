@@ -129,7 +129,7 @@ window.onload = function() {
     const entries = performance.getEntriesByType('navigation');
     if (entries && entries.length > 0) {
       const navigationType = entries[0].type;
-      if ((navigationType === 'reload' || navigationType === 'back_forward' || navigationType === 'navigate') && socket.connected) {
+      if (navigationType === 'back_forward' && socket.connected) {
         window.location.reload();
       }
     }

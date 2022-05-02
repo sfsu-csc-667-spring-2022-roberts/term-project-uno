@@ -21,8 +21,9 @@ window.addEventListener('load', () => {
   })
   .then(async (res) => {
     const data = await res.json();
-    for(let i = 0; i<data.length; i++) {
-      const { id, hostName, name, playerCapacity, guests, type } = data[i];
+    data.results.forEach((lobby) => {
+      console.log(lobby);
+      const { id, hostName, name, playerCapacity, guestLength, type } = lobby;
       const newLobby = document.createElement("div");
       const lobbyName = document.createElement("div");
       const playerCount = document.createElement("div");
@@ -34,13 +35,12 @@ window.addEventListener('load', () => {
       newLobby.className= "lobby-container"; 
       lobbyName.className = "lobby-name";
       lobbyName.innerHTML = name;
-      playerCount.innerHTML = 1 + guests.length + "/" + playerCapacity;
+      playerCount.innerHTML = 1 + guestLength + "/" + playerCapacity;
       joinButton.innerHTML = "Join";
       host.innerHTML = hostName;
       lobbyType.innerHTML = type;
       
       joinButton.onclick = function () { joinLobby(id) }
-
 
       newLobby.appendChild(lobbyName)
       newLobby.appendChild(host)
@@ -49,7 +49,7 @@ window.addEventListener('load', () => {
       newLobby.append(joinButton)
 
       document.getElementById("lobbyListContainer").appendChild(newLobby);
-    }
+    });
   })
   .catch((err) => {
     console.error(err);
@@ -68,7 +68,6 @@ async function joinLobby(lobbyId) {
       window.location.href = res.url;
     } else {
       const data = await res.json();
-      console.log(data);
     }
   })
   .catch((err) => console.error(err));

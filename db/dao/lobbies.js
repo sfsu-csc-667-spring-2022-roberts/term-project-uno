@@ -1,50 +1,38 @@
 const db = require('../index');
 const bcrypt = require('bcrypt');
-const { verifyGuest } = require('../dao/lobbyGuests');
 
 async function createPrivate(userId, name, playerCapacity, password) {
   return bcrypt.hash(password, 8)
   .then((hashedPassword) => {
-    return db.any(`
-      INSERT INTO $1:name($2:name, name, password, $3:name)
-      VALUES($4, $5, $6, $7)
-      RETURNING *`,
-      ['Lobbies', 'hostId', 'playerCapacity', userId, name, hashedPassword, playerCapacity]);
-  })
-  .then((results) => {
-    if (results && results.length === 1) {
-      return Promise.resolve(results[0]);
-    } else return Promise.resolve(null);
+    return db.one(`
+      INSERT INTO "Lobbies"("hostId", name, password, "playerCapacity")
+      VALUES($1, $2, $3, $4)
+      RETURNING *
+    `, [userId, name, hashedPassword, playerCapacity]);
   })
   .catch((err) => Promise.reject(err));
 }
 
 async function createPublic(userId, name, playerCapacity) {
-  return db.any(`
-    INSERT INTO $1:name($2:name, name, $3:name)
-    VALUES($4, $5, $6)
-    RETURNING *`,
-    ['Lobbies', 'hostId', 'playerCapacity', userId, name, playerCapacity])
-  .then((results) => {
-    if (results && results.length === 1) {
-      return Promise.resolve(results[0]);
-    } else return Promise.resolve(null);
-  })
+  return db.one(`
+    INSERT INTO "Lobbies"("hostId", name, "playerCapacity")
+    VALUES($1, $2, $3)
+    RETURNING *
+  `, [userId, name, playerCapacity])
   .catch((err) => Promise.reject(err));
 }
 
 async function deleteLobby(lobbyId) {
   return db.any(`
-    DELETE FROM "LobbyMessages"
-    WHERE "lobbyId" = $1
+    DELETE 
+    FROM "LobbyMessages"
+    WHERE "lobbyId" = $1;
+    DELETE
+    FROM "LobbyGuests"
+    WHERE "lobbyId" = $1;
+    DELETE FROM "Lobbies"
+    WHERE id = $1
   `, [lobbyId])
-  .then(() => {
-    return db.one(`
-      DELETE FROM "Lobbies"
-      WHERE id = $1
-      RETURNING id
-    `, [lobbyId]);
-  })
   .catch((err) => Promise.reject(err));
 }
 
@@ -54,63 +42,55 @@ async function findLobby(lobbyId) {
     FROM "Lobbies"
     WHERE id = $1
   `, [lobbyId])
-  .then((results) => {
-    if (results && results.length === 1) return Promise.resolve(results[0]);
+  .then((lobbies) => {
+    if (lobbies && lobbies.length === 1) return Promise.resolve(lobbies[0]);
     else return Promise.resolve(null);
-  })
-  .catch((err) => Promise.reject(err));
-}
-
-async function findFreeLobby(lobbyId) {
-  return db.query(`
-  SELECT *
-  FROM $1:name
-  WHERE id = $2 AND busy = $3`, ['Lobbies', lobbyId, false])
-.then((results) => {
-  if (results && results.length === 1) return Promise.resolve(results);
-  else return Promise.resolve(null);
-})
-.catch((err) => Promise.reject(err));
-}
-
-async function findHostLobbies(hostId) {
-  return db.query(`
-  SELECT *
-  FROM $1:name
-  WHERE $2:name = $3`, ['Lobbies', 'hostId', hostId])
-  .then((results) => {
-    return Promise.resolve(results);
   })
   .catch((err) => Promise.reject(err));
 }
 
 async function findAllFreeLobbies() {
   return db.query(`
-    SELECT *
-    FROM $1:name
-    WHERE busy = $2
-    ORDER BY $3:name DESC`, 
-  ['Lobbies', false, 'createdAt'])
-  .then((results) => {
-    return Promise.resolve(results);
-  })
+    SELECT "Lobbies".id, name, "playerCapacity", "Lobbies"."createdAt", (
+    CASE 
+      WHEN "Lobbies".password IS NULL 
+      THEN 'public' 
+      ELSE 'private' 
+    END) AS type, (
+    CASE 
+      WHEN count IS NULL 
+      THEN 0 
+      ELSE CAST(count AS INTEGER)
+    END) AS "guestLength", username AS "hostName" 
+    FROM "Lobbies" 
+    INNER JOIN "Users" 
+    ON "Users".id = "hostId" 
+    FULL JOIN (
+      SELECT count(*), "lobbyId" 
+      FROM "LobbyGuests" 
+      GROUP BY "lobbyId"
+    ) AS lobbyguests 
+    ON "Lobbies".id = "lobbyId" 
+    WHERE busy = FALSE 
+    ORDER BY "Lobbies"."createdAt" DESC;
+  `, [])
   .catch((err) => Promise.reject(err));
 }
 
 async function findAllMembers(lobbyId) {
   const findUserById = async (userId) => db.one(`
-    SELECT id, username, "gamesWon", "gamesPlayed", "createdAt", avatar, portrait 
-    FROM "Users" 
+    SELECT "Users".id, username, "gamesWon", "gamesPlayed", "createdAt", location AS avatar, portrait
+    FROM "Users"
     FULL JOIN (
-      SELECT location, (
+      SELECT "userId", location, (
       CASE 
-        WHEN height > width 
-        THEN TRUE 
-        ELSE FALSE 
+        WHEN height <= width 
+        THEN FALSE 
+        ELSE TRUE 
       END) AS portrait 
       FROM "Avatars"
     ) AS avatars 
-    ON location = avatar
+    ON "Users".id = "userId"
     WHERE id = $1
   `, [userId])
   .catch((e) => Promise.reject(e));
@@ -168,34 +148,36 @@ async function setBusy(lobbyId, busy) {
 }
 
 async function verifyHost(userId, lobbyId) {
-  return db.one(`
-    SELECT "hostId"
+  return db.query(`
+    SELECT *
     FROM "Lobbies"
-    WHERE id = $1`, [lobbyId])
-  .then((lobby) => {
-    if (lobby.hostId === userId) {
-      return Promise.resolve(true);
-    } else return Promise.resolve(false);
+    WHERE "hostId" = $1 AND id = $2
+  `, [userId, lobbyId])
+  .then((lobbies) => {
+    if (lobbies && lobbies.length == 1) return Promise.resolve(true);
+    return Promise.resolve(false);
   })
   .catch((err) => Promise.reject(err));
 }
 
 async function verifyHostOrGuest(userId, lobbyId) {
   return db.query(`
-    SELECT $1:name
-    FROM $2:name
-    WHERE id = $3`, ['hostId', 'Lobbies', lobbyId])
-  .then((results) => {
-    if (results && results.length === 1 && results[0].hostId === userId) {
+    SELECT * 
+    FROM "Lobbies" 
+    FULL JOIN "LobbyGuests" 
+    ON id = "lobbyId" 
+    WHERE ("hostId" = $1 OR "userId" = $1) AND id = $2
+  `, [userId, lobbyId])
+  .then((lobbies) => {
+    if (lobbies && lobbies.length > 0) {
       return Promise.resolve(true);
-    } else return verifyGuest(userId, lobbyId);
+    } else return Promise.resolve(false);
   })
-  .then((isGuest) => Promise.resolve(isGuest))
   .catch((err) => Promise.reject(err));
 }
 
 async function setHost(newHostId, lobbyId) {
-  return db.query(`
+  return db.one(`
     UPDATE "Lobbies"
     SET "hostId" = $1
     WHERE id = $2
@@ -209,8 +191,6 @@ module.exports = {
   createPublic, 
   deleteLobby,
   findLobby,
-  findFreeLobby,
-  findHostLobbies,
   findAllMembers,
   findAllFreeLobbies,
   setBusy,

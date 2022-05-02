@@ -169,11 +169,8 @@ router.patch('/avatar', authenticate, uploadTemp, async (req, res) => {
     }
 
     const user = await UserDao.findUserById(req.user.id);
-
-    Promise.all([
-      AvatarDao.create(uploadedImage.Location, height, width),
-      UserDao.changeAvatar(uploadedImage.Location, req.user.id)
-    ]);
+    await AvatarDao.removeByUserId(req.user.id);
+    await AvatarDao.create(uploadedImage.Location, height, width, req.user.id);
 
     if (user.avatar) {
       const url = new URL(user.avatar);

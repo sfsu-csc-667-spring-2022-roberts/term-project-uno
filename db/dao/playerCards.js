@@ -27,9 +27,10 @@ async function findPlayerCardsByUserId(userId, gameId) {
 
 async function createPlayerCard(cardId, playerId) {
   return db.any(`
-  INSERT INTO $1:name($2:name, $3:name)
-  VALUES($4, $5)
-  RETURNING *`, ['PlayerCards', 'cardId', 'playerId', cardId, playerId])
+    INSERT INTO "PlayerCards"("cardId", "playerId")
+    VALUES($1, $2)
+    RETURNING *
+  `, [cardId, playerId])
   .then((result) => {
     if (result) {
       return Promise.resolve(result[0]);
@@ -40,9 +41,9 @@ async function createPlayerCard(cardId, playerId) {
 
 async function verifyPlayerCard(cardId, playerId) {
   return db.any(`
-  SELECT *
-  FROM "PlayerCards"
-  WHERE "playerId" = $1 AND "cardId" = $2
+    SELECT *
+    FROM "PlayerCards"
+    WHERE "playerId" = $1 AND "cardId" = $2
   `, [playerId, cardId])
   .then((results) => {
     if (results && results.length === 1) {
@@ -54,9 +55,9 @@ async function verifyPlayerCard(cardId, playerId) {
 
 async function removePlayerCard(cardId, playerId) {
   return db.any(`
-  DELETE
-  FROM "PlayerCards"
-  WHERE "playerId" = $1 AND "cardId" = $2
+    DELETE
+    FROM "PlayerCards"
+    WHERE "playerId" = $1 AND "cardId" = $2
   `, [playerId, cardId])
   .then((results) => {
     if (results && results.length === 1) {
@@ -68,7 +69,8 @@ async function removePlayerCard(cardId, playerId) {
 
 async function deleteAndGetCards(playerId) {
   return db.query(`
-    DELECT FROM "PlayerCards"
+    DELETE 
+    FROM "PlayerCards"
     WHERE "playerId" = $1
     RETURNING *
   `, [playerId])

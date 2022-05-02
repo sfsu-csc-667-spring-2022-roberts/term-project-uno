@@ -191,7 +191,6 @@ function initLobby() {
             .then(async (res) => {
               if (res.status != 200) {
                 const data = await res.json();
-                console.log(data);
               }
             })
             .catch((err) => console.error(err));
@@ -259,7 +258,6 @@ function initLobby() {
       .then(async (res) => {
         if (res.status != 200) {
           const data = res.json();
-          console.log(data);
         }
       })
       .catch((err) => console.error(err));
@@ -317,7 +315,7 @@ function initLobby() {
     const entries = performance.getEntriesByType('navigation');
     if (entries && entries.length > 0) {
       const navigationType = entries[0].type;
-      if ((navigationType === 'reload' || navigationType === 'back_forward' || navigationType === 'navigate') && socket.connected) {
+      if (navigationType === 'back_forward' && socket.connected) {
         window.location.reload();
       }
     }

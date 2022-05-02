@@ -3,35 +3,24 @@ const DrawCardDao = require('./drawCards');
 
 async function findPlayersWithFullInfo(gameId) {
   return db.query(`
-    SELECT id, "userID", "turnIndex", username, CAST (cards AS INTEGER), avatar,
-      (CASE
-        WHEN portrait IS NULL
-        THEN TRUE ELSE portrait
-      END) AS portrait
-    FROM (
-      SELECT * FROM "Players" 
-      INNER JOIN (
-        SELECT id AS "userID", username, avatar, portrait 
-        FROM "Users" FULL JOIN (
-          SELECT location, (
-            CASE 
-              WHEN height > width 
-              THEN TRUE ELSE FALSE 
-            END) AS portrait 
-          FROM "Avatars") 
-        AS avatar_info 
-        ON location = avatar) 
-      AS user_info 
-      ON "Players"."userId" = "userID") 
-    AS full_user_info 
+    SELECT "Players".id, "Users".id AS "userID", "turnIndex", username, location AS avatar, cards, (
+    CASE 
+      WHEN height <= width 
+      THEN FALSE 
+      ELSE TRUE 
+    END) AS portrait 
+    FROM "Users" 
+    FULL JOIN "Avatars" 
+    ON "Users".id = "Avatars"."userId" 
+    INNER JOIN "Players" 
+    ON "Users".id = "Players"."userId" 
     INNER JOIN (
-      SELECT count(*) as cards, "playerId" 
+      SELECT count(*) AS cards, "playerId" 
       FROM "PlayerCards" 
-      GROUP BY "playerId") 
-    AS cards_info 
-    ON "playerId" = id 
-    WHERE "gameId" = $1
-    ORDER BY "turnIndex" ASC
+      GROUP BY "playerId"
+    ) AS playercards 
+    ON "Players".id = "playerId"
+    WHERE "Players"."gameId" = $1
   `, [gameId])
   .catch((err) => Promise.reject(err));
 }
@@ -39,8 +28,9 @@ async function findPlayersWithFullInfo(gameId) {
 async function findPlayers(userId) {
   return db.query(`
     SELECT *
-    FROM $1:name
-    WHERE $2:name = $3`, ['Players', 'userId', userId])
+    FROM "Players"
+    WHERE "userId" = $1
+  `, [userId])
   .then((results) => {
     if (results && results.length > 0) return Promise.resolve(results);
     else return Promise.resolve(null);
@@ -50,9 +40,10 @@ async function findPlayers(userId) {
 
 async function createPlayer(turnIndex, userId, gameId) {
   return db.any(`
-  INSERT INTO $1:name($2:name, $3:name, $4:name)
-  VALUES($5, $6, $7)
-  RETURNING *`, ['Players', 'turnIndex', 'userId', 'gameId', turnIndex, userId, gameId])
+    INSERT INTO "Players"("turnIndex", "userId", "gameId")
+    VALUES($1, $2, $3)
+    RETURNING *
+  `, [turnIndex, userId, gameId])
   .then((result) => {
     if (result) {
       return Promise.resolve(result[0]);

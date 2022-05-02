@@ -6,8 +6,9 @@ const UserError = require('../../helpers/error/UserError');
 async function usernameExists(username) {
   return db.query(`
     SELECT id 
-    FROM $1:name 
-    WHERE username = $2`, ['Users', username])
+    FROM "Users"
+    WHERE username = $1
+  `, [username])
   .then((results) => {
     return Promise.resolve(results && results.length === 0);
   })
@@ -16,18 +17,12 @@ async function usernameExists(username) {
 
 async function create(username, password) {
   return bcrypt.hash(password, 8)
-  .then((hashedPassword) => {
-    return db.any(`
-      INSERT INTO $1:name(username, password) 
-      VALUES($2, $3) 
-      RETURNING id`, ['Users', username, hashedPassword]);
-  })
-  .then((results) => {
-    if (results && results.length === 1) {
-      const userId = results[0].id;
-      return Promise.resolve(userId);
-    } else return Promise.resolve(-1);
-  })
+  .then((hashedPassword) => db.one(`
+    INSERT INTO "Users"(username, password) 
+    VALUES($1, $2) 
+    RETURNING id
+  `, [username, hashedPassword]))
+  .then((user) => Promise.resolve(user.id))
   .catch((err) => Promise.reject(err));
 }
 
@@ -35,8 +30,9 @@ async function authenticate(username, password) {
   let userId;
   return db.query(`
     SELECT id, username, password 
-    FROM $1:name 
-    WHERE username = $2`, ['Users', username])
+    FROM "Users"
+    WHERE username = $1
+  `, [username])
   .then((results) => {
     if (results && results.length === 1) {
       userId = results[0].id;
@@ -52,19 +48,16 @@ async function authenticate(username, password) {
 
 async function findUserById(userId) {
   return db.query(`
-  SELECT id, username, "gamesWon", "gamesPlayed", "createdAt", avatar, portrait 
-  FROM "Users" 
-  FULL JOIN (
-    SELECT location, (
+    SELECT id, username, "gamesWon", "gamesPlayed", "createdAt", location AS avatar, (
     CASE 
-      WHEN height > width 
-      THEN TRUE 
-      ELSE FALSE 
+      WHEN height <= width 
+      THEN FALSE 
+      ELSE TRUE 
     END) AS portrait 
-    FROM "Avatars"
-  ) AS avatars 
-  ON location = avatar
-  WHERE id = $1
+    FROM "Users" 
+    FULL JOIN "Avatars" 
+    ON id = "userId" 
+    WHERE id = $1
   `, [userId])
   .then((results) => {
     if (results && results.length === 1) return Promise.resolve(results[0]);
@@ -75,18 +68,15 @@ async function findUserById(userId) {
 
 async function findUserByName(username) {
   return db.query(`
-    SELECT id, username, "gamesWon", "gamesPlayed", "createdAt", avatar, portrait 
+    SELECT id, username, "gamesWon", "gamesPlayed", "createdAt", location AS avatar, (
+    CASE 
+      WHEN height <= width 
+      THEN FALSE 
+      ELSE TRUE 
+    END) AS portrait 
     FROM "Users" 
-    FULL JOIN (
-      SELECT location, (
-      CASE 
-        WHEN height > width 
-        THEN TRUE 
-        ELSE FALSE 
-      END) AS portrait 
-      FROM "Avatars"
-    ) AS avatars 
-    ON location = avatar
+    FULL JOIN "Avatars" 
+    ON id = "userId" 
     WHERE username = $1
   `, [username])
   .then((results) => {
@@ -99,16 +89,13 @@ async function findUserByName(username) {
 async function changeUsername(oldUsername, newUsername, password) {
   const userId = await authenticate(oldUsername, password);
   if (userId > 0) {
-    return db.query(`
-      UPDATE $1:name
-      SET username = replace(username, $2, $3)
-      WHERE id = $4
-      RETURNING id`,
-      ['Users', oldUsername, newUsername, userId])
-    .then((results) => {
-      if (results && results.length === 1) return Promise.resolve(results[0].id);
-      else return Promise.resolve(-1);
-    })
+    return db.one(`
+      UPDATE "Users"
+      SET username = replace(username, $1, $2)
+      WHERE id = $3
+      RETURNING id
+    `, [oldUsername, newUsername, userId])
+    .then((user) => Promise.resolve(user.id))
     .catch((err) => Promise.reject(err));
   } else throw new UserError('Invalid password', 401);
 }
@@ -117,46 +104,28 @@ async function changePassword(username, oldPassword, newPassword) {
   const userId = await authenticate(username, oldPassword);
   if (userId > 0) {
     return bcrypt.hash(newPassword, 8)
-    .then((newHashedPassword) => {
-      return db.query(`
-        UPDATE $1:name
-        SET password = $2
-        WHERE id = $3
-        RETURNING id`,
-        ['Users', newHashedPassword, userId])
-    })
-    .then((results) => {
-      if (results && results.length === 1) return Promise.resolve(results[0].id);
-      else return Promise.resolve(-1);
-    })
+    .then((newHashedPassword) => db.one(`
+      UPDATE "Users"
+      SET password = $1
+      WHERE id = $2
+      RETURNING id
+    `, [newHashedPassword, userId]))
+    .then((user) => Promise.resolve(user.id))
     .catch((err) => Promise.reject(err));
   } else throw new UserError('Invalid password', 401);
 }
 
-async function changeAvatar(key, userId) {
-  return db.one(`
-    UPDATE "Users"
-    SET avatar = $1
-    WHERE id = $2
-    RETURNING id
-  `, [key, userId])
-  .catch((err) => Promise.reject(err));
-}
-
 async function findUsersBySimilarName(username) {
   return db.query(`
-    SELECT id, username, "gamesWon", "gamesPlayed", "createdAt", avatar, portrait 
+    SELECT id, username, "gamesWon", "gamesPlayed", "createdAt", location AS avatar, (
+    CASE 
+      WHEN height <= width 
+      THEN FALSE 
+      ELSE TRUE 
+    END) AS portrait 
     FROM "Users" 
-    FULL JOIN (
-      SELECT location, (
-      CASE 
-        WHEN height > width 
-        THEN TRUE 
-        ELSE FALSE 
-      END) AS portrait 
-      FROM "Avatars"
-    ) AS avatars 
-    ON location = avatar
+    FULL JOIN "Avatars" 
+    ON id = "userId" 
     WHERE username LIKE $1
     ORDER BY username
     `,
@@ -265,7 +234,6 @@ module.exports = {
   findUserById,
   findUserByName,
   findAllFormattedLobbies,
-  changeAvatar,
   changeUsername,
   changePassword,
   findUsersBySimilarName,

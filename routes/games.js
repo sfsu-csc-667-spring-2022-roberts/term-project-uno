@@ -170,11 +170,13 @@ router.delete('/:gameId(\\d+)/players', authenticate, async (req, res) => {
         LobbyDao.setBusy(lobby.id, false)
       ]);
 
-      playerSockets.forEach((socket) => {
-        if (socket.rooms.has(`game/${gameId}`)) {
-          socket.emit('redirect', JSON.stringify({ pathname: `/lobbies/${game.lobbyId}` }));
-        }
-      });
+      if (playerSockets) {
+        playerSockets.forEach((socket) => {
+          if (socket.rooms.has(`game/${gameId}`)) {
+            socket.emit('redirect', JSON.stringify({ pathname: `/lobbies/${game.lobbyId}` }));
+          }
+        });
+      }
     } else {
       const drawDeckCount = await DrawCardDao.findDrawCardsCount(gameId);
       players.forEach((player) => {
@@ -202,11 +204,13 @@ router.delete('/:gameId(\\d+)/players', authenticate, async (req, res) => {
       });
     }
 
-    userSockets.forEach((socket) => {
-      if (socket.rooms.has(`game/${gameId}`)) {
-        socket.emit('redirect', JSON.stringify({ pathname: '/' }));
-      }
-    })
+    if (userSockets) {
+      userSockets.forEach((socket) => {
+        if (socket.rooms.has(`game/${gameId}`)) {
+          socket.emit('redirect', JSON.stringify({ pathname: '/' }));
+        }
+      });
+    }
 
     res.json({ message: 'Successfully left the game' });
   } catch (err) {
@@ -299,11 +303,7 @@ router.post('/:gameId(\\d+)/messages', authenticate, async (req, res) => {
 
     const messageObj = await MessageDao.createGameMessage(message, req.user.id, gameId);
 
-    messageObj.sender = req.user.username;
-    delete messageObj.userId;
-    delete messageObj.gameId;
-
-    io.to(`game/${gameId}`).emit('game-message-send', messageObj);
+    io.to(`game/${gameId}`).emit('game-message-send', JSON.stringify(messageObj));
 
     res.status(201).json({ message: 'Successfully created new game message' });
   } catch (err) {

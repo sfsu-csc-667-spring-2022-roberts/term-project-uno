@@ -106,12 +106,13 @@ async function updateColor(color, gameId) {
 
 async function updateTurn(turnIndex, gameId) {
   return db.any(`
-  UPDATE "Games"
-  SET "turnIndex" = $1
-  WHERE "id" = $2
+    UPDATE "Games"
+    SET "turnIndex" = $1
+    WHERE "id" = $2
+    RETURNING *
   `, [turnIndex, gameId])
   .then((results) => {
-    if (results) return Promise.resolve(true);
+    if (results && results.length == 1) return Promise.resolve(true);
     else return Promise.resolve(false);
   })
   .catch((err) => Promise.reject(err));
@@ -119,12 +120,12 @@ async function updateTurn(turnIndex, gameId) {
 
 async function updateReversed(playerOrderReversed, gameId) {
   return db.any(`
-  UPDATE "Games"
-  SET "playerOrderReversed" = $1
-  WHERE "id" = $2
+    UPDATE "Games"
+    SET "playerOrderReversed" = $1
+    WHERE "id" = $2
   `, [playerOrderReversed, gameId])
   .then((results) => {
-    if (results) return Promise.resolve(true);
+    if (results && results.length == 1) return Promise.resolve(true);
     else return Promise.resolve(false);
   })
   .catch((err) => Promise.reject(err));
@@ -132,14 +133,22 @@ async function updateReversed(playerOrderReversed, gameId) {
 
 async function deleteGame(gameId) {
   return db.any(`
-    DELETE FROM "GameMessages"
-    WHERE "gameId" = $1
-  `, [gameId])
-  .then(() => db.one(`
-    DELETE FROM "Games"
+    DELETE 
+    FROM "GameMessages"
+    WHERE "gameId" = $1;
+    DELETE
+    FROM "Players"
+    WHERE "gameId" = $1;
+    DELETE
+    FROM "DrawCards"
+    WHERE "gameId" = $1;
+    DELETE
+    FROM "PlayedCards"
+    WHERE "gameId" = $1;
+    DELETE 
+    FROM "Games"
     WHERE id = $1
-    RETURNING id
-  `, [gameId]))
+  `, [gameId])
   .catch((err) => Promise.reject(err));
 }
 

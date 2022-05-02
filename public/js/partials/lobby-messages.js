@@ -13,7 +13,6 @@ function sendMessage() {
     .then(async (res) => {
       const data = await res.json();
       if (res.status != 201 && data.message) {
-        console.log(data.message);
       }
     })
     .catch((err) => console.error(err))
@@ -46,6 +45,7 @@ function initMessages() {
   socket.on('lobby-message-send', (message) => {
     try {
       const data = JSON.parse(message);
+      console.log(data);
       appendMessage(data);
     } catch (err) {
       console.error(err);
@@ -56,6 +56,7 @@ function initMessages() {
   .then(response => response.json())
   .then((data) => {
     if (data.messages) {
+      console.log(data.messages);
       messages.innerHTML = '';
       data.messages.forEach((message) => {
         messages.innerHTML = messages.innerHTML + createMessage(message);
