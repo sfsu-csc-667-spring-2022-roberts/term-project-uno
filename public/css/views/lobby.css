@@ -17,6 +17,12 @@ main {
   height: 80%;
 }
 
+.current-user {
+  background: rgb(152,91,0) !important;
+  background: linear-gradient(0deg, rgba(152,91,0,1) 0%, rgba(241,209,8,1) 100%) !important;
+  color: white;
+}
+
 .hidden {
   visibility: hidden;
 }

@@ -301,7 +301,7 @@ router.post('/:gameId(\\d+)/messages', authenticate, async (req, res) => {
       return res.status(401).json({ message: 'You are not a player in the game' });
     }
 
-    const messageObj = await MessageDao.createGameMessage(message, req.user.id, gameId);
+    const messageObj = await MessageDao.createGameMessage(message.trim(), req.user.id, gameId);
 
     io.to(`game/${gameId}`).emit('game-message-send', JSON.stringify(messageObj));
 

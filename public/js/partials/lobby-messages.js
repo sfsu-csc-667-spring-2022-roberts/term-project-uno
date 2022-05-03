@@ -8,7 +8,7 @@ function sendMessage() {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ message: messageInput.value })
+      body: JSON.stringify({ message: messageInput.value.trim() })
     })
     .then(async (res) => {
       const data = await res.json();

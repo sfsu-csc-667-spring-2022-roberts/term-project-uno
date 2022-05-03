@@ -60,7 +60,7 @@ router.patch('/:lobbyId(\\d+)', authenticate, async (req, res) => {
     }
 
     if ((await LobbyGuestsDao.findNumberOfGuests(lobbyId)) + 1 > parseInt(maxPlayers)) {
-      return res.status(401).json({ message: 'Cannot set maximum number of players to below the current number of players' });
+      return res.status(409).json({ message: 'Cannot set maximum number of players to below the current number of players' });
     }
 
     if (updatePassword) {
@@ -103,7 +103,7 @@ router.post('/:lobbyId(\\d+)/messages', authenticate, async (req, res) => {
     if (!req.user || !(await LobbyDao.verifyHostOrGuest(req.user.id, lobbyId))) {
       return res.status(401).json({ message: 'You are not a member of the lobby' });
     }
-    const messageObj = await MessageDao.createLobbyMessage(message, req.user.id, lobbyId);
+    const messageObj = await MessageDao.createLobbyMessage(message.trim(), req.user.id, lobbyId);
 
     io.to(`lobby/${lobbyId}`).emit('lobby-message-send', JSON.stringify(messageObj));
 
