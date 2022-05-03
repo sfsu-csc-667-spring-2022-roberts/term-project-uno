@@ -1,22 +1,32 @@
-const kickButtons = document.getElementsByClassName('kick')
+const lobbyTitle = document.getElementById('lobby-title');
+const lobbyTypeLogo = document.getElementById('lobby-type-icon');
+const popupContainer = document.getElementById('popup-container');
+const numPlayersLabel = document.getElementById('num-players-output');
+const numPlayersInput = document.getElementById('maxPlayers');
 const leftTableBody = document.getElementById('list-1');
 const rightTableBody = document.getElementById('list-2');
 const lobbyMenu = document.getElementById('lobby-menu');
 const readyButton = document.getElementById('ready-button');
+const settings = document.getElementById('settings');
 const baseURL = `${window.location.protocol}//${window.location.host}`;
+
 let leaveButton = document.getElementById('leave-button');
 let startButton = document.getElementById('start-button');
 let inviteInput = document.getElementById('username');
 let inviteButton = document.getElementById('invite-button');
 
 function addKickButtonListener() {
+  const kickButtons = document.querySelectorAll('.kick')
   if (kickButtons) {
     for (let button of kickButtons) {
       button.addEventListener('click', (e) => {
-        socket.emit('lobby-kick-player', JSON.stringify({
-          lobbyId,
-          userId: button.id,
-        }));
+        fetch(`/api/lobbies/${lobbyId}/users/${button.id}`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        })
+        .catch((err) => console.error(err));
       });
     }
   }
@@ -33,11 +43,21 @@ function createGuestRow(guest) {
       </tr>`
     );
   }
+  else if (guest.unavailable) {
+    return (
+      `<tr class="lobby-unavailable">
+        <td class="lobby-guest-icon-col"></td>
+        <td class="lobby-guest-name"></td>
+        <td class="lobby-guest-status"></td>
+        <td></td>
+      </tr>`
+    );
+  }
   return (
     `<tr class="lobby-guest">
       <td class="lobby-guest-icon-col">
         <div class="lobby-guest-icon">
-          <img src="${guest.avatar ? guest.avatar : '/images/default-profile-pic.png'}">
+        <img class="${guest.portrait ? 'lobby-avatar-portrait' : 'lobby-avatar-landscape'}" src="${guest.avatar ? guest.avatar : '/images/default-profile-pic.png'}" />
         </div>
       </td>
       <td class="lobby-guest-name">${guest.username}</td>
@@ -60,11 +80,21 @@ function createGuestRowAsHost(guest) {
       </tr>`
     );
   }
+  else if (guest.unavailable) {
+    return (
+      `<tr class="lobby-unavailable">
+        <td class="lobby-guest-icon-col"></td>
+        <td class="lobby-guest-name"></td>
+        <td class="lobby-guest-status"></td>
+        <td></td>
+      </tr>`
+    );
+  }
   return (
     `<tr class="lobby-guest">
       <td class="lobby-guest-icon-col">
         <div class="lobby-guest-icon">
-          <img src="${guest.avatar ? guest.avatar : '/images/default-profile-pic.png'}">
+        <img class="${guest.portrait ? 'lobby-avatar-portrait' : 'lobby-avatar-landscape'}" src="${guest.avatar ? guest.avatar : '/images/default-profile-pic.png'}" />
         </div>
       </td>
       <td class="lobby-guest-name">${guest.username}</td>
@@ -140,19 +170,37 @@ function initLobby() {
     }
   });
 
-  socket.on('invite-to-lobby', (message) => {
+  socket.on('lobby-update', (message) => {
     try {
       const data = JSON.parse(message);
-      const inviteError = document.getElementById('invite-error');
+      const leftGuests = leftTableBody.children;
+      const rightGuests = rightTableBody.children;
+      let count = 1;
 
-      if (data.message) {
-        inviteError.innerHTML = data.message;
+      lobbyTitle.innerHTML = data.lobbyName;
+      lobbyName = data.lobbyName;
+      maxPlayers = data.maxPlayers;
+      isPrivate = data.isPrivate;
+      lobbyTypeLogo.setAttribute('src', isPrivate ? '/images/private.png' : '/images/public.png');
+
+      for (let i = 0; i < leftGuests.length; i++) {
+        const element = leftGuests[i];
+        if (count > maxPlayers) {
+          element.className = 'lobby-unavailable';
+        } else if (element.className = 'lobby-unavailable') {
+          element.className = 'lobby-guest'
+        }
+        count += 1;
       }
 
-      if (data.error && inviteError) {
-        inviteError.className = 'invite-error';
-      } else if (inviteError) {
-        inviteError.className = 'invite-success';
+      for (let i = 0; i < rightGuests.length; i++) {
+        const element = rightGuests[i];
+        if (count > maxPlayers) {
+          element.className = 'lobby-unavailable';
+        } else if (element.className = 'unavailable') {
+          element.className = 'lobby-guest'
+        }
+        count += 1;
       }
     } catch (err) {
       console.error(err);
@@ -163,8 +211,8 @@ function initLobby() {
     try {
       const data = JSON.parse(message);
 
-      if (data.upgrade && lobbyMenu) {
-        lobbyMenu.innerHTML = `<h3 id="lobby-title">${lobbyName}</h3>
+      if (lobbyMenu) {
+        lobbyMenu.innerHTML = `<img id="uno-lobby-logo" src="/images/uno-logo.png">
         <div id="invitation-container">
           <span id="invite-error" class="invite-error hidden"></span>
           <form>
@@ -177,18 +225,39 @@ function initLobby() {
           <button id="leave-button" class="lobby-button">Leave Lobby</button>
         </div>
         `;
+        document.getElementById('settings').className = '';
         leaveButton = document.getElementById('leave-button');
         startButton = document.getElementById('start-button');
         if (leaveButton) {
           leaveButton.addEventListener('click', (e) => {
-            socket.emit('leave-lobby', JSON.stringify({
-              lobbyId
-            }));
+            e.preventDefault();
+            e.stopPropagation();
+      
+            fetch(`/api/lobbies/${lobbyId}/users`, {
+              method: 'DELETE',
+              headers: {
+                'Content-Type': 'application/json',
+              }
+            })
+            .then(res => res.json())
+            .catch((err) => console.error(err));
           })
         }
         if (startButton) {
           startButton.addEventListener('click', (e) => {
-            socket.emit('lobby-start-game', JSON.stringify({ lobbyId }));
+            fetch(`/api/games/`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ lobbyId })
+            })
+            .then(async (res) => {
+              if (res.status != 200) {
+                const data = await res.json();
+              }
+            })
+            .catch((err) => console.error(err));
           });
         }
       }
@@ -208,7 +277,13 @@ function initLobby() {
     
   if (readyButton) {
     readyButton.addEventListener('click', (e) => {
-      socket.emit('lobby-toggle-ready', JSON.stringify({ lobbyId }));
+      fetch(`/api/lobbies/${lobbyId}/users`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      })
+      .catch((err) => console.error(err));
     });
   }
   
@@ -237,15 +312,35 @@ function initLobby() {
         }
       }
 
-      socket.emit('lobby-start-game', JSON.stringify({ lobbyId }));
+      fetch(`/api/games/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ lobbyId })
+      })
+      .then(async (res) => {
+        if (res.status != 200) {
+          const data = res.json();
+        }
+      })
+      .catch((err) => console.error(err));
     });
   }
   
   if (leaveButton) {
     leaveButton.addEventListener('click', (e) => {
-      socket.emit('leave-lobby', JSON.stringify({
-        lobbyId
-      }));
+      e.preventDefault();
+      e.stopPropagation();
+
+      fetch(`/api/lobbies/${lobbyId}/users`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      })
+      .then(res => res.json())
+      .catch((err) => console.error(err));
     });
   }
 
@@ -255,9 +350,33 @@ function initLobby() {
       e.stopPropagation();
 
       if (inviteInput.value.trim().length > 0) {
-        socket.emit('invite-to-lobby', JSON.stringify({ lobbyId, username: inviteInput.value }));
+        fetch(`/api/lobbies/${lobbyId}/invitations`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ username: inviteInput.value })
+        })
+        .then(async (res) => {
+          const data = await res.json();
+          const inviteError = document.getElementById('invite-error');
+          if (res.status != 201 && data.message) {
+            inviteError.className = 'invite-error';
+            inviteError.innerHTML = data.message;
+          } else if (data.message) {
+            inviteError.className = 'invite-success';
+            inviteError.innerHTML = data.message;
+          }
+        })
+        .catch((err) => console.error(err));
       }
     });
+  }
+
+  if (settings) {
+    settings.addEventListener('click', (event) => {
+      popupContainer.className = '';
+    })
   }
 
   addKickButtonListener();
@@ -266,7 +385,7 @@ function initLobby() {
     const entries = performance.getEntriesByType('navigation');
     if (entries && entries.length > 0) {
       const navigationType = entries[0].type;
-      if ((navigationType === 'reload' || navigationType === 'back_forward' || navigationType === 'navigate') && socket.connected) {
+      if (navigationType === 'back_forward' && socket.connected) {
         window.location.reload();
       }
     }

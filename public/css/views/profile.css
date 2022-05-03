@@ -44,6 +44,7 @@ summary section {
 }
 
 #profile-pic {
+  position: relative;
   height: 10rem;
   width: 10rem;
   background: white;
@@ -53,9 +54,26 @@ summary section {
   box-shadow: rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px;
 }
 
-#profile-pic img {
+#profile-avatar-portrait {
+  position: absolute;
+  left: -1000%;
+  right: -1000%;
+  top: -1000%;
+  bottom: -1000%;
+  margin: auto;
   width: 100%;
   height: auto;
+}
+
+#profile-avatar-landscape {
+  position: absolute;
+  left: -1000%;
+  right: -1000%;
+  top: -1000%;
+  bottom: -1000%;
+  margin: auto;
+  width: auto;
+  height: 100%;
 }
 
 #profile-info {

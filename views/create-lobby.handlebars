@@ -10,21 +10,40 @@
   </head>
   <body>
     {{> navbar}}
-    <form id="createLobbyForm">
-      <main>
-        <h2>Create Lobby</h2>
-        <input type="text" placeholder="Lobby Name" id="lobby-name-input" name="lobbyName" required>
-        <input type="range" min="2" max="10" value="1" id="num-players-slider" oninput="this.nextElementSibling.value = this.value" name="maxPlayers">
-        <output id="num-players-output" class="num-players-output">2</output>
-        <div id="private-container" class="private-container">
+    <main>
+      <form id="create-lobby-form">
+        <header>
+          <h2>Create Lobby</h2>
+        </header>
+        <section id="lobby-name">
+          <input 
+            type="text"
+            placeholder="Lobby Name"
+            id="lobby-name-input"
+            name="lobbyName"
+            aria-describedby="name-error"
+            required>
+          <p class="error-message hidden" id="name-error"></p>
+        </section>
+        <section id="lobby-password">
+          <input 
+            type="text"
+            placeholder="Password (Optional)"
+            id="lobby-password-input"
+            name="password"
+            >
+          <p class="error-message hidden" id="password-error"></p>
+        </section>
+        <section id="player-capacity">
+          <label for="maxPlayers">Maximum Players</label>
           <div>
-            <input type="checkbox" id="private-checkbox">
-            <label for="private-checkbox">Private</label>
+            <input type="range" min="2" max="10" value="1" id="maxPlayers" oninput="this.nextElementSibling.value = this.value" name="maxPlayers">
+            <output id="num-players-output">2</output>
           </div>
-        </div>
+        </section>
         <button id="create-lobby-button" type="Submit">Create</button>
-      </main>
-    </form>
+      </form>
+    </main>
   </body>
   <script src="/js/views/create-lobby.js" type="module"></script>
 </html>

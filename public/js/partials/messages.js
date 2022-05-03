@@ -5,9 +5,15 @@ const messagesDiv = document.getElementById("messages");
 const messageInput = document.getElementById("message-input");
 const messageIcon = document.getElementById("message-icon");
 
+
 // ------ socket events
-socket.on('game-message-send', (data) => {
-    appendMessage(data);
+socket.on('game-message-send', (message) => {
+    try {
+        const data = JSON.parse(message);
+        appendMessage(data);
+    } catch (err) {
+        console.error(err);
+    }
 });
 
 // ------ message events
@@ -46,7 +52,7 @@ const getMessages = async () => {
                 });
             }
         })
-        .catch(err => console.log(err))
+        .catch(err => console.error(err))
         .finally(() => {
             if (messagePopUpToggle) messagesDiv.scrollTop = messagesDiv.scrollHeight;
         });
@@ -57,8 +63,23 @@ const sendMessage = async () => {
         const pathnames = window.location.pathname.split('/');
         const gameId = pathnames[pathnames.length-1];
 
-        socket.emit('game-message-send', JSON.stringify({ message: messageInput.value, gameId }))
-        messageInput.value = "";
+        fetch(`/api/games/${gameId}/messages`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ message: messageInput.value })
+          })
+          .then(async (res) => {
+            const data = await res.json();
+            if (res.status != 201 && data.message) {
+              console.log(data.message);
+            }
+          })
+          .catch((err) => console.error(err))
+          .finally(() => {
+            messageInput.value = '';
+          });
     }
 };
 

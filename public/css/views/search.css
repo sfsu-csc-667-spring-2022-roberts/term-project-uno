@@ -34,6 +34,7 @@ main header {
 }
 
 .search-result-pic {
+  position: relative;
   height: 10rem;
   width: 10rem;
   background: white;
@@ -43,9 +44,26 @@ main header {
   box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
 }
 
-.search-result-pic img {
+.img-portrait {
   width: 100%;
   height: auto;
+  position: absolute;
+  left: -1000%;
+  right: -1000%;
+  top: -1000%;
+  bottom: -1000%;
+  margin: auto;
+}
+
+.img-landscape {
+  height: 100%;
+  width: auto;
+  position: absolute;
+  left: -1000%;
+  right: -1000%;
+  top: -1000%;
+  bottom: -1000%;
+  margin: auto;
 }
 
 #search-container {

@@ -1,7 +1,5 @@
 import timeSince from '../lib/timeSince.js';
 
-const baseURL = `${window.location.protocol}//${window.location.host}`;
-
 function addEventListenersToInvitations() {
   const invitationListItems = document.getElementsByClassName('invitation');
   for (const invitationListItem of invitationListItems) {
@@ -10,7 +8,7 @@ function addEventListenersToInvitations() {
     const acceptButton = invitationListItem.getElementsByClassName('accept').item(0);
     const declineButton = invitationListItem.getElementsByClassName('decline').item(0);
 
-    const date = new Date(time.innerHTML);
+    const date = new Date(time.getAttribute('datetime'));
     time.innerHTML = timeSince(date);
     setInterval(() => {
       time.innerHTML = timeSince(date);
@@ -20,14 +18,34 @@ function addEventListenersToInvitations() {
       event.preventDefault();
       event.stopPropagation();
 
-      socket.emit('accept-invite', JSON.stringify({ lobbyId }));
+      fetch(`/api/lobbies/${lobbyId}/invitations/accept`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      })
+      .then(async (res) => {
+        if (res.redirected) {
+          window.location.href = res.url;
+        } else {
+          const data = await res.json();
+          if (data.message) createFlashMessage(data.message);
+        }
+      })
+      .catch((err) => console.error(err));
     });
 
     declineButton.addEventListener('click', (event) => {
       event.preventDefault();
       event.stopPropagation();
 
-      socket.emit('decline-invite', JSON.stringify({ lobbyId }));
+      fetch(`/api/lobbies/${lobbyId}/invitations`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      })
+      .catch((err) => console.error(err));
     });
   }
 }
@@ -64,7 +82,7 @@ function createFlashMessage(message) {
 function createInvitation(invitation) {
   return (
     `<li id="${invitation.lobbyId}" class="invitation">
-      <span>You were invited to "${invitation.lobbyName}" <time class="time-since">${invitation.createdAt}</time> ago...</span>
+      <span>You were invited to <p class="lobby-name">${invitation.lobbyName}</p> <time datetime="${invitation.createdAt}" class="time-since">${timeSince(invitation.createdAt)}</time> ago...</span>
       <div>
         <button class="invitation-button decline">Decline</button>
         <button class="invitation-button accept">Accept</button>
@@ -107,29 +125,11 @@ window.onload = function() {
     }
   });
 
-  socket.on('invite-error', (message) => {
-    try {
-      const data = JSON.parse(message);
-      createFlashMessage(data.message);
-    } catch (err) {
-      console.error(err);
-    }
-  });
-
-  socket.on('redirect', (message) => {
-    try {
-      const data = JSON.parse(message);
-      if (data.pathname) window.location.href = baseURL + data.pathname;
-    } catch (err) {
-      console.error(err);
-    }
-  });
-
   window.addEventListener('pageshow', () => {
     const entries = performance.getEntriesByType('navigation');
     if (entries && entries.length > 0) {
       const navigationType = entries[0].type;
-      if ((navigationType === 'reload' || navigationType === 'back_forward' || navigationType === 'navigate') && socket.connected) {
+      if (navigationType === 'back_forward' && socket.connected) {
         window.location.reload();
       }
     }

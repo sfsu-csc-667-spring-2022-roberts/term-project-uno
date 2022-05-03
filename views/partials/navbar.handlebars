@@ -27,10 +27,14 @@
   </a>
   <div>
     <div class="nav-icon" id="nav-profile-pic">
-      {{#if user.pictureUrl}}
-      <img src="{{user.pictureUrl}}">
+      {{#if user.avatar}}
+        {{#if user.portrait}}
+        <img id="nav-avatar-portrait" src="{{user.avatar}}">
+        {{else}}
+        <img id="nav-avatar-landscape" src="{{user.avatar}}">
+        {{/if}}
       {{else}}
-      <img src="/images/default-profile-pic.png">
+      <img id="nav-avatar-portrait" src="/images/default-profile-pic.png">
       {{/if}}
     </div>
     <ul id="profile-dropdown" class="dropdown-menu">
@@ -56,5 +60,5 @@
   </ul>
   {{/if}}
   <script src="/socket.io/socket.io.js"></script>
-  <script defer type="text/javascript" src="/js/partials/navbar.js"></script>
+  <script type="text/javascript" src="/js/partials/navbar.js"></script>
 </nav>
