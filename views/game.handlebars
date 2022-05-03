@@ -11,7 +11,7 @@
     <title>{{title}}</title>
 </head>
 
-<body onload="{getBackgroundColor(); getMessages(); getGameState();}">
+<body onload="{ getBackgroundColor(); getMessages(); getGameState(); }">
 
     <svg id="message-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
         <path
@@ -39,6 +39,7 @@
     <button onclick="handleReverse();">REVERSE</button>
 
     <div class="main-deck-container"></div>
+    <script src="/socket.io/socket.io.js"></script>
 </body>
 
 </html>

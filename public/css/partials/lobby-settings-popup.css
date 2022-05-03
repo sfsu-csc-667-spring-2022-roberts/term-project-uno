@@ -1,0 +1,130 @@
+.error-message {
+  background-color: #fee;
+  color: #c33;
+  margin: 0;
+  padding: 0.25rem;
+  flex-basis: 100%;
+}
+
+.error-hidden {
+  display: none !important;
+  margin: 0 !important;
+}
+
+.success-message {
+  background-color: rgb(175, 255, 159);
+  color: rgb(33, 88, 22);
+  margin: 0;
+  padding: 0.25rem;
+  flex-basis: 100%;
+}
+
+#popup-container {
+  position: fixed;
+  justify-content: center;
+  z-index: 12;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  top: 0;
+  background-color: #4d4d4db0;
+}
+
+#lobby-settings-form {
+  display: flex;
+  flex-direction: column;
+  margin: 10rem auto 0 auto;
+  background-color: white;
+  width: 30rem;
+  overflow: hidden;
+  padding: 0;
+  box-shadow: rgba(0, 0, 0, 0.3) 0px 19px 38px, rgba(0, 0, 0, 0.22) 0px 15px 12px;
+  border-radius: 0.5rem;
+}
+
+#lobby-settings-form button {
+  background: #ee161f;
+  color: white;
+  font-weight: bold;
+  border: none;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  margin: 1rem 6rem;
+  box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 3px, rgba(0, 0, 0, 0.24) 0px 1px 2px;
+  transition: transform 0.15s ease-in-out;
+}
+
+#lobby-settings-form button:hover {
+  transform: scale(1.15);
+  -webkit-transform: scale(1.15);
+  -moz-transform: scale(1.15);
+  -o-transform: scale(1.15);
+}
+
+#lobby-settings-form input[type="text"] {
+  outline: none;
+  border: 1px solid #e5e5e5;
+  box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 3px, rgba(0, 0, 0, 0.24) 0px 1px 2px;
+  padding: 0.5rem;
+}
+
+#lobby-settings-form input[type="range"] {
+  width: 16rem;
+}
+
+#lobby-settings-form header {
+  display: flex;
+  background: #ee161f;
+  margin: 0;
+  height: 4rem;
+  justify-content: center;
+  align-items: center;
+  border-bottom: 0.2rem solid #d6151d;
+  color: white;
+}
+
+#feedback-container {
+  display: flex;
+  flex-direction: column;
+  margin: 1rem 2rem 0 2rem;
+}
+
+#lobby-name {
+  display: flex;
+  flex-direction: column;
+  margin: 0rem 2rem 1rem 2rem;
+}
+
+#lobby-password {
+  display: flex;
+  flex-direction: column;
+  margin: 1rem 2rem;
+}
+
+#lobby-password-keep {
+  display: flex;
+  align-items: center;
+  margin: 0rem 2rem 1rem 2rem;
+}
+
+#lobby-password-keep label {
+  margin-right: 0.5rem;
+}
+
+#player-capacity {
+  display: flex;
+  justify-content: space-between;
+  margin: 1rem 2rem;
+}
+
+#player-capacity div {
+  width: 18rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+#buttons-container {
+  display: flex;
+  justify-content: space-evenly;
+}

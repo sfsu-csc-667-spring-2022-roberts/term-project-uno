@@ -1,8 +1,7 @@
 <nav id="nav-container">
-  <img 
-    id="logo"
-    src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/UNO_Logo.svg/1280px-UNO_Logo.svg.png"
-  >
+  <a href="/">
+    <img id="logo" src="/images/uno-logo.png">
+  </a>
   <ul id="nav-links">
     <li>
       <a href="/" class="nav-link">Home</a>
@@ -20,14 +19,22 @@
   </form>
   {{#if user}}
   <a href="/notifications" class="nav-icon" id="nav-notifications">
-    <img src="/images/notifications.png">
+    {{#if notifications}}
+      <img id="notifications-icon" src="/images/notifications-signal.png">
+    {{else}}
+      <img id="notifications-icon" src="/images/notifications.png">
+    {{/if}}
   </a>
   <div>
     <div class="nav-icon" id="nav-profile-pic">
-      {{#if user.pictureUrl}}
-      <img src="{{user.pictureUrl}}">
+      {{#if user.avatar}}
+        {{#if user.portrait}}
+        <img id="nav-avatar-portrait" src="{{user.avatar}}">
+        {{else}}
+        <img id="nav-avatar-landscape" src="{{user.avatar}}">
+        {{/if}}
       {{else}}
-      <img src="/images/default-profile-pic.png">
+      <img id="nav-avatar-portrait" src="/images/default-profile-pic.png">
       {{/if}}
     </div>
     <ul id="profile-dropdown" class="dropdown-menu">
@@ -52,5 +59,6 @@
     </li>
   </ul>
   {{/if}}
-  <script defer src="/js/partials/navbar.js" type="module"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script type="text/javascript" src="/js/partials/navbar.js"></script>
 </nav>

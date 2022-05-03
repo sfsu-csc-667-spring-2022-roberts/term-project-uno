@@ -5,6 +5,17 @@ const messagesDiv = document.getElementById("messages");
 const messageInput = document.getElementById("message-input");
 const messageIcon = document.getElementById("message-icon");
 
+
+// ------ socket events
+socket.on('game-message-send', (message) => {
+    try {
+        const data = JSON.parse(message);
+        appendMessage(data);
+    } catch (err) {
+        console.error(err);
+    }
+});
+
 // ------ message events
 messageInput.addEventListener("keyup", (e) => {
     if (e.key === "Enter") {
@@ -41,25 +52,34 @@ const getMessages = async () => {
                 });
             }
         })
-        .catch(err => console.log(err))
+        .catch(err => console.error(err))
         .finally(() => {
             if (messagePopUpToggle) messagesDiv.scrollTop = messagesDiv.scrollHeight;
         });
 };
 
 const sendMessage = async () => {
-    if (messageInput.value.trim().length > 0) {
-        fetch(`/api${window.location.pathname}/messages`, {
+    if (messageInput.value.trim().length > 0) {   
+        const pathnames = window.location.pathname.split('/');
+        const gameId = pathnames[pathnames.length-1];
+
+        fetch(`/api/games/${gameId}/messages`, {
             method: 'POST',
-            headers: { "Content-Type": "application/json" },
+            headers: {
+              'Content-Type': 'application/json',
+            },
             body: JSON.stringify({ message: messageInput.value })
-        })
-            .then(response => response.json())
-            .then(data => {
-                messageInput.value = "";
-                getMessages();
-            })
-            .catch(err => console.log(err));
+          })
+          .then(async (res) => {
+            const data = await res.json();
+            if (res.status != 201 && data.message) {
+              console.log(data.message);
+            }
+          })
+          .catch((err) => console.error(err))
+          .finally(() => {
+            messageInput.value = '';
+          });
     }
 };
 
@@ -72,5 +92,10 @@ const createMessage = (message) => {
         </div>`
     );
 };
+
+const appendMessage = (message) => {
+    messagesDiv.innerHTML = messagesDiv.innerHTML + createMessage(message);
+    if (messagePopUpToggle) messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
 
 const timeFormat = (time) => `${time[0]}:${time[1]} ${time[2].split(" ")[1]}`;

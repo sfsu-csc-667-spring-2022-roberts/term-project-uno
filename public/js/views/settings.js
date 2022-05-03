@@ -2,6 +2,11 @@ import serializeForm from '../lib/serializeForm.js';
 
 const changeUsernameForm = document.getElementById('changeUsername');
 const changePasswordForm = document.getElementById('changePassword');
+const pictureFileUpload = document.getElementById('fileUpload');
+const changePictureForm = document.getElementById('changePicture');
+const profilePicture = document.getElementById('profileImage');
+let originalSrc = profilePicture.src;
+let originalClass = profilePicture.className;
 
 function validateUsernameForm(data) {
   return /^[a-z0-9]+$/i.test(data.username) && data.username.length <= 16;
@@ -87,10 +92,66 @@ async function informPasswordError(res) {
   }
 }
 
-/*
- Handle Picture submission here!
- should be PUT request at /api/users/avatar
-*/
+pictureFileUpload.addEventListener('change', (event) => {
+  event.preventDefault();
+  event.stopPropagation();
+
+  const fileInfo = pictureFileUpload.files[0];
+  const imgUrl = URL.createObjectURL(fileInfo);
+  const img = new Image();
+  const editOptions = document.getElementById('editOptions');
+  const fileUploadLabel = document.getElementById('upload-pic');
+  editOptions.style = "display:block";
+  fileUploadLabel.style = "display:none";
+  img.src = imgUrl;
+  profileImage.src = imgUrl;
+
+  img.onload = function(e) {
+    if (e.target.height > this.width) {
+      profileImage.className = 'profile-pic-portrait';
+    } else profileImage.className = 'profile-pic-landscape';
+  }
+})
+
+changePictureForm.addEventListener('reset' , (event) => {
+  event.preventDefault();
+  event.stopPropagation();
+
+  const editOptions = document.getElementById('editOptions');
+  const fileUploadLabel = document.getElementById('upload-pic');
+  editOptions.style = "display:none";
+  fileUploadLabel.style = "display:block";
+  pictureFileUpload.value = '';
+  profileImage.src = originalSrc;
+  profileImage.className = originalClass;
+})
+
+changePictureForm.addEventListener('submit' , (event) => {
+  event.preventDefault();
+  event.stopPropagation();
+
+  const fileInfo = pictureFileUpload.files[0];
+
+  let formData = new FormData();
+  formData.append('file', fileInfo);
+
+  const url = window.location.protocol + '//' + window.location.host;
+  fetch(url + '/api/users/avatar', {
+    method: 'PATCH',
+    body: formData,
+  })
+  .catch((err) => {
+    console.error(err);
+  })
+  .finally(() => {
+    const editOptions = document.getElementById('editOptions');
+    const fileUploadLabel = document.getElementById('upload-pic');
+    editOptions.style = 'display: none';
+    fileUploadLabel.style = 'display: block';
+    originalSrc = URL.createObjectURL(fileInfo);
+    originalClass = profileImage.className;
+  })
+})
 
 // Handle change username submission
 changeUsernameForm.addEventListener('submit', (event) => {
@@ -100,8 +161,7 @@ changeUsernameForm.addEventListener('submit', (event) => {
   const serializedData = serializeForm(changeUsernameForm);
 
   if (validateUsernameForm(serializedData)) {
-    const url = window.location.protocol + '//' + window.location.host;
-    fetch(url + '/api/users/', {
+    fetch('/api/users/', {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
@@ -151,16 +211,18 @@ document.getElementById('username').addEventListener('input', (event) => {
   const nameError = document.getElementById('name-error');
   const value = event.target.value;
   
-  if(value.length === 0) {
-    nameError.className = 'hidden';
-  } else if (!/^[a-z0-9]+$/i.test(value)) {
-    nameError.innerHTML = 'Username must be alphanumeric'
-    nameError.className = 'error-message';
-  } else if (value.length > 16) {
-    nameError.innerHTML = 'Username must be at most 16 characters long';
-    nameError.className = 'error-message';
-  } else {
-    nameError.className = 'hidden';
+  if (nameError) {
+    if(value.length === 0) {
+      nameError.className = 'hidden';
+    } else if (!/^[a-z0-9]+$/i.test(value)) {
+      nameError.innerHTML = 'Username must be alphanumeric'
+      nameError.className = 'error-message';
+    } else if (value.length > 16) {
+      nameError.innerHTML = 'Username must be at most 16 characters long';
+      nameError.className = 'error-message';
+    } else {
+      nameError.className = 'hidden';
+    }
   }
 });
 

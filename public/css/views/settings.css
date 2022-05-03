@@ -93,7 +93,7 @@ main {
   padding: 0.5rem;
 }
 
-#pictureForm {
+#changePicture {
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -107,6 +107,7 @@ main {
 }
 
 #profile-pic {
+  position: relative;
   height: 10rem;
   width: 10rem;
   background: white;
@@ -116,9 +117,26 @@ main {
   margin-bottom: 1rem;
 }
 
-#profile-pic img {
+.profile-pic-portrait {
   width: 100%;
   height: auto;
+  position: absolute;
+  left: -1000%;
+  right: -1000%;
+  top: -1000%;
+  bottom: -1000%;
+  margin: auto;
+}
+
+.profile-pic-landscape {
+  width: auto;
+  height: 100%;
+  position: absolute;
+  left: -1000%;
+  right: -1000%;
+  top: -1000%;
+  bottom: -1000%;
+  margin: auto;
 }
 
 #upload-pic {
@@ -142,5 +160,9 @@ main {
 }
 
 #upload-pic input[type=file] {
+  display: none;
+}
+
+#editOptions {
   display: none;
 }

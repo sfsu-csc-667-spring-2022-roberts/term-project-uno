@@ -1,0 +1,53 @@
+<div id="popup-container" class="hidden">
+  <form id="lobby-settings-form" class="popup">
+    <header>
+      <h2>Lobby Settings</h2>
+    </header>
+    <section id="feedback-container">
+      <p class="hidden" id="feedback"></p>
+    </section>
+    <section id="lobby-name">
+      <input 
+        type="text"
+        placeholder="Lobby Name"
+        value="{{lobbyName}}"
+        id="lobby-name-input"
+        name="lobbyName"
+        aria-describedby="name-error"
+        required>
+      <p class="error-hidden" id="name-error"></p>
+    </section>
+    <section id="lobby-password">
+      <input 
+        type="text"
+        placeholder="Password (Optional)"
+        id="lobby-password-input"
+        name="password"
+        {{#if isPrivate}}
+          disabled
+        {{else}}{{/if}}
+        >
+      <p class="error-hidden" id="password-error"></p>
+    </section>
+    <section id="lobby-password-keep">
+      <label for="password-checkbox">Keep Current Password</label>
+      {{#if isPrivate}}
+        <input id="password-checkbox" type="checkbox" checked="checked">
+      {{else}}
+        <input id="password-checkbox" type="checkbox">
+      {{/if}}
+    </section>
+    <section id="player-capacity">
+      <label for="maxPlayers">Maximum Players</label>
+      <div>
+        <input type="range" min="2" max="10" value="{{maxPlayers}}" id="maxPlayers" oninput="this.nextElementSibling.value = this.value" name="maxPlayers">
+        <output id="num-players-output">{{maxPlayers}}</output>
+      </div>
+    </section>
+    <section id="buttons-container">
+      <button id="cancel-popup">Exit</button>
+      <button id="update-lobby-button" type="Submit">Update</button>
+    </section>
+  </form>
+  <script defer type="module" src="/js/partials/lobby-settings-popup.js"></script>
+</div>

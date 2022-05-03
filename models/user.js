@@ -31,7 +31,11 @@ module.exports = (sequelize, DataTypes) => {
       User.hasMany(models.GameMessage, {
         foreignKey: 'userId'
       });
-      User.hasMany(models.LobbyInvitatio, {
+      User.hasMany(models.LobbyInvitation, {
+        foreignKey: 'userId'
+      });
+      // profile picture
+      User.hasOne(models.Avatar, {
         foreignKey: 'userId'
       });
     }

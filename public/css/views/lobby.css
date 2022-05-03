@@ -1,67 +1,270 @@
 body {
-    font: 14px 'Lucida Grande', Helvetica, Arial, sans-serif;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100vw;
-    height: 100vh;
-    margin: 0;
-  }
-  
-  main {
-    margin-top: 5rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 80%;
-    height: 80%;
-  }
+  font: 14px 'Lucida Grande', Helvetica, Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+}
 
-  .big-buttons {
-      display: flex;
-      flex-direction: row;
-      justify-content: space-evenly;
-      align-self: center;
-  }
+main {
+  margin-top: 5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 80%;
+  height: 80%;
+}
 
-  .button2 {
-      background-color: rgb(203, 146, 146);
-  }
-  
-  input {
-    width: 90%
-  }
-  
-  .search-container {
-    display: flex;
-    justify-content: center;
-  }
+.hidden {
+  visibility: hidden;
+}
 
-  .player-container {
-      width: 50vh;
-      height: 50vh;
-      align-items: center;
-  }
-  
-  .lobby-list-container {
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .header-container, .lobby-container {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-evenly;
-    border: 1px solid black;
-  }
-  
-  .lobby-container {
-    min-height: 50px;
-    align-items: center;
-  }
-  .lobby-name-header, .lobby-name {
-    width: 70%;
-    padding-left: 100px;
-  }
-  
+.invite-error {
+  width: 14.2325rem;
+  color: #c33;
+  background-color: #fee;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  padding: 0.25rem;
+  margin: 0;
+}
+
+.invite-success {
+  width: 14.2325rem;
+  color: rgb(33, 88, 22);
+  background-color: rgb(175, 255, 159);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  padding: 0.25rem;
+  margin: 0;
+}
+
+.lobby-avatar-portrait {
+  width: 100%;
+  height: auto;
+  position: absolute;
+  left: -1000%;
+  right: -1000%;
+  top: -1000%;
+  bottom: -1000%;
+  margin: auto;
+}
+
+.lobby-avatar-landscape {
+  width: auto;
+  height: 100%;
+  position: absolute;
+  left: -1000%;
+  right: -1000%;
+  top: -1000%;
+  bottom: -1000%;
+  margin: auto;
+}
+
+.lobby-button {
+  background: #ee161f;
+  color: white;
+  font-weight: bold;
+  border: none;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 3px, rgba(0, 0, 0, 0.24) 0px 1px 2px;
+  transition: all 0.15s ease-in-out;
+}
+
+.lobby-button:hover:enabled {
+  transform: scale(1.15);
+  -webkit-transform: scale(1.15);
+  -moz-transform: scale(1.15);
+  -o-transform: scale(1.15);
+}
+
+.lobby-button:disabled {
+  color: rgb(114, 114, 114);
+  background: #b59193;
+  cursor: default;
+}
+
+.lobby-unavailable {
+  background: rgb(108,7,11);
+  background: linear-gradient(0deg, rgba(108,7,11,1) 0%, rgba(184,14,21,1) 100%);
+  color: white;
+  outline: 0.12rem solid rgb(144, 173, 196);
+  height: 3.9rem;
+}
+
+.lobby-guest {
+  background: rgb(0,49,88);
+  background: linear-gradient(0deg, rgb(0, 60, 109) 0%, rgba(0,99,179,1) 75%);
+  color: white;
+  outline: 0.12rem solid rgb(144, 173, 196);
+  height: 3.9rem;
+}
+
+.lobby-guest-name {
+  width: 35%;
+}
+
+.lobby-guest-status {
+  width: 23%;
+}
+
+.lobby-guest-icon {
+  position: relative;
+  height: 2.5rem;
+  width: 2.5rem;
+  margin: auto;
+  background: white;
+  border-radius: 100%;
+  overflow: hidden;
+  box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 3px, rgba(0, 0, 0, 0.24) 0px 1px 2px;
+}
+
+.lobby-guest-icon-col {
+  width: 20%;
+}
+
+.notification {
+  font-style: italic;
+}
+
+#content-container {
+  display: flex;
+  flex-direction: column;
+  height: 35rem;
+}
+
+#lobby-container {
+  display: flex;
+  width: 60rem;
+  height: 20rem;
+}
+
+#lobby-members-list {
+  display: flex;
+  width: 43rem;
+  border-radius: 0.25rem;
+  border: 0.25rem solid rgb(144, 173, 196);
+}
+
+#lobby-members-list table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+#lobby-members-list td {
+  text-align: center;
+}
+
+#lobby-menu {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 16.75rem;
+  height: 100%;
+  margin-left: 0.25rem;
+  border-radius: 0.25rem;
+  background: rgb(102,123,139);
+  background: linear-gradient(0deg, rgba(102,123,139,1) 0%, rgba(177,201,221,1) 75%);
+}
+
+#lobby-options {
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  padding: 1.5rem 0.5rem;
+}
+
+#invitation-container {
+  display: flex;
+  flex-direction: column;
+  padding: 0.5rem;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 3.4375rem;
+}
+
+#invitation-container input {
+  height: 1rem;
+  padding: 0.25rem;
+}
+
+#invitation-container input:focus {
+  outline: none;
+}
+
+#invitation-container form {
+  width: 14.7325rem;
+}
+
+#lobby-info-container {
+  display: flex;
+  height: 3rem;
+  width: 60rem;
+  align-items: center;
+  justify-content: space-between;
+  background: rgb(102,123,139);
+  background: linear-gradient(0deg, rgba(102,123,139,1) 0%, rgba(177,201,221,1) 75%);
+}
+
+#lobby-title {
+  color: rgb(203, 231, 255);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  margin-left: 0.5rem;
+  width: 54rem;
+  font-size: 0.9rem;
+}
+
+#title-div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 56.5rem;
+  height: 2rem;
+  margin: 0.5rem 0 0.5rem 0.5rem;
+  background: rgb(58, 95, 129);
+}
+
+#lobby-type-icon {
+  width: 2rem;
+  height: 2rem;
+}
+
+#settings {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 2rem;
+  height: 2rem;
+  background: #ee161f;
+  margin-right: 0.5rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+}
+
+#settings:hover {
+  transform: scale(1.15);
+  -webkit-transform: scale(1.15);
+  -moz-transform: scale(1.15);
+  -o-transform: scale(1.15);
+}
+
+#settings-icon {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+#uno-lobby-logo {
+  width: 10rem;
+  height: auto;
+  align-self: center;
+  margin-top: 3rem;
+}

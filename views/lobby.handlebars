@@ -6,69 +6,188 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" type="text/css" href="/css/views/lobby.css" />
     <link rel="stylesheet" type="text/css" href="/css/partials/navbar.css" />
-    <link rel="stylesheet" type="text/css" href="/css/partials/messages.css" />
+    <link rel="stylesheet" type="text/css" href="/css/partials/lobby-messages.css">
+    <link rel="stylesheet" type="text/css" href="/css/partials/lobby-settings-popup.css">
+    <link rel="stylesheet" type="text/css" href="/css/scrollbar.css">
     <script defer type="text/javascript" src="/js/views/lobby.js"></script>
-
-
+    <script defer type="text/javascript" src="/js/partials/lobby-messages.js"></script>
     <title>{{title}}</title>
+    {{assign "isHost" isHost}}
   </head>
-  <body>
+  <body onload="{initMessages(); initLobby();}">
     {{> navbar}}
     <main>
-
-
-        <div class = "player-container">
-        <div class="header-container">
-          <div class="lobby-name-header">{{lobbyName}}</div>
-          <div class="player-count-header">{{currentPlayers}}/{{maxCount}}</div>
+      <div id="lobby-info-container">
+        <div id="title-div">
+          <h3 id="lobby-title">{{lobbyName}}</h3>
+          {{#if isPrivate}}
+            <img id="lobby-type-icon" src="/images/private.png">
+          {{else}}
+            <img id="lobby-type-icon" src="/images/public.png">
+          {{/if}}
         </div>
-        <div class="lobby-container">
-            <div class="lobby-name">{{hostName}} (Host)</div>
-            {{#each guest}}
-              <div class="lobby-name">{{this.username}} Ready: {{this.ready}}</div>
-            {{/each}}
-        </div>  
-        </div>
-
-        <div class="big-buttons">
-            <button type="button" class="button2">Leave</button>
+        {{#if isHost}}
+          <div id="settings">
+            <img id="settings-icon" src="/images/gear.png">
+          </div>
+        {{else}}
+          <div id="settings" class="hidden">
+            <img id="settings-icon" src="/images/gear.png">
+          </div>
+        {{/if}}
+      </div>
+      <div id="content-container">
+        <div id="lobby-container">
+          <div id="lobby-members-list">
+            <table>
+              <tbody id="list-1">
+                {{#each leftList}}
+                  {{#if empty}}
+                    <tr class="lobby-guest">
+                      <td class="lobby-guest-icon-col"></td>
+                      <td class="lobby-guest-name"></td>
+                      <td class="lobby-guest-status"></td>
+                      <td></td>
+                    </tr>
+                  {{else if unavailable}}
+                    <tr class="lobby-unavailable">
+                      <td class="lobby-guest-icon-col"></td>
+                      <td class="lobby-guest-name"></td>
+                      <td class="lobby-guest-status"></td>
+                      <td></td>
+                    </tr>
+                  {{else}}
+                  <tr class="lobby-guest">
+                    <td class="lobby-guest-icon-col">
+                      <div class="lobby-guest-icon">
+                        {{#if this.avatar}}
+                          {{#if this.portrait}}
+                          <img class="lobby-avatar-portrait" src="{{this.avatar}}">
+                          {{else}}
+                          <img class="lobby-avatar-landscape" src="{{this.avatar}}">
+                          {{/if}}
+                        {{else}}
+                          <img class="lobby-avatar-portrait" src="/images/default-profile-pic.png">
+                        {{/if}}
+                      </div>
+                    </td>
+                    <td class="lobby-guest-name">{{this.username}}</td>
+                    {{#if this.host}}
+                     <td class="lobby-guest-status">Host</td>
+                    {{else}}
+                      {{#if this.ready}}
+                        <td class="lobby-guest-status">Ready</td>
+                      {{else}}
+                        <td class="lobby-guest-status">Not Ready</td>
+                      {{/if}}
+                    {{/if}}
+                    {{#if this.host}}
+                      <td></td>
+                    {{else}}
+                      {{#varEquals "isHost" true}}
+                        <td class="lobby-guest-kick">
+                          <button id="{{this.id}}" class="lobby-button kick">Kick</button>
+                        </td>
+                      {{else}}
+                        <td></td>
+                      {{/varEquals}}
+                    {{/if}}
+                  </tr>
+                  {{/if}}
+                {{/each}}
+              </tbody>
+            </table>
+            <table>
+              <tbody id="list-2">
+                {{#each rightList}}
+                  {{#if empty}}
+                    <tr class="lobby-guest">
+                      <td class="lobby-guest-icon-col"></td>
+                      <td class="lobby-guest-name"></td>
+                      <td class="lobby-guest-status"></td>
+                      <td></td>
+                  </tr>
+                  {{else if unavailable}}
+                    <tr class="lobby-unavailable">
+                      <td class="lobby-guest-icon-col"></td>
+                      <td class="lobby-guest-name"></td>
+                      <td class="lobby-guest-status"></td>
+                      <td></td>
+                    </tr>
+                  {{else}}
+                  <tr class="lobby-guest">
+                    <td class="lobby-guest-icon-col">
+                      <div class="lobby-guest-icon">
+                        {{#if this.avatar}}
+                          <img src="https://csc665-term-project-uno.s3.us-west-1.amazonaws.com/{{this.avatar}}">
+                        {{else}}
+                          <img src="/images/default-profile-pic.png">
+                        {{/if}}
+                      </div>
+                    </td>
+                    <td class="lobby-guest-name">{{this.username}}</td>
+                    {{#if this.host}}
+                     <td class="lobby-guest-status">Host</td>
+                    {{else}}
+                      {{#if this.ready}}
+                        <td class="lobby-guest-status">Ready</td>
+                      {{else}}
+                        <td class="lobby-guest-status">Not Ready</td>
+                      {{/if}}
+                    {{/if}}
+                    {{#if this.host}}
+                      <td></td>
+                    {{else}}
+                      {{#varEquals "isHost" true}}
+                        <td class="lobby-guest-kick">
+                          <button id="{{this.id}}" class="lobby-button kick">Kick</button>
+                        </td>
+                      {{else}}
+                        <td></td>
+                      {{/varEquals}}
+                    {{/if}}
+                  </tr>
+                  {{/if}}
+                {{/each}}
+              </tbody>
+            </table>
+          </div>
+          <div id="lobby-menu">
+            <img id="uno-lobby-logo" src="/images/uno-logo.png">
             {{#if isHost}}
-              <button type="button" class="start-button" onclick="start({{lobbyId}})">Start</button>
+            <div id="invitation-container">
+              <span id="invite-error" class="invite-error hidden"></span>
+              <form>
+                <input type="text" placeholder="Username" id="username" name="username">
+                <button id="invite-button" class="lobby-button">Invite</button>
+              </form>
+            </div>
             {{else}}
-              <button type="button" class="button2" id="ready" onclick="colorchange()">Say I'm Ready</button>
             {{/if}}
-
+            <div id="lobby-options">
+              {{#if isHost}}
+                {{#if guestsReady}}
+                  <button id="start-button" class="lobby-button">Start</button>
+                {{else}}
+                  <button disabled id="start-button" class="lobby-button">Start</button>
+                {{/if}}
+              {{else}}
+              <button id="ready-button" class="lobby-button">Ready</button>
+              {{/if}}
+              <button id='leave-button' class="lobby-button">Leave Lobby</button>
+            </div>
+          </div>
         </div>
-<div>
-    <svg id="message-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-        <path
-            d="M5.2 22c-.4 0-.9-.1-1.3-.2s-.6-.3-.8-.5l-.1-.1c-.1-.1-.2-.3-.2-.4 0-.2.1-.3.3-.4.8-.4 1.5-1.1 1.9-1.9 0-.1 0-.2.1-.3C2.3 16.5.7 13.8.7 11 .6 6 5.7 2 12 2c6.3 0 11.4 4 11.4 9s-5.1 9.1-11.4 9.1c-.6 0-1.3 0-1.9-.1-1.5 1.3-3.2 2-4.9 2zm-1-1.1c1.7.4 3.7-.3 5.5-1.8 0-.1.2-.2.3-.1.6.1 1.3.1 2 .1 5.7 0 10.4-3.6 10.4-8.1S17.7 3 12 3 1.6 6.6 1.6 11c0 2.6 1.6 5 4.3 6.5.2.1.3.4.2.6 0 .3-.1.6-.3.9-.4.8-1 1.4-1.6 1.9z" />
-    </svg>
-
-    <div id="messages-container" class="hidden">
-        <div id="messages"></div>
-        <textarea id="message-input" placeholder="Type message..."></textarea>
-        <svg onclick="sendMessage();" id="message-send-btn" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-            viewBox="0 0 24 24">
-            <path fillRule="evenodd"
-                d="M4.10514201,11.8070619 L2.74013818,2.2520351 L22.236068,12 L2.74013818,21.7479649 L4.10514201,12.1929381 L4.87689437,12 L4.10514201,11.8070619 Z M5.25986182,5.7479649 L5.89485799,10.1929381 L13.1231056,12 L5.89485799,13.8070619 L5.25986182,18.2520351 L17.763932,12 L5.25986182,5.7479649 Z" />
-        </svg>
-    </div>
-    </div>
-
-
-
+        {{> lobby-messages}}
+      </div>
     </main>
+    {{> lobby-settings-popup}}
+    <script>
+      const userId = "{{user.id}}"
+      const lobbyId = "{{lobbyId}}"
+      let lobbyName = "{{lobbyName}}"
+      let isPrivate = "{{isPrivate}}"
+      let maxPlayers = "{{maxPlayers}}"
+    </script>
   </body>
 </html>
-
-
-
-
-
-<script>
-function colorchange()
-{
-      document.getElementById("ready").style.background = "rgb(122, 221, 92)";
-}
-</script>
