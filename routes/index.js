@@ -180,12 +180,12 @@ router.get('/lobbies/:lobbyId(\\d+)', authenticate, async (req, res, next) => {
       ]);
       const lobbyMembers = results[0];
       const guestsReady = results[1];
-      const { leftList, rightList } = splitLobbyMembers(lobbyMembers);
+      const { leftList, rightList } = splitLobbyMembers(lobbyMembers, lobby.playerCapacity);
 
       res.render('lobby', {
-        layout: false, title:  `Uno Lobby #${lobbyId}`, lobbyId,
+        layout: false, title:  `Uno Lobby #${lobbyId}`, lobbyId, maxPlayers: lobby.playerCapacity,
         lobbyName: lobby.name, leftList, rightList, guestsReady, isHost: req.user.id === lobby.hostId,
-        user: req.user, notifications: results[2]
+        isPrivate: lobby.password != null, user: req.user, notifications: results[2]
       });
     } 
     else if (lobby && lobby.busy) {

@@ -1,9 +1,15 @@
-
+const lobbyTitle = document.getElementById('lobby-title');
+const lobbyTypeLogo = document.getElementById('lobby-type-icon');
+const popupContainer = document.getElementById('popup-container');
+const numPlayersLabel = document.getElementById('num-players-output');
+const numPlayersInput = document.getElementById('maxPlayers');
 const leftTableBody = document.getElementById('list-1');
 const rightTableBody = document.getElementById('list-2');
 const lobbyMenu = document.getElementById('lobby-menu');
 const readyButton = document.getElementById('ready-button');
+const settings = document.getElementById('settings');
 const baseURL = `${window.location.protocol}//${window.location.host}`;
+
 let leaveButton = document.getElementById('leave-button');
 let startButton = document.getElementById('start-button');
 let inviteInput = document.getElementById('username');
@@ -37,6 +43,16 @@ function createGuestRow(guest) {
       </tr>`
     );
   }
+  else if (guest.unavailable) {
+    return (
+      `<tr class="lobby-unavailable">
+        <td class="lobby-guest-icon-col"></td>
+        <td class="lobby-guest-name"></td>
+        <td class="lobby-guest-status"></td>
+        <td></td>
+      </tr>`
+    );
+  }
   return (
     `<tr class="lobby-guest">
       <td class="lobby-guest-icon-col">
@@ -57,6 +73,16 @@ function createGuestRowAsHost(guest) {
   if (guest.empty) {
     return (
       `<tr class="lobby-guest">
+        <td class="lobby-guest-icon-col"></td>
+        <td class="lobby-guest-name"></td>
+        <td class="lobby-guest-status"></td>
+        <td></td>
+      </tr>`
+    );
+  }
+  else if (guest.unavailable) {
+    return (
+      `<tr class="lobby-unavailable">
         <td class="lobby-guest-icon-col"></td>
         <td class="lobby-guest-name"></td>
         <td class="lobby-guest-status"></td>
@@ -144,12 +170,49 @@ function initLobby() {
     }
   });
 
+  socket.on('lobby-update', (message) => {
+    try {
+      const data = JSON.parse(message);
+      const leftGuests = leftTableBody.children;
+      const rightGuests = rightTableBody.children;
+      let count = 1;
+
+      lobbyTitle.innerHTML = data.lobbyName;
+      lobbyName = data.lobbyName;
+      maxPlayers = data.maxPlayers;
+      isPrivate = data.isPrivate;
+      lobbyTypeLogo.setAttribute('src', isPrivate ? '/images/private.png' : '/images/public.png');
+
+      for (let i = 0; i < leftGuests.length; i++) {
+        const element = leftGuests[i];
+        if (count > maxPlayers) {
+          element.className = 'lobby-unavailable';
+        } else if (element.className = 'lobby-unavailable') {
+          element.className = 'lobby-guest'
+        }
+        count += 1;
+      }
+
+      for (let i = 0; i < rightGuests.length; i++) {
+        const element = rightGuests[i];
+        if (count > maxPlayers) {
+          element.className = 'lobby-unavailable';
+        } else if (element.className = 'unavailable') {
+          element.className = 'lobby-guest'
+        }
+        count += 1;
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  });
+
   socket.on('upgrade-to-lobby-host', (message) => {
     try {
       const data = JSON.parse(message);
 
       if (lobbyMenu) {
-        lobbyMenu.innerHTML = `<h3 id="lobby-title">${lobbyName}</h3>
+        lobbyMenu.innerHTML = `<img id="uno-lobby-logo" src="/images/uno-logo.png">
         <div id="invitation-container">
           <span id="invite-error" class="invite-error hidden"></span>
           <form>
@@ -162,6 +225,7 @@ function initLobby() {
           <button id="leave-button" class="lobby-button">Leave Lobby</button>
         </div>
         `;
+        document.getElementById('settings').className = '';
         leaveButton = document.getElementById('leave-button');
         startButton = document.getElementById('start-button');
         if (leaveButton) {
@@ -307,6 +371,12 @@ function initLobby() {
         .catch((err) => console.error(err));
       }
     });
+  }
+
+  if (settings) {
+    settings.addEventListener('click', (event) => {
+      popupContainer.className = '';
+    })
   }
 
   addKickButtonListener();

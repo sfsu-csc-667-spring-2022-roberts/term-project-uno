@@ -82,7 +82,7 @@ function createFlashMessage(message) {
 function createInvitation(invitation) {
   return (
     `<li id="${invitation.lobbyId}" class="invitation">
-      <span>You were invited to "${invitation.lobbyName}" <time datetime="${invitation.createdAt}" class="time-since">${timeSince(invitation.createdAt)}</time> ago...</span>
+      <span>You were invited to <p class="lobby-name">${invitation.lobbyName}</p> <time datetime="${invitation.createdAt}" class="time-since">${timeSince(invitation.createdAt)}</time> ago...</span>
       <div>
         <button class="invitation-button decline">Decline</button>
         <button class="invitation-button accept">Accept</button>

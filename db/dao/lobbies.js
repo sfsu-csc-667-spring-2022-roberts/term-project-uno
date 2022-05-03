@@ -186,6 +186,26 @@ async function setHost(newHostId, lobbyId) {
   .catch((err) => Promise.reject(err));
 }
 
+async function updateLobby(lobbyId, lobbyName, maxPlayers) {
+  return db.one(`
+    UPDATE "Lobbies"
+    SET name = $2, "playerCapacity" = $3
+    WHERE id = $1
+    RETURNING *
+  `, [lobbyId, lobbyName, maxPlayers])
+  .catch((err) => Promise.reject(err));
+}
+
+async function updateLobbyAndPassword(lobbyId, lobbyName, maxPlayers, password) {
+  return db.one(`
+    UPDATE "Lobbies"
+    SET name = $2, "playerCapacity" = $3, password = $4
+    WHERE id = $1
+    RETURNING *
+  `, [lobbyId, lobbyName, maxPlayers, password])
+  .catch((err) => Promise.reject(err));
+}
+
 module.exports = {
   createPrivate,
   createPublic, 
@@ -197,4 +217,6 @@ module.exports = {
   setHost,
   verifyHost,
   verifyHostOrGuest,
+  updateLobby,
+  updateLobbyAndPassword
 }

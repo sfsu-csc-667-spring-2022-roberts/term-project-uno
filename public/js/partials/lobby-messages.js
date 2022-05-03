@@ -45,7 +45,6 @@ function initMessages() {
   socket.on('lobby-message-send', (message) => {
     try {
       const data = JSON.parse(message);
-      console.log(data);
       appendMessage(data);
     } catch (err) {
       console.error(err);
@@ -56,7 +55,6 @@ function initMessages() {
   .then(response => response.json())
   .then((data) => {
     if (data.messages) {
-      console.log(data.messages);
       messages.innerHTML = '';
       data.messages.forEach((message) => {
         messages.innerHTML = messages.innerHTML + createMessage(message);

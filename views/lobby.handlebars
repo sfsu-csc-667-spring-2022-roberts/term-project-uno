@@ -7,6 +7,7 @@
     <link rel="stylesheet" type="text/css" href="/css/views/lobby.css" />
     <link rel="stylesheet" type="text/css" href="/css/partials/navbar.css" />
     <link rel="stylesheet" type="text/css" href="/css/partials/lobby-messages.css">
+    <link rel="stylesheet" type="text/css" href="/css/partials/lobby-settings-popup.css">
     <link rel="stylesheet" type="text/css" href="/css/scrollbar.css">
     <script defer type="text/javascript" src="/js/views/lobby.js"></script>
     <script defer type="text/javascript" src="/js/partials/lobby-messages.js"></script>
@@ -16,6 +17,25 @@
   <body onload="{initMessages(); initLobby();}">
     {{> navbar}}
     <main>
+      <div id="lobby-info-container">
+        <div id="title-div">
+          <h3 id="lobby-title">{{lobbyName}}</h3>
+          {{#if isPrivate}}
+            <img id="lobby-type-icon" src="/images/private.png">
+          {{else}}
+            <img id="lobby-type-icon" src="/images/public.png">
+          {{/if}}
+        </div>
+        {{#if isHost}}
+          <div id="settings">
+            <img id="settings-icon" src="/images/gear.png">
+          </div>
+        {{else}}
+          <div id="settings" class="hidden">
+            <img id="settings-icon" src="/images/gear.png">
+          </div>
+        {{/if}}
+      </div>
       <div id="content-container">
         <div id="lobby-container">
           <div id="lobby-members-list">
@@ -28,7 +48,14 @@
                       <td class="lobby-guest-name"></td>
                       <td class="lobby-guest-status"></td>
                       <td></td>
-                  </tr>
+                    </tr>
+                  {{else if unavailable}}
+                    <tr class="lobby-unavailable">
+                      <td class="lobby-guest-icon-col"></td>
+                      <td class="lobby-guest-name"></td>
+                      <td class="lobby-guest-status"></td>
+                      <td></td>
+                    </tr>
                   {{else}}
                   <tr class="lobby-guest">
                     <td class="lobby-guest-icon-col">
@@ -80,6 +107,13 @@
                       <td class="lobby-guest-status"></td>
                       <td></td>
                   </tr>
+                  {{else if unavailable}}
+                    <tr class="lobby-unavailable">
+                      <td class="lobby-guest-icon-col"></td>
+                      <td class="lobby-guest-name"></td>
+                      <td class="lobby-guest-status"></td>
+                      <td></td>
+                    </tr>
                   {{else}}
                   <tr class="lobby-guest">
                     <td class="lobby-guest-icon-col">
@@ -119,7 +153,7 @@
             </table>
           </div>
           <div id="lobby-menu">
-            <h3 id="lobby-title">{{lobbyName}}</h3>
+            <img id="uno-lobby-logo" src="/images/uno-logo.png">
             {{#if isHost}}
             <div id="invitation-container">
               <span id="invite-error" class="invite-error hidden"></span>
@@ -147,10 +181,13 @@
         {{> lobby-messages}}
       </div>
     </main>
+    {{> lobby-settings-popup}}
     <script>
       const userId = "{{user.id}}"
-      const lobbyName = "{{lobbyName}}"
       const lobbyId = "{{lobbyId}}"
+      let lobbyName = "{{lobbyName}}"
+      let isPrivate = "{{isPrivate}}"
+      let maxPlayers = "{{maxPlayers}}"
     </script>
   </body>
 </html>

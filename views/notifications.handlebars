@@ -19,7 +19,7 @@
       {{#if invitations}}
         {{#each invitations}}
           <li id="{{this.lobbyId}}" class="invitation">
-            <span>You were invited to "{{this.lobbyName}}" <time datetime="{{this.createdAt}}" class="time-since">{{this.timeSince}}</time> ago...</span>
+            <span>You were invited to <p class="lobby-name">{{this.lobbyName}}</p> <time datetime="{{this.createdAt}}" class="time-since">{{this.timeSince}}</time> ago...</span>
             <div>
               <button class="invitation-button decline">Decline</button>
               <button class="invitation-button accept">Accept</button>

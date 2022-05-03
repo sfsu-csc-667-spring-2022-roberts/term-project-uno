@@ -5,7 +5,7 @@ const registerForm = document.getElementById('registerForm');
 function validateSerializedData(data) {
   return /^[a-z0-9]+$/i.test(data.username) && data.username.length <= 16 &&
     data.password.length >= 4 && data.password.length <= 32 &&
-    data.password === data.confirmPassword;
+    data.password === data.confirmPassword && !(/\s/.test(data.password));
 }
 
 // Handle registration submission
@@ -19,7 +19,7 @@ registerForm.addEventListener('submit', (event) => {
   error.innerHTML = ''
   error.className = 'hidden';
 
-  if(validateSerializedData(serializedData)){
+  if (validateSerializedData(serializedData)) {
     fetch('/api/users/', {
       method: 'POST',
       headers: {
@@ -73,6 +73,9 @@ document.getElementById('password').addEventListener('input', (event) => {
 
   if (value.length < 4 || value.length > 32) {
     passwordError.innerHTML = 'Password must be between 4 and 32 characters long';
+    passwordError.className = 'error-message';
+  } else if (/\s/.test(value)) {
+    passwordError.innerHTML = 'Password cannot contain whitespace';
     passwordError.className = 'error-message';
   } else {
     passwordError.className = 'hidden';

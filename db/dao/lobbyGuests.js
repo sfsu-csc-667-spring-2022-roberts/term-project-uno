@@ -14,6 +14,19 @@ async function findLobbyGuests(guestId) {
   .catch((err) => Promise.reject(err));
 }
 
+async function findNumberOfGuests(lobbyId) {
+  return db.query(`
+    SELECT count(*)
+    FROM "LobbyGuests"
+    WHERE "lobbyId" = $1
+  `, [lobbyId])
+  .then((results) => {
+    if (results && results.length === 1) return Promise.resolve(parseInt(results[0].count));
+    return Promise.resolve(0);
+  })
+  .catch((err) => Promise.reject(err))
+}
+
 async function getAllLobbyGuests() {
   return db.query(`
     SELECT *
@@ -122,5 +135,6 @@ module.exports = {
   verifyGuest,
   removeOldestGuest,
   toggleReady,
-  verifyAllGuestsReady
+  verifyAllGuestsReady,
+  findNumberOfGuests
 };

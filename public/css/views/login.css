@@ -92,10 +92,6 @@ main {
   justify-content: center;
   align-items: center;
   border-bottom: 0.2rem solid #d6151d;
-
-}
-
-#loginForm header h2 {
   color: white;
 }
 
