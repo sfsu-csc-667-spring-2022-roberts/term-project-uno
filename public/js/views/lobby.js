@@ -105,11 +105,12 @@ function createGuestRowAsHost(guest) {
 }
 
 function checkIfUserWasKicked(list) {
-  list.forEach((guests) => {
+  for (let i = 0; i < list.length; i++) {
+    const guests = list[i];
     for (let j = 0; j < guests.length; j++) {
       if (userId == guests[j].id) return false;
     }
-  })
+  }
   return true;
 }
 
@@ -120,7 +121,6 @@ function initLobby() {
 
       if (data.host && startButton) startButton.disabled = !data.guestsReady;
   
-      console.log(data);
       for (let i = 0; i < data.list.length; i++) {
         const tbody = document.getElementById(`list-${i}`);
         tbody.innerHTML = '';
@@ -231,7 +231,6 @@ function initLobby() {
         }
         if (startButton) {
           startButton.addEventListener('click', (e) => {
-            console.log('clicked');
             fetch(`/api/games/`, {
               method: 'POST',
               headers: {
