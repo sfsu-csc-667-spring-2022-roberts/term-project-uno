@@ -31,12 +31,13 @@ router.post('/', authenticate, async (req, res) => {
 
   const hostId = req.user.id;
   const { lobbyName, maxPlayers, password } = req.body;
+  let newLobby;
 
   try {
-    let newLobby;
     if (password != null && password != '') {
       newLobby = await LobbyDao.createPrivate(hostId, lobbyName, maxPlayers, password);
     } else newLobby = await LobbyDao.createPublic(hostId, lobbyName, maxPlayers);
+
     res.redirect(`/lobbies/${newLobby.id}`);
   } catch (err) {
     console.error(err);
@@ -51,10 +52,9 @@ router.patch('/:lobbyId(\\d+)', authenticate, async (req, res) => {
 
   const { lobbyId } = req.params;
   const { lobbyName, maxPlayers, password, updatePassword } = req.body;
+  let lobby;
 
   try {
-    let lobby;
-
     if (!(await LobbyDao.verifyHost(req.user.id, lobbyId))) {
       return res.status(401).json({ message: 'You must be the host to update lobby information' });
     }
