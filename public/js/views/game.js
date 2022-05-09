@@ -41,13 +41,26 @@ socket.on('play-card-choose', (data) => {
 socket.on('play-card-swap', (data) => {
     console.log(data);
 });
-
-// ------ socket methods
-const joinGameRoom = () => {
-    const pathnames = window.location.pathname.split('/');
-    const gameId = pathnames[pathnames.length-1];
-    socket.emit('join-game-room', JSON.stringify({ gameId }));
-}
+socket.on('leave', (message) => {
+    try {
+        const data = JSON.parse(message);
+        getDrawDeck(data.drawDeckCount);
+        buildGameBoard(data.players, data.turnIndex, data.playerOrderReversed);
+    } catch (err) {
+        console.error(err);
+    }
+});
+socket.on('redirect', (message) => {
+    try {
+        const data = JSON.parse(message);
+        if (data.pathname) {
+            const baseURL = `${window.location.protocol}//${window.location.host}`;
+            window.location.href = baseURL + data.pathname;
+        }
+    } catch (err) {
+        console.error(err);
+    }
+});
 
 // ------ game listeners
 leaveBtn.onclick = (e) => {
@@ -57,8 +70,19 @@ leaveBtn.onclick = (e) => {
     document.getElementById("leave-btn-cancel").onclick = (e) => {
         document.body.removeChild(leavePopUpDiv);
     }
-    document.getElementById("leave-btn-confirm").onclick = (e) => {
-        window.location.replace("/");
+    document.getElementById("leave-btn-confirm").onclick = async (e) => {
+        // window.location.replace("/");
+        const pathnames = window.location.pathname.split('/');
+        const gameId = pathnames[pathnames.length-1];
+        await fetch(`/api/games/${gameId}/players`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .catch((err) => {
+            console.error(err);
+        })
     }
 }
 
@@ -122,11 +146,15 @@ const getGameState = async () => {
                 getPlayedDeck(data.gameState.playedDeck);
             } else window.location.replace("/");
         })
-        .catch(err => console.log(err))
+        .catch(err => console.error(err))
 }
 
 const buildGameBoard = async (players, currentIndex, reversed) => {
-    console.log(players);
+    // Clear out player containers
+    playersLeftContainer.innerHTML = '';
+    playersTopContainer.innerHTML = '';
+    playersRightContainer.innerHTML = '';
+
     switch (players.length) {
         case 2: {
             playersTopContainer.innerHTML = playersTopContainer.innerHTML + createPlayer(players[1], "top", "middle", currentIndex, reversed);
@@ -198,7 +226,7 @@ const createPlayer = (player, placement, position, currentIndex, reversed) => {
                     </div>
                     <div class="player-avatar-div-left">
                         <div class='avatar-container'>
-                            <img alt="player avatar" class="player-avatar" src="${player.avatar ? `https://csc665-term-project-uno.s3.us-west-1.amazonaws.com/${player.avatar}` : defaultAvatar}" />
+                        <img alt="player avatar" class="${player.portrait ? 'player-avatar-portrait' : 'player-avatar-landscape'}" src="${player.avatar ? player.avatar : defaultAvatar}" />
                         </div>
                         <label class="player-username">${player.username} <label style="display:inline; color: #FFFFFF; text-shadow: 2px 1px 2px #000000; font-size: 12px; margin-left: 5px; z-index:3;">${player.cards}</label></label>
                     </div>
@@ -219,7 +247,7 @@ const createPlayer = (player, placement, position, currentIndex, reversed) => {
                     </div>
                     <div class="player-avatar-div">
                         <div class='avatar-container'>
-                            <img alt="player avatar" class="player-avatar" src="${player.avatar ? `https://csc665-term-project-uno.s3.us-west-1.amazonaws.com/${player.avatar}` : defaultAvatar}" />
+                        <img alt="player avatar" class="${player.portrait ? 'player-avatar-portrait' : 'player-avatar-landscape'}" src="${player.avatar ? player.avatar : defaultAvatar}" />
                         </div>
                         <label class="player-username">${player.username} <label style="display:inline; color: #FFFFFF; text-shadow: 2px 1px 2px #000000; font-size: 12px; margin-left: 5px; z-index:3;">${player.cards}</label></label>
                     </div>
@@ -240,7 +268,7 @@ const createPlayer = (player, placement, position, currentIndex, reversed) => {
                     </div>
                     <div class="player-avatar-div-right">
                         <div class='avatar-container'>
-                            <img alt="player avatar" class="player-avatar" src="${player.avatar ? `https://csc665-term-project-uno.s3.us-west-1.amazonaws.com/${player.avatar}` : defaultAvatar}" />
+                        <img alt="player avatar" class="${player.portrait ? 'player-avatar-portrait' : 'player-avatar-landscape'}" src="${player.avatar ? player.avatar : defaultAvatar}" />
                         </div>
                         <label class="player-username"><label style="color: #FFFFFF; text-shadow: 2px 1px 2px #000000; font-size: 12px; margin-right: 5px;">${player.cards}</label> ${player.username}</label>
                     </div>
@@ -520,7 +548,7 @@ const drawCard = (element) => {
         fetch(`/api${window.location.pathname}/drawCard`, { method: 'PATCH' })
             .then(response => response.json())
             .then(data => data.success ? handleDraw(data, element) : null)
-            .catch(err => console.log(err));
+            .catch(err => console.error(err));
     }
 }
 

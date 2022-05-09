@@ -1,15 +1,20 @@
-const kickButtons = document.getElementsByClassName('kick')
-const leftTableBody = document.getElementById('list-1');
-const rightTableBody = document.getElementById('list-2');
+const lobbyTitle = document.getElementById('lobby-title');
+const lobbyTypeLogo = document.getElementById('lobby-type-icon');
+const popupContainer = document.getElementById('popup-container');
+const numPlayersLabel = document.getElementById('num-players-output');
+const numPlayersInput = document.getElementById('maxPlayers');
 const lobbyMenu = document.getElementById('lobby-menu');
 const readyButton = document.getElementById('ready-button');
+const settings = document.getElementById('settings');
 const baseURL = `${window.location.protocol}//${window.location.host}`;
+
 let leaveButton = document.getElementById('leave-button');
 let startButton = document.getElementById('start-button');
 let inviteInput = document.getElementById('username');
 let inviteButton = document.getElementById('invite-button');
 
 function addKickButtonListener() {
+  const kickButtons = document.querySelectorAll('.kick')
   if (kickButtons) {
     for (let button of kickButtons) {
       button.addEventListener('click', (e) => {
@@ -36,11 +41,21 @@ function createGuestRow(guest) {
       </tr>`
     );
   }
+  else if (guest.unavailable) {
+    return (
+      `<tr class="lobby-unavailable">
+        <td class="lobby-guest-icon-col"></td>
+        <td class="lobby-guest-name"></td>
+        <td class="lobby-guest-status"></td>
+        <td></td>
+      </tr>`
+    );
+  }
   return (
-    `<tr class="lobby-guest">
+    `<tr class="lobby-guest${userId == guest.id ? ' current-user' : ''}">
       <td class="lobby-guest-icon-col">
         <div class="lobby-guest-icon">
-          <img src="${guest.avatar ? `https://csc665-term-project-uno.s3.us-west-1.amazonaws.com/${guest.avatar}` : '/images/default-profile-pic.png'}" />
+        <img class="${guest.portrait ? 'lobby-avatar-portrait' : 'lobby-avatar-landscape'}" src="${guest.avatar ? guest.avatar : '/images/default-profile-pic.png'}" />
         </div>
       </td>
       <td class="lobby-guest-name">${guest.username}</td>
@@ -63,11 +78,21 @@ function createGuestRowAsHost(guest) {
       </tr>`
     );
   }
+  else if (guest.unavailable) {
+    return (
+      `<tr class="lobby-unavailable">
+        <td class="lobby-guest-icon-col"></td>
+        <td class="lobby-guest-name"></td>
+        <td class="lobby-guest-status"></td>
+        <td></td>
+      </tr>`
+    );
+  }
   return (
-    `<tr class="lobby-guest">
+    `<tr class="lobby-guest${userId == guest.id ? ' current-user' : ''}">
       <td class="lobby-guest-icon-col">
         <div class="lobby-guest-icon">
-        <img src="${guest.avatar ? `https://csc665-term-project-uno.s3.us-west-1.amazonaws.com/${guest.avatar}` : '/images/default-profile-pic.png'}" />
+        <img class="${guest.portrait ? 'lobby-avatar-portrait' : 'lobby-avatar-landscape'}" src="${guest.avatar ? guest.avatar : '/images/default-profile-pic.png'}" />
         </div>
       </td>
       <td class="lobby-guest-name">${guest.username}</td>
@@ -79,12 +104,12 @@ function createGuestRowAsHost(guest) {
   );
 }
 
-function checkIfUserWasKicked(leftList, rightList) {
-  for (let i = 0; i < leftList.length; i++) {
-    if (userId == leftList[i].id) return false;
-  }
-  for (let i = 0; i < rightList.length; i++) {
-    if (userId == rightList[i].id) return false;
+function checkIfUserWasKicked(list) {
+  for (let i = 0; i < list.length; i++) {
+    const guests = list[i];
+    for (let j = 0; j < guests.length; j++) {
+      if (userId == guests[j].id) return false;
+    }
   }
   return true;
 }
@@ -95,18 +120,15 @@ function initLobby() {
       const data = JSON.parse(message);
 
       if (data.host && startButton) startButton.disabled = !data.guestsReady;
-
-      leftTableBody.innerHTML = '';
-      rightTableBody.innerHTML = '';
   
-      data.leftList.forEach((guest) => {
-        if (data.host) leftTableBody.innerHTML += createGuestRowAsHost(guest);
-        else leftTableBody.innerHTML += createGuestRow(guest);
-      });
-      data.rightList.forEach((guest) => {
-        if (data.host) rightTableBody.innerHTML += createGuestRowAsHost(guest);
-        else rightTableBody.innerHTML += createGuestRow(guest);
-      });
+      for (let i = 0; i < data.list.length; i++) {
+        const tbody = document.getElementById(`list-${i}`);
+        tbody.innerHTML = '';
+        data.list[i].forEach((guest) => {
+          if (data.host) tbody.innerHTML += createGuestRowAsHost(guest);
+          else tbody.innerHTML += createGuestRow(guest);
+        })
+      }
   
       addKickButtonListener();
     } catch (err) {
@@ -120,24 +142,52 @@ function initLobby() {
   
       if (data.host && startButton) {
         startButton.disabled = !data.guestsReady;
-      } else if (checkIfUserWasKicked(data.leftList, data.rightList)) {
+      } else if (checkIfUserWasKicked(data.list)) {
         window.location.href = `${baseURL}/find-lobby`;
         return;
       }
   
-      leftTableBody.innerHTML = '';
-      rightTableBody.innerHTML = '';
-  
-      data.leftList.forEach((guest) => {
-        if (data.host) leftTableBody.innerHTML += createGuestRowAsHost(guest);
-        else leftTableBody.innerHTML += createGuestRow(guest);
-      });
-      data.rightList.forEach((guest) => {
-        if (data.host) rightTableBody.innerHTML += createGuestRowAsHost(guest);
-        else rightTableBody.innerHTML += createGuestRow(guest);
-      });
+      for (let i = 0; i < data.list.length; i++) {
+        const tbody = document.getElementById(`list-${i}`);
+        tbody.innerHTML = '';
+
+        data.list[i].forEach((guest) => {
+          if (data.host) tbody.innerHTML += createGuestRowAsHost(guest);
+          else tbody.innerHTML += createGuestRow(guest);
+        })
+      }
   
       addKickButtonListener();
+    } catch (err) {
+      console.error(err);
+    }
+  });
+
+  socket.on('lobby-update', (message) => {
+    try {
+      const data = JSON.parse(message);
+      let count = 1;
+
+      lobbyTitle.innerHTML = data.lobbyName;
+      lobbyName = data.lobbyName;
+      maxPlayers = data.maxPlayers;
+      isPrivate = data.isPrivate;
+      lobbyTypeLogo.setAttribute('src', isPrivate ? '/images/private.png' : '/images/public.png');
+
+      for (let i = 0; i < 2; i++) {
+        const tbody = document.getElementById(`list-${i}`);
+        const guests = tbody.children;
+
+        for (let j = 0; j < guests.length; j++) {
+          const guest = guests[j];
+          if (count > maxPlayers) {
+            guest.className = 'lobby-unavailable';
+          } else if (guest.className == 'lobby-unavailable') {
+            guest.className = 'lobby-guest'
+          }
+          count += 1;
+        }
+      }
     } catch (err) {
       console.error(err);
     }
@@ -148,7 +198,7 @@ function initLobby() {
       const data = JSON.parse(message);
 
       if (lobbyMenu) {
-        lobbyMenu.innerHTML = `<h3 id="lobby-title">${lobbyName}</h3>
+        lobbyMenu.innerHTML = `<img id="uno-lobby-logo" src="/images/uno-logo.png">
         <div id="invitation-container">
           <span id="invite-error" class="invite-error hidden"></span>
           <form>
@@ -161,6 +211,7 @@ function initLobby() {
           <button id="leave-button" class="lobby-button">Leave Lobby</button>
         </div>
         `;
+        document.getElementById('settings').className = '';
         leaveButton = document.getElementById('leave-button');
         startButton = document.getElementById('start-button');
         if (leaveButton) {
@@ -190,7 +241,6 @@ function initLobby() {
             .then(async (res) => {
               if (res.status != 200) {
                 const data = await res.json();
-                console.log(data);
               }
             })
             .catch((err) => console.error(err));
@@ -225,25 +275,18 @@ function initLobby() {
   
   if (startButton) {
     startButton.addEventListener('click', (e) => {
-      const leftGuests = leftTableBody.children;
-      const rightGuests = rightTableBody.children;
+      // verify all users are "Ready"
+      for (let i = 0; i < 2; i++) {
+        const tbody = document.getElementById(`list-${i}`);
+        const guests = tbody.children;
 
-      for (let i = 0; i < leftGuests.length; i++) {
-        const elements = leftGuests[i].getElementsByClassName('lobby-guest-status');
-        if (elements) {
-          const status = elements.item(0);
-          if (status && status.innerHTML.trim() != '' && status.innerHTML.trim().toLowerCase() != 'host') {
-            if (status.innerHTML.trim().toLowerCase() != 'ready') return;
-          }
-        }
-      }
-  
-      for (let i = 0; i < rightGuests.length; i++) {
-        const elements = rightGuests[i].getElementsByClassName('lobby-guest-status');
-        if (elements) {
-          const status = elements.item(0);
-          if (status && status.innerHTML.trim() != '' && status.innerHTML.trim().toLowerCase() != 'host') {
-            if (status.innerHTML.trim().toLowerCase() != 'ready') return;
+        for (let j = 0; j < guests.length; j++) {
+          const elements = guests[i].getElementsByClassName('lobby-guest-status');
+          if (elements) {
+            const status = elements.item(0);
+            if (status && status.innerHTML.trim() != '' && status.innerHTML.trim().toLowerCase() != 'host') {
+              if (status.innerHTML.trim().toLowerCase() != 'ready') return;
+            }
           }
         }
       }
@@ -258,7 +301,6 @@ function initLobby() {
       .then(async (res) => {
         if (res.status != 200) {
           const data = res.json();
-          console.log(data);
         }
       })
       .catch((err) => console.error(err));
@@ -310,13 +352,19 @@ function initLobby() {
     });
   }
 
+  if (settings) {
+    settings.addEventListener('click', (event) => {
+      popupContainer.className = '';
+    })
+  }
+
   addKickButtonListener();
 
   window.addEventListener('pageshow', () => {
     const entries = performance.getEntriesByType('navigation');
     if (entries && entries.length > 0) {
       const navigationType = entries[0].type;
-      if ((navigationType === 'reload' || navigationType === 'back_forward' || navigationType === 'navigate') && socket.connected) {
+      if (navigationType === 'back_forward' && socket.connected) {
         window.location.reload();
       }
     }

@@ -19,39 +19,14 @@ if (socket) {
 closeModal.addEventListener('click', () => {
   const joinLobbyFormModal = document.getElementById("joinPrivateLobbyModal");
   const passwordInput = document.getElementById("password");
-  joinPrivateLobbyForm.removeEventListener('submit', (event) => {
-    event.preventDefault();
-    event.stopPropagation();
-    const url = window.location.protocol + '//' + window.location.host;
-    const serializedData = serializeForm(joinPrivateLobbyForm);
-    fetch(url + `/api/lobbies/${lobbyId}/users`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(serializedData),
-    })
-    .then(async (res) => {
-      if (res.redirected) {
-        window.location.href = res.url;
-      } else {
-        const data = await res.json();
-        if (res.status === 400) {
-          const error = document.getElementById('error');
-          error.innerHTML = data.message;
-          error.className = 'error-message';
-        } else console.log(data);
-      }
-    })
-    .catch((err) => console.error(err));
-  });
+  joinPrivateLobbyForm.removeEventListener('submit', joinPrivateLobby);
+  joinPrivateLobbyForm.removeAttribute('lobbyId');
   passwordInput.value = "";
   joinLobbyFormModal.style.display = "none";
 });
 
 window.addEventListener('load', () => {
-  const url = window.location.protocol + '//' + window.location.host;
-  fetch(url + '/api/lobbies/', {
+  fetch('/api/lobbies/', {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -59,8 +34,8 @@ window.addEventListener('load', () => {
   })
   .then(async (res) => {
     const data = await res.json();
-    for(let i = 0; i<data.length; i++) {
-      const { id, hostName, name, playerCapacity, guests, type } = data[i];
+    data.results.forEach((lobby) => {
+      const { id, hostName, name, playerCapacity, guestLength, type } = lobby;
       const newLobby = document.createElement("div");
       const lobbyName = document.createElement("div");
       const playerCount = document.createElement("div");
@@ -72,13 +47,12 @@ window.addEventListener('load', () => {
       newLobby.className= "lobby-container"; 
       lobbyName.className = "lobby-name";
       lobbyName.innerHTML = name;
-      playerCount.innerHTML = 1 + guests.length + "/" + playerCapacity;
+      playerCount.innerHTML = 1 + guestLength + "/" + playerCapacity;
       joinButton.innerHTML = "Join";
       host.innerHTML = hostName;
       lobbyType.innerHTML = type;
       
       joinButton.onclick = function () { joinLobby(id) }
-
 
       newLobby.appendChild(lobbyName)
       newLobby.appendChild(host)
@@ -87,13 +61,12 @@ window.addEventListener('load', () => {
       newLobby.append(joinButton)
 
       document.getElementById("lobbyListContainer").appendChild(newLobby);
-    }
+    });
   })
   .catch((err) => {
     console.error(err);
   });
 });
-
 
 async function isLobbyGuest(lobbyId) {
   const url = window.location.protocol + '//' + window.location.host;
@@ -120,14 +93,45 @@ async function getLobbyType(lobbyId) {
       'Content-Type': 'application/json',
     },
   })
-  .then(async(result) => {
-    const data = await result.json();
-    return Promise.resolve(data.type);
+  .then(async (res) => {
+    if (res.redirected) {
+    } else {
+      const data = await res.json();
+      return Promise.resolve(data.type == 'private');
+    }
   })
   .catch((err) => {
     console.error(err);
     return Promise.reject(err);
   })
+}
+
+async function joinPrivateLobby (event) {
+  event.preventDefault();
+  event.stopPropagation();
+
+  const url = window.location.protocol + '//' + window.location.host;
+  const serializedData = serializeForm(joinPrivateLobbyForm);
+  fetch(url + `/api/lobbies/${joinPrivateLobbyForm.getAttribute('lobbyId')}/users`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(serializedData),
+  })
+  .then(async (res) => {
+    if (res.redirected) {
+      window.location.href = res.url;
+    } else {
+      const data = await res.json();
+      if (res.status === 400) {
+        const error = document.getElementById('error');
+        error.innerHTML = data.message;
+        error.className = 'error-message';
+      } else console.log(data);
+    }
+  })
+  .catch((err) => console.error(err));
 }
 
 async function joinLobby(lobbyId) {
@@ -142,33 +146,8 @@ async function joinLobby(lobbyId) {
   if(privateLobby) {
     const joinLobbyFormModal = document.getElementById("joinPrivateLobbyModal")
     joinLobbyFormModal.style.display = "block";
-    joinPrivateLobbyForm.addEventListener('submit', (event) => {
-      event.preventDefault();
-      event.stopPropagation();
-      const url = window.location.protocol + '//' + window.location.host;
-      const serializedData = serializeForm(joinPrivateLobbyForm);
-      fetch(url + `/api/lobbies/${lobbyId}/users`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(serializedData),
-      })
-      .then(async (res) => {
-        if (res.redirected) {
-          window.location.href = res.url;
-        } else {
-          const data = await res.json();
-          if (res.status === 400) {
-            const error = document.getElementById('error');
-            error.innerHTML = data.message;
-            error.className = 'error-message';
-          } else console.log(data);
-        }
-      })
-      .catch((err) => console.error(err));
-    });
-    
+    joinPrivateLobbyForm.setAttribute('lobbyId', lobbyId)
+    joinPrivateLobbyForm.addEventListener('submit', joinPrivateLobby);
   }
   else {
     fetch(url + `/api/lobbies/${lobbyId}/users`, {

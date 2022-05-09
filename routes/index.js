@@ -5,118 +5,139 @@ const { authenticate, verifyToken } = require('../lib/utils/token');
 const { validateUsername } = require('../lib/validation/users');
 const { findLobby, findAllMembers, verifyHostOrGuest } = require('../db/dao/lobbies');
 const { verifyAllGuestsReady } = require('../db/dao/lobbyGuests');
-const { checkUserHasInvitations, findUsersInvitations } = require('../db/dao/lobbyInvitations');
+const { checkUserHasInvitations } = require('../db/dao/lobbyInvitations');
 const { findGameWithLobby } = require('../db/dao/games');
 const { verifyUserInGame } = require('../db/dao/players');
-const { formatAllLobbyInfo, calculateWinRate, timeSince } = require('../lib/utils/index');
+const { calculateWinRate, timeSince } = require('../lib/utils/index');
 const { splitLobbyMembers } = require('../lib/utils/socket');
 
 const router = express.Router();
 
-router.get('/', verifyToken, (req, res) => {
+router.get('/', verifyToken, async (req, res, next) => {
   if (req.user) {
-    UserDao.findAllLobbies(req.user.id)
-    .then((lobbies) => {
-      return formatAllLobbyInfo(lobbies);
-    })
-    .then(async (formattedLobbies) => {
+    try {
+      const results = await Promise.all([
+        UserDao.findAllFormattedLobbies(req.user.id), checkUserHasInvitations(req.user.id)
+      ]);
+      const lobbies = results[0];
+
       res.render('home', {
         layout: false, title: 'Home', 
-        user: req.user, lobbies: formattedLobbies,
-        notifications: await checkUserHasInvitations(req.user.id)
+        user: req.user, lobbies,
+        notifications: results[1]
       });
-    })
-    .catch((err) => {
+    } catch (err) {
       console.error(err);
       next(new IndexError('An unexpected error occured', 500));
-    });
+    }
   } else res.render('home', {layout: false, title: 'Home'});
 });
 
-router.get('/login', verifyToken, async (req, res) => {
-  res.render('login', {
-    layout: false, title: 'Login', user: req.user,
-    notifications: (req.user ? (await checkUserHasInvitations(req.user.id)) : false)
-  });
+router.get('/login', verifyToken, async (req, res, next) => {
+  try {
+    res.render('login', {
+      layout: false, title: 'Login', user: req.user,
+      notifications: (req.user ? (await checkUserHasInvitations(req.user.id)) : false)
+    });
+  } catch (err) {
+    console.error(err);
+    next(new IndexError('An unexpected error occured', 500));
+  }
 });
 
-router.get('/register', verifyToken, async (req, res) => {
-  res.render('register', {
-    layout: false, title: 'Register', user: req.user,
-    notifications: (req.user ? (await checkUserHasInvitations(req.user.id)) : false)
-  });
+router.get('/register', verifyToken, async (req, res, next) => {
+  try {
+    res.render('register', {
+      layout: false, title: 'Register', user: req.user,
+      notifications: (req.user ? (await checkUserHasInvitations(req.user.id)) : false)
+    });
+  } catch (err) {
+    console.error(err);
+    next(new IndexError('An unexpected error occured', 500));
+  }
 });
 
-router.get('/notifications', authenticate, (req, res, next) => {
-  findUsersInvitations(req.user.id)
-  .then(async (lobbyInvitations) => {
-    const asyncTasks = [];
+router.get('/notifications', authenticate, async (req, res, next) => {
+  try {
+    const results = await Promise.all([
+      UserDao.findInvitations(req.user.id), checkUserHasInvitations(req.user.id)
+    ]);
+    const lobbyInvitations = results[0];
     const invitations = [];
-
-    if (lobbyInvitations) {
-      lobbyInvitations.forEach((invitation) => {
-        asyncTasks.push(findLobby(invitation.lobbyId));
+  
+    lobbyInvitations.forEach((invitation) => {
+      invitations.push({
+        lobbyId: invitation.lobbyId,
+        lobbyName: invitation.lobbyName,
+        createdAt: invitation.createdAt,
+        timeSince: timeSince(new Date(invitation.createdAt))
       });
-  
-      const lobbiesInfo = await Promise.all(asyncTasks);
-  
-      for (let i = 0; i < lobbiesInfo.length; i++) {
-        invitations.push({
-          lobbyId: lobbyInvitations[i].lobbyId,
-          lobbyName: lobbiesInfo[i].name,
-          createdAt: lobbyInvitations[i].createdAt,
-          timeSince: timeSince(new Date(lobbyInvitations[i].createdAt))
-        });
-      }
-    }
+    });
 
     res.render('notifications', { 
       layout: false, title: 'Notifications', user: req.user, invitations,
-      notifications: await checkUserHasInvitations(req.user.id)
+      notifications: results[1]
     });
-  })
-  .catch((err) => {
+  } catch (err) {
     console.error(err);
     next(new IndexError('An unexpected error occured', 500));
-  });
+  }
 });
 
-router.get('/search', verifyToken, (req, res, next) => {
-  const { q } = req.query;
-  const title = q ? `Search "${q}"` : `Search`;
+router.get('/search', verifyToken, async (req, res, next) => {
+  try {
+    const { q } = req.query;
+    const title = q ? `Search "${q}"` : `Search`;
+    const asyncTasks = await Promise.all([
+      UserDao.findUsersBySimilarName(q),
+      req.user ? (checkUserHasInvitations(req.user.id)) : false
+    ]);
+    const results = asyncTasks[0];
 
-  UserDao.findUserBySimilarName(q)
-  .then(async (results) => {
     res.render('search', { 
-      layout: false, title, user: req.user, results, q,
-      notifications: (req.user ? (await checkUserHasInvitations(req.user.id)) : false)
+      layout: false, title, user: req.user, results, q, 
+      notifications: asyncTasks[1]
     });
-  })
-  .catch((err) => {
+  } catch (err) {
     console.error(err);
     next(new IndexError('An unexpected error occured', 500));
-  });
+  }
 });
 
 router.get('/settings', authenticate, async (req, res) => {
-  res.render('settings', {
-    layout: false, title: 'User Settings', user: req.user, 
-    notifications: await checkUserHasInvitations(req.user.id)
-  });
+  try {
+    res.render('settings', {
+      layout: false, title: 'User Settings', user: req.user,
+      notifications: await checkUserHasInvitations(req.user.id)
+    });
+  } catch (err) {
+    console.error(err);
+    next(new IndexError('An unexpected error occured', 500));
+  }
 });
 
 router.get('/create-lobby', authenticate, async (req,res) => {
-  res.render('create-lobby', {
-    layout: false, title: 'Create Lobby', user: req.user,
-    notifications: await checkUserHasInvitations(req.user.id)
-  });
+  try {
+    res.render('create-lobby', {
+      layout: false, title: 'Create Lobby', user: req.user,
+      notifications: await checkUserHasInvitations(req.user.id)
+    });
+  } catch (err) {
+    console.error(err);
+    next(new IndexError('An unexpected error occured', 500));
+  }
 });
 
 router.get('/find-lobby', verifyToken, async (req,res) => {
-  res.render('find-lobby', {
-    layout: false, title: 'Find Lobby', user: req.user,
-    notifications: (req.user ? (await checkUserHasInvitations(req.user.id)) : false)
-  });
+  try {
+    res.render('find-lobby', {
+      layout: false, title: 'Find Lobby', user: req.user,
+      notifications: (req.user ? (await checkUserHasInvitations(req.user.id)) : false)
+    });
+  } catch (err) {
+    console.error(err);
+    next(new IndexError('An unexpected error occured', 500));
+  }
 });
 
 /* Profile pages */
@@ -124,22 +145,24 @@ router.get('/:username', verifyToken, async (req, res, next) => {
   const { error } = validateUsername(req.params);
   if (error) return next(new IndexError('This page does not exist', 404));
 
-  const { username } = req.params;
+  try {
+    const { username } = req.params;
+    const results = await Promise.all([
+      UserDao.findUserByName(username), (req.user ? (await checkUserHasInvitations(req.user.id)) : false)
+    ]);
+    const requestedUser = results[0];
 
-  UserDao.findUserByName(username)
-  .then(async (requestedUser) => {
-    if (requestedUser) {
-      requestedUser['winRate'] = calculateWinRate(requestedUser);
-      res.render('profile', { 
-        layout: false, title: username, user: req.user, requestedUser,
-        notifications: (req.user ? (await checkUserHasInvitations(req.user.id)) : false)
-      });
-    } else next(new IndexError('Cannot find user "' + username + '"', 404));
-  })  
-  .catch((err) => {
+    if (!requestedUser) return next(new IndexError(`Cannot find user "${username}"`, 404));
+    requestedUser['winRate'] = calculateWinRate(requestedUser);
+
+    res.render('profile', { 
+      layout: false, title: username, user: req.user, requestedUser, 
+      notifications: results[1]
+    });
+  } catch (err) {
     console.error(err);
     next(new IndexError('An unexpected error occured', 500));
-  });
+  }
 });
 
 /* Lobby Pages */
@@ -149,17 +172,20 @@ router.get('/lobbies/:lobbyId(\\d+)', authenticate, async (req, res, next) => {
     if (!(await verifyHostOrGuest(req.user.id, lobbyId))) return res.redirect('/find-lobby');
 
     const lobby = await findLobby(lobbyId);
+    if (!lobby) return res.status(404).json({ message: 'Lobby not found' });
   
     if(lobby && !lobby.busy) {
-      const { hostId, name } = lobby;
-      const lobbyMembers = await findAllMembers(lobbyId);
-      const guestsReady = await verifyAllGuestsReady(lobbyId);
-      const { leftList, rightList } = splitLobbyMembers(lobbyMembers);
+      const results = await Promise.all([
+        findAllMembers(lobbyId), verifyAllGuestsReady(lobbyId), checkUserHasInvitations(req.user.id)
+      ]);
+      const lobbyMembers = results[0];
+      const guestsReady = results[1];
+      const list = splitLobbyMembers(lobbyMembers, lobby.playerCapacity);
 
       res.render('lobby', {
-        layout: false, title:  `Uno Lobby #${lobbyId}`, lobbyId: lobbyId,
-        lobbyName: name, leftList, rightList, guestsReady, isHost: req.user.id === hostId,
-        user: req.user, notifications: await checkUserHasInvitations(req.user.id)
+        layout: false, title:  `Uno Lobby #${lobbyId}`, lobbyId, maxPlayers: lobby.playerCapacity,
+        lobbyName: lobby.name, list, guestsReady, isHost: req.user.id === lobby.hostId,
+        isPrivate: lobby.password != null, user: req.user, notifications: results[2]
       });
     } 
     else if (lobby && lobby.busy) {
@@ -174,13 +200,15 @@ router.get('/lobbies/:lobbyId(\\d+)', authenticate, async (req, res, next) => {
 });
 
 /* Game Pages */
-router.get('/games/:id(\\d+)', authenticate, (req, res) => {
-  verifyUserInGame(req.params.id, req.user.id)
-  .then((isUserInGame) => {
-    if (isUserInGame) {
-      res.render('game', {layout: false, title: `Game ${req.params.id}`, user: req.user});
-    } else res.redirect('/');
-  })
+router.get('/games/:id(\\d+)', authenticate, async (req, res, next) => {
+  try {
+    const isPlayer = await verifyUserInGame(req.params.id, req.user.id);
+    if (!isPlayer) return res.redirect('/');
+    res.render('game', {layout: false, title: `Game ${req.params.id}`, user: req.user});
+  } catch (err) {
+    console.error(err);
+    next(new IndexError('An unexpected error occured', 500));
+  }
 });
 
 module.exports = router;

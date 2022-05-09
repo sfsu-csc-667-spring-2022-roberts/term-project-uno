@@ -25,14 +25,14 @@ if (navProfilePic) {
 
 if (logout) {
   logout.addEventListener('click', (event) => {
-    const url = window.location.protocol + '//' + window.location.host;
-    fetch(url + '/api/users/logout', {
+    fetch('/api/users/logout', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       }
     })
     .then(async (res) => {
+      const url = window.location.protocol + '//' + window.location.host;
       window.location.href = url + '/login';
     })
     .catch((err) => {

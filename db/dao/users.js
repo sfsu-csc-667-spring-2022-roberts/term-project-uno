@@ -2,14 +2,13 @@ const db = require('../index');
 const bcrypt = require('bcrypt');
 
 const UserError = require('../../helpers/error/UserError');
-const { findHostLobbies, findLobby } = require('./lobbies');
-const { findLobbyGuests } = require('./lobbyGuests');
 
 async function usernameExists(username) {
   return db.query(`
     SELECT id 
-    FROM $1:name 
-    WHERE username = $2`, ['Users', username])
+    FROM "Users"
+    WHERE username = $1
+  `, [username])
   .then((results) => {
     return Promise.resolve(results && results.length === 0);
   })
@@ -18,18 +17,12 @@ async function usernameExists(username) {
 
 async function create(username, password) {
   return bcrypt.hash(password, 8)
-  .then((hashedPassword) => {
-    return db.any(`
-      INSERT INTO $1:name(username, password) 
-      VALUES($2, $3) 
-      RETURNING id`, ['Users', username, hashedPassword]);
-  })
-  .then((results) => {
-    if (results && results.length === 1) {
-      const userId = results[0].id;
-      return Promise.resolve(userId);
-    } else return Promise.resolve(-1);
-  })
+  .then((hashedPassword) => db.one(`
+    INSERT INTO "Users"(username, password) 
+    VALUES($1, $2) 
+    RETURNING id
+  `, [username, hashedPassword]))
+  .then((user) => Promise.resolve(user.id))
   .catch((err) => Promise.reject(err));
 }
 
@@ -37,8 +30,9 @@ async function authenticate(username, password) {
   let userId;
   return db.query(`
     SELECT id, username, password 
-    FROM $1:name 
-    WHERE username = $2`, ['Users', username])
+    FROM "Users"
+    WHERE username = $1
+  `, [username])
   .then((results) => {
     if (results && results.length === 1) {
       userId = results[0].id;
@@ -52,12 +46,19 @@ async function authenticate(username, password) {
   .catch((e) => Promise.reject(e));
 }
 
-async function findUserById(id) {
+async function findUserById(userId) {
   return db.query(`
-    SELECT id, username, $1:name, $2:name, $3:name, $4:name 
-    FROM $5:name 
-    WHERE id = $6`,
-    ['pictureUrl', 'gamesWon', 'gamesPlayed', 'createdAt', 'Users', id])
+    SELECT id, username, "gamesWon", "gamesPlayed", "createdAt", location AS avatar, (
+    CASE 
+      WHEN height <= width 
+      THEN FALSE 
+      ELSE TRUE 
+    END) AS portrait 
+    FROM "Users" 
+    FULL JOIN "Avatars" 
+    ON id = "userId" 
+    WHERE id = $1
+  `, [userId])
   .then((results) => {
     if (results && results.length === 1) return Promise.resolve(results[0]);
     else return Promise.resolve(null);
@@ -67,10 +68,17 @@ async function findUserById(id) {
 
 async function findUserByName(username) {
   return db.query(`
-    SELECT id, username, $1:name, $2:name, $3:name, $4:name 
-    FROM $5:name 
-    WHERE username = $6`,
-    ['pictureUrl', 'gamesWon', 'gamesPlayed', 'createdAt', 'Users', username])
+    SELECT id, username, "gamesWon", "gamesPlayed", "createdAt", location AS avatar, (
+    CASE 
+      WHEN height <= width 
+      THEN FALSE 
+      ELSE TRUE 
+    END) AS portrait 
+    FROM "Users" 
+    FULL JOIN "Avatars" 
+    ON id = "userId" 
+    WHERE username = $1
+  `, [username])
   .then((results) => {
     if (results && results.length === 1) return Promise.resolve(results[0]);
     else return Promise.resolve(null);
@@ -81,16 +89,13 @@ async function findUserByName(username) {
 async function changeUsername(oldUsername, newUsername, password) {
   const userId = await authenticate(oldUsername, password);
   if (userId > 0) {
-    return db.query(`
-      UPDATE $1:name
-      SET username = replace(username, $2, $3)
-      WHERE id = $4
-      RETURNING id`,
-      ['Users', oldUsername, newUsername, userId])
-    .then((results) => {
-      if (results && results.length === 1) return Promise.resolve(results[0].id);
-      else return Promise.resolve(-1);
-    })
+    return db.one(`
+      UPDATE "Users"
+      SET username = replace(username, $1, $2)
+      WHERE id = $3
+      RETURNING id
+    `, [oldUsername, newUsername, userId])
+    .then((user) => Promise.resolve(user.id))
     .catch((err) => Promise.reject(err));
   } else throw new UserError('Invalid password', 401);
 }
@@ -99,44 +104,32 @@ async function changePassword(username, oldPassword, newPassword) {
   const userId = await authenticate(username, oldPassword);
   if (userId > 0) {
     return bcrypt.hash(newPassword, 8)
-    .then((newHashedPassword) => {
-      return db.query(`
-        UPDATE $1:name
-        SET password = $2
-        WHERE id = $3
-        RETURNING id`,
-        ['Users', newHashedPassword, userId])
-    })
-    .then((results) => {
-      if (results && results.length === 1) return Promise.resolve(results[0].id);
-      else return Promise.resolve(-1);
-    })
+    .then((newHashedPassword) => db.one(`
+      UPDATE "Users"
+      SET password = $1
+      WHERE id = $2
+      RETURNING id
+    `, [newHashedPassword, userId]))
+    .then((user) => Promise.resolve(user.id))
     .catch((err) => Promise.reject(err));
   } else throw new UserError('Invalid password', 401);
 }
 
-async function changeAvatar(key, userId) {
+async function findUsersBySimilarName(username) {
   return db.query(`
-    UPDATE $1:name
-    SET $2:name = $3
-    WHERE id = $4
-    RETURNING id`,
-    ['Users', 'pictureUrl', key, userId])
-    .then((results) => {
-      if (results && results.length === 1) return Promise.resolve(results[0].id);
-      else return Promise.resolve(-1);
-    })
-    .catch((err) => Promise.reject(err));
-}
-
-
-async function findUserBySimilarName(username) {
-  return db.query(`
-    SELECT id, username, $1:name, $2:name, $3:name, $4:name 
-    FROM $5:name 
-    WHERE username
-    LIKE $6`,
-    ['pictureUrl', 'gamesWon', 'gamesPlayed', 'createdAt', 'Users', `%${username}%`])
+    SELECT id, username, "gamesWon", "gamesPlayed", "createdAt", location AS avatar, (
+    CASE 
+      WHEN height <= width 
+      THEN FALSE 
+      ELSE TRUE 
+    END) AS portrait 
+    FROM "Users" 
+    FULL JOIN "Avatars" 
+    ON id = "userId" 
+    WHERE username LIKE $1
+    ORDER BY username
+    `,
+    [`%${username}%`])
   .then((results) => {
     if (results && results.length > 0) return Promise.resolve(results);
     else return Promise.resolve(null);
@@ -144,36 +137,48 @@ async function findUserBySimilarName(username) {
   .catch((err) => Promise.reject(err));
 }
 
-async function findAllLobbies(userId) {
-  return findLobbyGuests(userId)
-  .then((lobbyGuests) => {
-    const asyncTasks = [findHostLobbies(userId)];
-    if (lobbyGuests) {
-      lobbyGuests.forEach((lobbyGuest) => {
-        asyncTasks.push(findLobby(lobbyGuest.lobbyId));
-      })
-    } 
-    return Promise.allSettled(asyncTasks);
-  })
-  .then((results) => {
-    const hostLobbies = results[0];
-    let lobbies = results.slice(1, results.length).map((result) => {
-      if (result.status === 'fulfilled' && result.value) {
-        if (result.value.password) delete result.value.password;
-        return result.value;
-      }
-    });
-    if (hostLobbies.status === 'fulfilled') {
-      lobbies = hostLobbies.value.map((hostLobby) => {
-        if (hostLobby.password) delete hostLobby.password;
-        return hostLobby;
-      })
-      .concat(lobbies);
-    }
-    
-    if (lobbies && lobbies.length > 0) return Promise.resolve(lobbies);
-    else return Promise.resolve(null);
-  })
+async function findAllFormattedLobbies(userId) {
+  return db.query(`
+  SELECT lobbies.id as id, name, CAST ("guestLength" AS INTEGER), username AS "hostName", busy, "playerCapacity", lobbies."createdAt" 
+  FROM (
+    SELECT id, "hostId", name, "playerCapacity", busy, "createdAt", (
+      CASE
+        WHEN "guestLength" IS NULL 
+        THEN 0
+        ELSE "guestLength"
+      END) AS "guestLength"
+    FROM "Lobbies" 
+    FULL JOIN (
+      SELECT count(*) AS "guestLength", "lobbyId" FROM "LobbyGuests" 
+      GROUP BY "lobbyId"
+    ) AS guest_count 
+    ON "lobbyId" = id
+  ) AS lobbies 
+  INNER JOIN (
+    SELECT * FROM "Users" WHERE "Users".id = $1
+  ) AS users 
+  ON "hostId" = users.id
+  UNION 
+  SELECT lobby_id AS id, name, CAST(count AS INTEGER) AS "guestLength", username AS "hostName", busy, "playerCapacity", t."createdAt"
+  FROM (
+    SELECT * FROM (
+      SELECT * FROM "LobbyGuests" 
+      INNER JOIN "Lobbies" 
+      ON "lobbyId" = "Lobbies".id
+      WHERE "userId" = $1
+    ) AS lobbyguests 
+    INNER JOIN (
+      SELECT count(*), "lobbyId" AS lobby_id
+      FROM "LobbyGuests" 
+      GROUP BY "lobbyId"
+    ) AS lobbycount 
+    ON lobbyguests.id = lobby_id
+  ) AS t 
+  INNER JOIN (
+    SELECT * FROM "Users"
+  ) AS users 
+  ON t."hostId" = users.id
+  `, [userId])
   .catch((err) => Promise.reject(err));
 }
 
@@ -190,16 +195,50 @@ async function verifyUserExists(userId) {
   .catch((err) => Promise.reject(err));
 }
 
+async function addWin(userId) {
+  return db.one(`
+    UPDATE "Users"
+    SET "gamesPlayed" = "gamesPlayed" + 1, "gamesWon" = "gamesWon" + 1
+    WHERE id = $1
+    RETURNING id
+  `, [userId])
+  .catch((err) => Promise.reject(err));
+}
+
+async function addLoss(userId) {
+  return db.one(`
+    UPDATE "Users"
+    SET "gamesPlayed" = "gamesPlayed" + 1
+    WHERE id = $1
+    RETURNING id
+  `, [userId])
+  .catch((err) => Promise.reject(err));
+}
+
+async function findInvitations(userId) {
+  return db.query(`
+    SELECT "lobbyId", name AS "lobbyName", "LobbyInvitations"."createdAt" 
+    FROM "LobbyInvitations" 
+    INNER JOIN "Lobbies" 
+    ON "lobbyId" = id 
+    WHERE "userId" = $1
+    ORDER BY "LobbyInvitations"."createdAt" DESC
+  `, [userId])
+  .catch(err => Promise.reject(err));
+}
+
 module.exports = {
   usernameExists,
   create,
   authenticate,
   findUserById,
   findUserByName,
-  findAllLobbies,
-  changeAvatar,
+  findAllFormattedLobbies,
   changeUsername,
   changePassword,
-  findUserBySimilarName,
-  verifyUserExists
+  findUsersBySimilarName,
+  verifyUserExists,
+  addWin,
+  addLoss,
+  findInvitations
 };

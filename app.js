@@ -6,9 +6,8 @@ const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const { create } = require('express-handlebars');
 
-const IndexError = require('./helpers/error/IndexError');
 const { verifyToken } = require('./lib/utils/token');
-const testRouter = require('./routes/test');
+const IndexError = require('./helpers/error/IndexError');
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
 const lobbiesRouter = require('./routes/lobbies');
@@ -16,7 +15,6 @@ const gamesRouter = require('./routes/games');
 
 const app = express();
 
-// create hbs instance with options
 const hbs = create({
   helpers: {
     equals(a, b, options) {
@@ -52,7 +50,6 @@ const hbs = create({
   }
 })
 
-// view engine setup
 app.engine('handlebars', hbs.engine);
 app.set('view engine', 'handlebars');
 app.set('views', path.join(__dirname, 'views'));
@@ -63,7 +60,6 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, '/public')));
 
-app.use('/test', testRouter);
 app.use('/', indexRouter);
 app.use('/api/users', usersRouter);
 app.use('/api/lobbies', lobbiesRouter);
@@ -83,7 +79,7 @@ app.use(async (err, req, res, next) => {
 
   // render the error page
   res.status(err.status || 500);
-  if (err instanceof IndexError) {
+  if (err instanceof IndexError) {  // render error page with custom message
     res.render('error', { 
       layout: false, 
       status: err.status || 500,
@@ -99,7 +95,6 @@ app.use(async (err, req, res, next) => {
       user: req.user
     });
   }
-
 
   if (!err.status || err.status === 500) {
     console.error(err);

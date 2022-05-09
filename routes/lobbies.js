@@ -4,9 +4,9 @@ const LobbyGuestsDao = require('../db/dao/lobbyGuests');
 const LobbyInvitationDao = require('../db/dao/lobbyInvitations');
 const UserDao = require('../db/dao/users');
 const MessageDao = require('../db/dao/messages');
-const LobbyError = require('../helpers/error/LobbyError');
 const { authenticate } = require('../lib/utils/token');
 const { validateUsername } = require('../lib/validation/users');
+const { validateCreateLobby, validateUpdateLobby } = require('../lib/validation/lobbies');
 const { getSocketsFromUserSockets, broadcastLobbyMemberJoin, broadcastLobbyMemberLeave, 
   broadcastLobbyMemberKicked, broadcastLobbyMembers, broadcastUpdatedInvitationList } = require('../lib/utils/socket');
 const io = require('../socket/index');
@@ -15,98 +15,91 @@ const router = express.Router();
 
 /* Get list of available lobbies with current player count*/
 router.get('/', async (req, res) => {
-  LobbyDao.findAllFreeLobbies()
-  .then(async (results) => {
-    const queries = [];
-
-    results.forEach((result) => {
-      if(result.password) {
-        result.type = "private";
-      }
-      else {
-        result.type = "public";
-      }
-      delete result.password;
-
-      const formatLobbyInfo = async () => {
-        const lobbyGuests = await LobbyGuestsDao.findAllLobbyGuests(result.id);
-        const host = await UserDao.findUserById(result.hostId);
-        result.guests = lobbyGuests;
-        result.hostName = host.username;
-      }
-      queries.push(formatLobbyInfo());
-    });
-
-    await Promise.allSettled(queries);
-    res.json(results);
-  })
-  .catch((err) => {
+  try {
+    const results = await LobbyDao.findAllFreeLobbies();
+    res.json({ results });
+  } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'An unexpected error occured' });
-  })
-});
-
-/* Get Lobby */
-router.get('/:id(\\d+)', authenticate, async (req, res) => {
-  const { id } = req.params;
-  let data;
-
-  LobbyDao.findLobby(id)
-  .then((result) => {
-    if(result.password) {
-      result.type = true;
-    }
-    else {
-      result.type = false;
-    }
-    delete result.password;
-    data = result;
-
-    return LobbyGuestsDao.findAllLobbyGuests(id);
-  })
-  .then((result) => {
-    data.guests = result;
-    return UserDao.findUserById(data.hostId);
-  })
-  .then((result) => {
-    data.hostName = result.username;
-    return res.json(data);
-  })
-  .catch((err) => {
-    console.error(err);
-    res.status(500).json({ message: 'An unexpected error occured' });
-  });
+  }
 });
 
 /* Create a new lobby */
 router.post('/', authenticate, async (req, res) => {
-  const hostId = req.user.id;
-  const { lobbyName, maxPlayers} = req.body;
+  const { error } = validateCreateLobby(req.body);
+  if (error) return res.status(400).json({ message: error.details[0].message });
 
-  if(req.body.password) {
-    const password = req.body.password;
-    return LobbyDao.createPrivate(hostId, lobbyName, maxPlayers, password)
-    .then((result) => {
-      if(result){
-        res.redirect("/lobbies/"+result.id);
-      }
-    })
-    .catch((err) => {
-      console.error(err);
-      res.status(500).json({ message: 'An unexpected error occured' });
-    });
+  const hostId = req.user.id;
+  const { lobbyName, maxPlayers, password } = req.body;
+  let newLobby;
+
+  try {
+    if (password != null && password != '') {
+      newLobby = await LobbyDao.createPrivate(hostId, lobbyName, maxPlayers, password);
+    } else newLobby = await LobbyDao.createPublic(hostId, lobbyName, maxPlayers);
+
+    res.redirect(`/lobbies/${newLobby.id}`);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'An unexpected error occured' });
   }
-  else {
-    return LobbyDao.createPublic(hostId, lobbyName, maxPlayers)
-    .then((result) => {
-      if(result){
-        res.redirect("/lobbies/"+result.id);
-      }
-    })
-    .catch((err) => {
-      console.error(err);
-      res.status(500).json({ message: 'An unexpected error occured' });
+});
+
+/* Get specific lobby */
+router.get('/:lobbyId(\\d+)', authenticate, async (req, res) => {
+  const { lobbyId } = req.params;
+
+  try {
+    const lobby = await LobbyDao.findLobby(lobbyId);
+    if (!lobby) return res.status(404).json({ message: 'Lobby not found' });
+
+    res.json({
+      id: lobby.id,
+      name: lobby.name,
+      hostId: lobby.hostId,
+      createdAt: lobby.createdAt,
+      playerCapacity: lobby.playerCapacity,
+      type: lobby.password ? 'private' : 'public'
     });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'An unexpected error occured' });
+  }
+});
+
+/* Update lobby information */
+router.patch('/:lobbyId(\\d+)', authenticate, async (req, res) => {
+  const { error } = validateUpdateLobby(req.body);
+  if (error) return res.status(400).json({ message: error.details[0].message });
+
+  const { lobbyId } = req.params;
+  const { lobbyName, maxPlayers, password, updatePassword } = req.body;
+  let lobby;
+
+  try {
+    if (!(await LobbyDao.verifyHost(req.user.id, lobbyId))) {
+      return res.status(401).json({ message: 'You must be the host to update lobby information' });
+    }
+
+    if ((await LobbyGuestsDao.findNumberOfGuests(lobbyId)) + 1 > parseInt(maxPlayers)) {
+      return res.status(409).json({ message: 'Cannot set maximum number of players to below the current number of players' });
+    }
+
+    if (updatePassword) {
+      const lobbyPassword = (password != null && password === '') ? null : password;
+      lobby = await LobbyDao.updateLobbyAndPassword(lobbyId, lobbyName, maxPlayers, lobbyPassword);
+    } else lobby = await LobbyDao.updateLobby(lobbyId, lobbyName, maxPlayers);
+
+    io.to(`lobby/${lobbyId}`).emit('lobby-update', JSON.stringify({
+      lobbyName: lobby.name,
+      maxPlayers: lobby.playerCapacity,
+      isPrivate: lobby.password != null
+    }));
+
+    res.json({ message: 'Updated lobby information' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'An unexpected error occured' });
   }
 });
 
@@ -123,7 +116,7 @@ router.get('/:lobbyId(\\d+)/messages', authenticate, async (req, res) => {
   }
 });
 
-/* Send lobby messasge */
+/* Send lobby message */
 router.post('/:lobbyId(\\d+)/messages', authenticate, async (req, res) => {
   const { lobbyId } = req.params;
   const { message } = req.body;
@@ -132,16 +125,24 @@ router.post('/:lobbyId(\\d+)/messages', authenticate, async (req, res) => {
     if (!req.user || !(await LobbyDao.verifyHostOrGuest(req.user.id, lobbyId))) {
       return res.status(401).json({ message: 'You are not a member of the lobby' });
     }
-
-    const messageObj = await MessageDao.createLobbyMessage(message, req.user.id, lobbyId);
-
-    messageObj.sender = req.user.username;
-    delete messageObj.userId;
-    delete messageObj.lobbyId;
+    const messageObj = await MessageDao.createLobbyMessage(message.trim(), req.user.id, lobbyId);
 
     io.to(`lobby/${lobbyId}`).emit('lobby-message-send', JSON.stringify(messageObj));
 
     res.status(201).json({ message: 'Successfully created new lobby message' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Something went wrong' });
+  }
+});
+
+/* Check if user is in a lobby */
+router.get('/:lobbyId(\\d+)/users', authenticate, async (req, res) => {
+  try {
+    if (!(await LobbyDao.verifyHostOrGuest(req.user.id, req.params.lobbyId))) {
+      res.json({ isGuest: false});
+    }
+    else res.json({ isGuest: true});
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Something went wrong' });
@@ -158,15 +159,25 @@ router.post('/:lobbyId(\\d+)/users', authenticate, async (req, res) => {
     
     const lobbyGuests = await LobbyGuestsDao.findAllLobbyGuests(lobbyId);
 
+    // Already a lobby member
+    if (req.user.id == lobby.hostId) {  // is host
+      return res.redirect(`/lobbies/${lobbyId}`);
+    }
+    for (let i = 0; i < lobbyGuests.length; i++) {
+      if (req.user.id == lobbyGuests[i].userId) { // is guest
+        return res.redirect(`/lobbies/${lobbyId}`);
+      }
+    }
+
     // Full Lobby
     if (lobbyGuests.length + 2 > lobby.playerCapacity) {
       return res.status(409).json({ message: 'Lobby is full' });
     }
 
     if(lobby.password) {
-      const password = req.body.password;
-      const result = await LobbyDao.authenticate(lobbyId, password);
-      if(!result) {
+      const { password } = req.body;
+      if (password == null) return res.status(400).json({ message: 'Missing password' });
+      if (!(await LobbyDao.authenticate(lobbyId, password))) {
         return res.status(401).json({ message: 'Invalid Password' });
       }
     }
@@ -193,27 +204,31 @@ router.delete('/:lobbyId(\\d+)/users', authenticate, async (req, res) => {
       let nextHostId;
       try {
         nextHostId = await LobbyGuestsDao.removeOldestGuest(lobbyId);
-      } catch (err) {
+      } catch (e) {
         // If there are no more guests, then delete the lobby
-        await LobbyDao.deleteLobby(lobbyId);
-        userSockets.forEach((userSocket) => {
-          if (userSocket.rooms.has(`lobby/${lobbyId}`)) {
-            userSocket.emit('redirect', JSON.stringify({ pathname: `/find-lobby` }));
-          }
-        })
+        LobbyDao.deleteLobby(lobbyId);
+        if (userSockets) {
+          userSockets.forEach((userSocket) => {
+            if (userSocket.rooms.has(`lobby/${lobbyId}`)) {
+              userSocket.emit('redirect', JSON.stringify({ pathname: `/find-lobby` }));
+            }
+          })
+        }
         return res.json({ message: 'Successfully left the lobby' });
       }
 
-      const nextHostSockets = getSocketsFromUserSockets(nextHostId);
       await LobbyDao.setHost(nextHostId, lobbyId);
+      const nextHostSockets = getSocketsFromUserSockets(nextHostId);
       const guestsReady = await LobbyGuestsDao.verifyAllGuestsReady(lobbyId);
-      nextHostSockets.forEach((hostSocket) => {
-        if (hostSocket.rooms.has(`lobby-guest/${lobbyId}`)) {
-          hostSocket.leave(`lobby-guest/${lobbyId}`);
-          hostSocket.join(`lobby-host/${lobbyId}`)
-          hostSocket.emit('upgrade-to-lobby-host', JSON.stringify({ guestsReady }));
-        }
-      });
+      if (nextHostSockets) {
+        nextHostSockets.forEach((hostSocket) => {
+          if (hostSocket.rooms.has(`lobby-guest/${lobbyId}`)) {
+            hostSocket.leave(`lobby-guest/${lobbyId}`);
+            hostSocket.join(`lobby-host/${lobbyId}`)
+            hostSocket.emit('upgrade-to-lobby-host', JSON.stringify({ guestsReady }));
+          }
+        });
+      }
     } else await LobbyGuestsDao.remove(req.user.id, lobbyId);
 
     userSockets.forEach((userSocket) => {
@@ -373,7 +388,7 @@ router.delete('/:lobbyId(\\d+)/invitations/accept', authenticate, async (req, re
     LobbyInvitationDao.removeUserInvitation(req.user.id, lobbyId);
 
     await broadcastLobbyMemberJoin(io, req.user.id, lobbyId);
-    res.redirect(`/lobbies/${lobbyId}`);
+    res.redirect(303, `/lobbies/${lobbyId}`);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'An unexpected error occured' });

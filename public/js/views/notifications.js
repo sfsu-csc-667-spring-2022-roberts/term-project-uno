@@ -1,7 +1,5 @@
 import timeSince from '../lib/timeSince.js';
 
-const baseURL = `${window.location.protocol}//${window.location.host}`;
-
 function addEventListenersToInvitations() {
   const invitationListItems = document.getElementsByClassName('invitation');
   for (const invitationListItem of invitationListItems) {
@@ -84,7 +82,7 @@ function createFlashMessage(message) {
 function createInvitation(invitation) {
   return (
     `<li id="${invitation.lobbyId}" class="invitation">
-      <span>You were invited to "${invitation.lobbyName}" <time datetime="${invitation.createdAt}" class="time-since">${timeSince(invitation.createdAt)}</time> ago...</span>
+      <span>You were invited to <p class="lobby-name">${invitation.lobbyName}</p> <time datetime="${invitation.createdAt}" class="time-since">${timeSince(invitation.createdAt)}</time> ago...</span>
       <div>
         <button class="invitation-button decline">Decline</button>
         <button class="invitation-button accept">Accept</button>
@@ -131,7 +129,7 @@ window.onload = function() {
     const entries = performance.getEntriesByType('navigation');
     if (entries && entries.length > 0) {
       const navigationType = entries[0].type;
-      if ((navigationType === 'reload' || navigationType === 'back_forward' || navigationType === 'navigate') && socket.connected) {
+      if (navigationType === 'back_forward' && socket.connected) {
         window.location.reload();
       }
     }

@@ -21,8 +21,7 @@ loginForm.addEventListener('submit', (event) => {
 
   const serializedData = serializeForm(loginForm);
   if(validateSerializedData(serializedData)){
-    const url = window.location.protocol + '//' + window.location.host;
-    fetch(url + '/api/users/login', {
+    fetch('/api/users/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

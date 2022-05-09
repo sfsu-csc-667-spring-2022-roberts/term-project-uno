@@ -7,8 +7,13 @@ const messageIcon = document.getElementById("message-icon");
 
 
 // ------ socket events
-socket.on('game-message-send', (data) => {
-    appendMessage(data);
+socket.on('game-message-send', (message) => {
+    try {
+        const data = JSON.parse(message);
+        appendMessage(data);
+    } catch (err) {
+        console.error(err);
+    }
 });
 
 // ------ message events
@@ -40,7 +45,6 @@ const getMessages = async () => {
     fetch(`/api${window.location.pathname}/messages`)
         .then(response => response.json())
         .then(data => {
-            console.log(data);
             if (data.messages) {
                 messagesDiv.innerHTML = "";
                 data.messages.forEach(message => {
@@ -48,7 +52,7 @@ const getMessages = async () => {
                 });
             }
         })
-        .catch(err => console.log(err))
+        .catch(err => console.error(err))
         .finally(() => {
             if (messagePopUpToggle) messagesDiv.scrollTop = messagesDiv.scrollHeight;
         });
