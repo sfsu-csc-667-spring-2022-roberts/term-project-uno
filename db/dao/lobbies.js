@@ -1,6 +1,19 @@
 const db = require('../index');
 const bcrypt = require('bcrypt');
 
+async function authenticate(lobbyId, password) {
+  return db.query(`
+    SELECT *
+    FROM "Lobbies"
+    WHERE id = $1`, [lobbyId])
+  .then((results) => {
+    if (results && results.length === 1) {
+      return Promise.resolve(bcrypt.compare(password, results[0].password));
+    } else return Promise.resolve(-1);
+  })
+  .catch((e) => Promise.reject(e));
+}
+
 async function createPrivate(userId, name, playerCapacity, password) {
   return bcrypt.hash(password, 8)
   .then((hashedPassword) => {
@@ -207,6 +220,7 @@ async function updateLobbyAndPassword(lobbyId, lobbyName, maxPlayers, password) 
 }
 
 module.exports = {
+  authenticate,
   createPrivate,
   createPublic, 
   deleteLobby,
