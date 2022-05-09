@@ -52,24 +52,24 @@ router.get('/:id(\\d+)', authenticate, async (req, res) => {
   let data;
 
   LobbyDao.findLobby(id)
-  .then((results) => {
-    if(results[0].password) {
-      results[0].type = "true";
+  .then((result) => {
+    if(result.password) {
+      result.type = true;
     }
     else {
-      results[0].type = "false";
+      result.type = false;
     }
-    delete results[0].password;
-    data = results;
+    delete result.password;
+    data = result;
 
     return LobbyGuestsDao.findAllLobbyGuests(id);
   })
   .then((result) => {
-    data[0].guests = result;
-    return UserDao.findUserById(data[0].hostId);
+    data.guests = result;
+    return UserDao.findUserById(data.hostId);
   })
   .then((result) => {
-    data[0].hostName = result.username;
+    data.hostName = result.username;
     return res.json(data);
   })
   .catch((err) => {
@@ -163,13 +163,11 @@ router.post('/:lobbyId(\\d+)/users', authenticate, async (req, res) => {
       return res.status(409).json({ message: 'Lobby is full' });
     }
 
-    // Already a lobby member
-    if (req.user.id == lobby.hostId) {
-      return res.redirect(`/lobbies/${lobbyId}`);
-    }
-    for (let i = 0; i < lobbyGuests.length; i++) {
-      if (req.user.id == lobbyGuests[i].userId) {
-        return res.redirect(`/lobbies/${lobbyId}`);
+    if(lobby.password) {
+      const password = req.body.password;
+      const result = await LobbyDao.authenticate(lobbyId, password);
+      if(!result) {
+        return res.status(401).json({ message: 'Invalid Password' });
       }
     }
 
@@ -232,6 +230,19 @@ router.delete('/:lobbyId(\\d+)/users', authenticate, async (req, res) => {
   }
 });
 
+/* Check if user is in a lobby */
+router.get('/:lobbyId(\\d+)/users', authenticate, async (req, res) => {
+  try {
+    if (!(await LobbyDao.verifyHostOrGuest(req.user.id, req.params.lobbyId))) {
+      res.json({ isGuest: false});
+    }
+    else res.json({ isGuest: true});
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Something went wrong' });
+  }
+
+});
 /* Kick user from lobby */
 router.delete('/:lobbyId(\\d+)/users/:userId(\\d+)', authenticate, async (req, res) => {
   const { lobbyId, userId } = req.params;

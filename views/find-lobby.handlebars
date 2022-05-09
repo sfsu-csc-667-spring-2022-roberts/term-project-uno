@@ -12,19 +12,30 @@
   <body id="body">
     {{> navbar}}
     <main>
-        <div class="search-container">
-          <input type="text" placeholder="Search" id="lobby-search-input" name="lobby-search" required>
-          <button type="submit">Search</button>
-          <button type="button">Refresh</button>
-        </div>
-        <div class="header-container">
-          <div class="lobby-name-header">Lobby Name</div>
-          <div>Host</div>
-          <div>Type</div>
-          <div class="player-count-header">Players</div>
-        </div>
-        <div class="lobby-list-container" id="lobbyListContainer">
-        </div>
+      <div class="search-container">
+        <input type="text" placeholder="Search" id="lobby-search-input" name="lobby-search" required>
+        <button type="submit">Search</button>
+        <button type="button">Refresh</button>
+      </div>
+      <div class="header-container">
+        <div class="lobby-name-header">Lobby Name</div>
+        <div>Host</div>
+        <div>Type</div>
+        <div class="player-count-header">Players</div>
+      </div>
+      <div class="lobby-list-container" id="lobbyListContainer">
+      </div>
+      <div id="joinPrivateLobbyModal">
+        <form id="joinPrivateLobbyForm">
+          <div id="formContent">
+            <span id="closeModal" class="closeModal">&times;</span>
+            <div>
+              <input id="password" name="password" type="password" placeholder="Password" required>
+              <button id="submit" type="submit">Enter</button>
+            </div>
+          </div>
+        </form>
+      </div>
     </main>
     <script src="/socket.io/socket.io.js"></script>
   </body>

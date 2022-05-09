@@ -1,5 +1,9 @@
+import serializeForm from '../lib/serializeForm.js';
+
 const socket = io();
 const baseURL = `${window.location.protocol}//${window.location.host}`;
+const closeModal = document.getElementById("closeModal");
+const joinPrivateLobbyForm = document.getElementById("joinPrivateLobbyForm");
 
 if (socket) {
   socket.on('redirect', (message) => {
@@ -11,6 +15,39 @@ if (socket) {
     }
   })
 }
+
+closeModal.addEventListener('click', () => {
+  const joinLobbyFormModal = document.getElementById("joinPrivateLobbyModal");
+  const passwordInput = document.getElementById("password");
+  joinPrivateLobbyForm.removeEventListener('submit', (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    const url = window.location.protocol + '//' + window.location.host;
+    const serializedData = serializeForm(joinPrivateLobbyForm);
+    fetch(url + `/api/lobbies/${lobbyId}/users`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(serializedData),
+    })
+    .then(async (res) => {
+      if (res.redirected) {
+        window.location.href = res.url;
+      } else {
+        const data = await res.json();
+        if (res.status === 400) {
+          const error = document.getElementById('error');
+          error.innerHTML = data.message;
+          error.className = 'error-message';
+        } else console.log(data);
+      }
+    })
+    .catch((err) => console.error(err));
+  });
+  passwordInput.value = "";
+  joinLobbyFormModal.style.display = "none";
+});
 
 window.addEventListener('load', () => {
   const url = window.location.protocol + '//' + window.location.host;
@@ -57,20 +94,98 @@ window.addEventListener('load', () => {
   });
 });
 
-async function joinLobby(lobbyId) {
-  fetch(`/api/lobbies/${lobbyId}/users`, {
-    method: 'POST',
+
+async function isLobbyGuest(lobbyId) {
+  const url = window.location.protocol + '//' + window.location.host;
+  return fetch(url + `/api/lobbies/${lobbyId}/users/`, {
+    method: 'GET',
     headers: {
       'Content-Type': 'application/json',
-    }
+    },
   })
-  .then(async (res) => {
-    if (res.redirected) {
-      window.location.href = res.url;
-    } else {
-      const data = await res.json();
-      console.log(data);
-    }
+  .then(async(result) => {
+    const data = await result.json();
+    return Promise.resolve(data.isGuest);
   })
-  .catch((err) => console.error(err));
+  .catch((err) => {
+    console.error(err);
+    return Promise.reject(err);
+  })
 }
+async function getLobbyType(lobbyId) {
+  const url = window.location.protocol + '//' + window.location.host;
+  return fetch(url + `/api/lobbies/${lobbyId}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
+  .then(async(result) => {
+    const data = await result.json();
+    return Promise.resolve(data.type);
+  })
+  .catch((err) => {
+    console.error(err);
+    return Promise.reject(err);
+  })
+}
+
+async function joinLobby(lobbyId) {
+  const url = window.location.protocol + '//' + window.location.host;
+  const isGuest = await isLobbyGuest(lobbyId);
+  const privateLobby = await getLobbyType(lobbyId);
+
+  if(isGuest) {
+    return document.location.href=url+`/lobbies/${lobbyId}`;
+  }
+
+  if(privateLobby) {
+    const joinLobbyFormModal = document.getElementById("joinPrivateLobbyModal")
+    joinLobbyFormModal.style.display = "block";
+    joinPrivateLobbyForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const url = window.location.protocol + '//' + window.location.host;
+      const serializedData = serializeForm(joinPrivateLobbyForm);
+      fetch(url + `/api/lobbies/${lobbyId}/users`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(serializedData),
+      })
+      .then(async (res) => {
+        if (res.redirected) {
+          window.location.href = res.url;
+        } else {
+          const data = await res.json();
+          if (res.status === 400) {
+            const error = document.getElementById('error');
+            error.innerHTML = data.message;
+            error.className = 'error-message';
+          } else console.log(data);
+        }
+      })
+      .catch((err) => console.error(err));
+    });
+    
+  }
+  else {
+    fetch(url + `/api/lobbies/${lobbyId}/users`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    })
+    .then(async (res) => {
+      if (res.redirected) {
+        window.location.href = res.url;
+      } else {
+        const data = await res.json();
+        console.log(data);
+      }
+    })
+    .catch((err) => console.error(err));
+  }
+}
+
