@@ -360,13 +360,9 @@ function initLobby() {
 
   addKickButtonListener();
 
-  window.addEventListener('pageshow', () => {
-    const entries = performance.getEntriesByType('navigation');
-    if (entries && entries.length > 0) {
-      const navigationType = entries[0].type;
-      if (navigationType === 'back_forward' && socket.connected) {
-        window.location.reload();
-      }
+  window.addEventListener('pageshow', (event) => {
+    if (event.persisted) {
+      window.location.reload();
     }
   });
 }
