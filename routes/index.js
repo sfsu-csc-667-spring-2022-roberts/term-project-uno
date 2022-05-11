@@ -89,7 +89,7 @@ router.get('/search', verifyToken, async (req, res, next) => {
     const { q } = req.query;
     const title = q ? `Search "${q}"` : `Search`;
     const asyncTasks = await Promise.all([
-      UserDao.findUsersBySimilarName(q),
+      q != '' ? UserDao.findUsersBySimilarName(q) : null,
       req.user ? (checkUserHasInvitations(req.user.id)) : false
     ]);
     const results = asyncTasks[0];
