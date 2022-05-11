@@ -4,6 +4,7 @@ const socket = io();
 const baseURL = `${window.location.protocol}//${window.location.host}`;
 const refreshButton = document.getElementById("refresh");
 const closeModal = document.getElementById("closeModal");
+const searchLobbiesForm = document.getElementById("searchLobbiesForm");
 const joinPrivateLobbyForm = document.getElementById("joinPrivateLobbyForm");
 
 if (socket) {
@@ -18,12 +19,59 @@ if (socket) {
 }
 
 window.addEventListener('load', () => {
-  displayLobbies();
+  fetch('/api/lobbies/', {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
+  .then(async (res) => {
+    const data = await res.json();
+    displayLobbies(data);
+  })
+  .catch((err) => {
+    console.error(err);
+  })
 });
+
+searchLobbiesForm.addEventListener('submit', (event) => {
+  event.preventDefault();
+  event.stopPropagation();
+
+  const searchInput = document.getElementById("lobby-search-input").value;
+  const url = window.location.protocol + '//' + window.location.host;
+
+  fetch(url +`/api/lobbies/search?name=${searchInput}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
+  .then(async (res) => {
+    const data = await res.json();
+    document.getElementById("lobbyListContainer").innerHTML = '';
+    displayLobbies(data);
+  })
+  .catch((err) => {
+    console.error(err);
+  })
+})
 
 refreshButton.addEventListener('click', ()=> {
   document.getElementById("lobbyListContainer").innerHTML = '';
-  displayLobbies();
+  fetch('/api/lobbies/', {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
+  .then(async (res) => {
+    const data = await res.json();
+    displayLobbies(data);
+  })
+  .catch((err) => {
+    console.error(err);
+  })
 })
 
 closeModal.addEventListener('click', () => {
@@ -35,15 +83,7 @@ closeModal.addEventListener('click', () => {
   joinLobbyFormModal.style.display = "none";
 });
 
-async function displayLobbies() {
-  fetch('/api/lobbies/', {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  })
-  .then(async (res) => {
-    const data = await res.json();
+async function displayLobbies(data) {
     data.results.forEach((lobby) => {
       const { id, hostName, name, playerCapacity, guestLength, type } = lobby;
       const newLobby = document.createElement("div");
@@ -72,10 +112,6 @@ async function displayLobbies() {
 
       document.getElementById("lobbyListContainer").appendChild(newLobby);
     });
-  })
-  .catch((err) => {
-    console.error(err);
-  });
 }
 
 async function isLobbyGuest(lobbyId) {
@@ -122,7 +158,7 @@ async function getLobbyType(lobbyId) {
   })
 }
 
-async function joinPrivateLobby (event) {
+async function joinPrivateLobby(event) {
   event.preventDefault();
   event.stopPropagation();
 

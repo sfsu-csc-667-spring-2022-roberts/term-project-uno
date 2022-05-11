@@ -13,8 +13,10 @@
     {{> navbar}}
     <main>
       <div class="search-container">
-        <input type="text" placeholder="Search" id="lobby-search-input" name="lobby-search" required>
-        <button id="search" type="submit">Search</button>
+        <form id="searchLobbiesForm">
+          <input id="lobby-search-input" type="text" placeholder="Search" id="lobby-search-input" name="lobby-search" required>
+          <button id="search" type="submit">Search</button>
+        </form>
         <button id="refresh" type="button">Refresh</button>
       </div>
       <div class="header-container">

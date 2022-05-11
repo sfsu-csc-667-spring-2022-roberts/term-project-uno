@@ -88,6 +88,34 @@ async function findAllFreeLobbies() {
   .catch((err) => Promise.reject(err));
 }
 
+async function findLobbiesBySimilarName(name) {
+  return db.query(`
+    SELECT "Lobbies".id, name, "playerCapacity", "Lobbies"."createdAt", (
+    CASE 
+      WHEN "Lobbies".password IS NULL 
+      THEN 'public' 
+      ELSE 'private' 
+    END) AS type, (
+    CASE 
+      WHEN count IS NULL 
+      THEN 0 
+      ELSE CAST(count AS INTEGER)
+    END) AS "guestLength", username AS "hostName" 
+    FROM "Lobbies" 
+    INNER JOIN "Users" 
+    ON "Users".id = "hostId" 
+    FULL JOIN (
+      SELECT count(*), "lobbyId" 
+      FROM "LobbyGuests" 
+      GROUP BY "lobbyId"
+    ) AS lobbyguests 
+    ON "Lobbies".id = "lobbyId" 
+    WHERE name LIKE $1
+    ORDER BY "Lobbies"."createdAt" DESC;
+  `, [`%${name}%`])
+  .catch((err) => Promise.reject(err));
+}
+
 async function findAllMembers(lobbyId) {
   const findUserById = async (userId) => db.one(`
     SELECT "Users".id, username, "gamesWon", "gamesPlayed", "createdAt", location AS avatar, portrait
@@ -224,6 +252,7 @@ module.exports = {
   createPublic, 
   deleteLobby,
   findLobby,
+  findLobbiesBySimilarName,
   findAllMembers,
   findAllFreeLobbies,
   setBusy,

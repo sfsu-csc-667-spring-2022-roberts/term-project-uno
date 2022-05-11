@@ -45,6 +45,18 @@ router.post('/', authenticate, async (req, res) => {
   }
 });
 
+/* Get searched lobbies */
+router.get('/search', async (req, res) => {
+  const { name } = req.query;
+  try {
+    const results = await LobbyDao.findLobbiesBySimilarName(name);
+    res.json({ results });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'An unexpected error occured' });
+  }
+});
+
 /* Get specific lobby */
 router.get('/:lobbyId(\\d+)', authenticate, async (req, res) => {
   const { lobbyId } = req.params;
