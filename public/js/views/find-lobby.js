@@ -39,9 +39,8 @@ searchLobbiesForm.addEventListener('submit', (event) => {
   event.stopPropagation();
 
   const searchInput = document.getElementById("lobby-search-input").value;
-  const url = window.location.protocol + '//' + window.location.host;
 
-  fetch(url +`/api/lobbies/search?name=${searchInput}`, {
+  fetch(`/api/lobbies/search?name=${searchInput}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -59,19 +58,40 @@ searchLobbiesForm.addEventListener('submit', (event) => {
 
 refreshButton.addEventListener('click', ()=> {
   document.getElementById("lobbyListContainer").innerHTML = '';
-  fetch('/api/lobbies/', {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  })
-  .then(async (res) => {
-    const data = await res.json();
-    displayLobbies(data);
-  })
-  .catch((err) => {
-    console.error(err);
-  })
+
+  const searchInput = document.getElementById("lobby-search-input").value;
+
+  if(document.getElementById("lobby-search-input").value) {
+    fetch(`/api/lobbies/search?name=${searchInput}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+    .then(async (res) => {
+      const data = await res.json();
+      document.getElementById("lobbyListContainer").innerHTML = '';
+      displayLobbies(data);
+    })
+    .catch((err) => {
+      console.error(err);
+    })
+  }
+  else {
+    fetch('/api/lobbies/', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+    .then(async (res) => {
+      const data = await res.json();
+      displayLobbies(data);
+    })
+    .catch((err) => {
+      console.error(err);
+    })
+  }
 })
 
 closeModal.addEventListener('click', () => {
