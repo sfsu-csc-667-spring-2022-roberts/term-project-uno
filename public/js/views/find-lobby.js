@@ -2,6 +2,7 @@ import serializeForm from '../lib/serializeForm.js';
 
 const socket = io();
 const baseURL = `${window.location.protocol}//${window.location.host}`;
+const refreshButton = document.getElementById("refresh");
 const closeModal = document.getElementById("closeModal");
 const joinPrivateLobbyForm = document.getElementById("joinPrivateLobbyForm");
 
@@ -16,6 +17,15 @@ if (socket) {
   })
 }
 
+window.addEventListener('load', () => {
+  displayLobbies();
+});
+
+refreshButton.addEventListener('click', ()=> {
+  document.getElementById("lobbyListContainer").innerHTML = '';
+  displayLobbies();
+})
+
 closeModal.addEventListener('click', () => {
   const joinLobbyFormModal = document.getElementById("joinPrivateLobbyModal");
   const passwordInput = document.getElementById("password");
@@ -25,7 +35,7 @@ closeModal.addEventListener('click', () => {
   joinLobbyFormModal.style.display = "none";
 });
 
-window.addEventListener('load', () => {
+async function displayLobbies() {
   fetch('/api/lobbies/', {
     method: 'GET',
     headers: {
@@ -66,7 +76,7 @@ window.addEventListener('load', () => {
   .catch((err) => {
     console.error(err);
   });
-});
+}
 
 async function isLobbyGuest(lobbyId) {
   const url = window.location.protocol + '//' + window.location.host;
@@ -89,6 +99,7 @@ async function isLobbyGuest(lobbyId) {
     return Promise.reject(err);
   })
 }
+
 async function getLobbyType(lobbyId) {
   const url = window.location.protocol + '//' + window.location.host;
   return fetch(url + `/api/lobbies/${lobbyId}`, {
