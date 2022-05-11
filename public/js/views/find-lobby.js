@@ -76,9 +76,13 @@ async function isLobbyGuest(lobbyId) {
       'Content-Type': 'application/json',
     },
   })
-  .then(async(result) => {
-    const data = await result.json();
-    return Promise.resolve(data.isGuest);
+  .then(async (res) => {
+    if (res.redirected) {
+      window.location.href = res.url;
+    } else {
+      const data = await res.json();
+      return Promise.resolve(data.isGuest);
+    }
   })
   .catch((err) => {
     console.error(err);
@@ -95,6 +99,7 @@ async function getLobbyType(lobbyId) {
   })
   .then(async (res) => {
     if (res.redirected) {
+      window.location.href = res.url;
     } else {
       const data = await res.json();
       return Promise.resolve(data.type == 'private');

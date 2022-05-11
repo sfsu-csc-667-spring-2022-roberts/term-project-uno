@@ -16,13 +16,11 @@ async function authenticate(lobbyId, password) {
 
 async function createPrivate(userId, name, playerCapacity, password) {
   return bcrypt.hash(password, 8)
-  .then((hashedPassword) => {
-    return db.one(`
-      INSERT INTO "Lobbies"("hostId", name, password, "playerCapacity")
-      VALUES($1, $2, $3, $4)
-      RETURNING *
-    `, [userId, name, hashedPassword, playerCapacity]);
-  })
+  .then((hashedPassword) => db.one(`
+    INSERT INTO "Lobbies"("hostId", name, password, "playerCapacity")
+    VALUES($1, $2, $3, $4)
+    RETURNING *
+  `, [userId, name, hashedPassword, playerCapacity]))
   .catch((err) => Promise.reject(err));
 }
 
@@ -210,12 +208,13 @@ async function updateLobby(lobbyId, lobbyName, maxPlayers) {
 }
 
 async function updateLobbyAndPassword(lobbyId, lobbyName, maxPlayers, password) {
-  return db.one(`
+  return bcrypt.hash(password, 8)
+  .then((hashedPassword) => db.one(`
     UPDATE "Lobbies"
     SET name = $2, "playerCapacity" = $3, password = $4
     WHERE id = $1
     RETURNING *
-  `, [lobbyId, lobbyName, maxPlayers, password])
+  `, [lobbyId, lobbyName, maxPlayers, hashedPassword]))
   .catch((err) => Promise.reject(err));
 }
 
