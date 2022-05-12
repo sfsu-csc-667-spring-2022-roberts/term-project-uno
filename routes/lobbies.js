@@ -64,13 +64,13 @@ router.get('/:lobbyId(\\d+)', authenticate, async (req, res) => {
   try {
     const lobby = await LobbyDao.findLobby(lobbyId);
     if (!lobby) return res.status(404).json({ message: 'Lobby not found' });
-
     res.json({
       id: lobby.id,
       name: lobby.name,
       hostId: lobby.hostId,
       createdAt: lobby.createdAt,
       playerCapacity: lobby.playerCapacity,
+      numPlayers: lobby.guestLength,
       type: lobby.password ? 'private' : 'public'
     });
   } catch (err) {
@@ -208,6 +208,7 @@ router.delete('/:lobbyId(\\d+)/users', authenticate, async (req, res) => {
   const { lobbyId } = req.params;
   try {
     const lobby = await LobbyDao.findLobby(lobbyId);
+
     if (!lobby) return res.status(404).json({ message: 'Lobby not found' });
 
     const userSockets = getSocketsFromUserSockets(req.user.id);
