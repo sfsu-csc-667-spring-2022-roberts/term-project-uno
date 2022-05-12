@@ -49,9 +49,22 @@ async function deleteLobby(lobbyId) {
 
 async function findLobby(lobbyId) {
   return db.query(`
-    SELECT *
-    FROM "Lobbies"
-    WHERE id = $1
+    SELECT "Lobbies".id, "Lobbies".password, name, "playerCapacity", "Lobbies"."createdAt", "Lobbies"."hostId", (
+    CASE 
+      WHEN count IS NULL 
+      THEN 0 
+      ELSE CAST(count AS INTEGER)
+    END) AS "guestLength", username AS "hostName" 
+    FROM "Lobbies" 
+    INNER JOIN "Users" 
+    ON "Users".id = "hostId" 
+    FULL JOIN (
+      SELECT count(*), "lobbyId" 
+      FROM "LobbyGuests" 
+      GROUP BY "lobbyId"
+    ) AS lobbyguests 
+    ON "Lobbies".id = "lobbyId" 
+    WHERE "Lobbies".id = $1
   `, [lobbyId])
   .then((lobbies) => {
     if (lobbies && lobbies.length === 1) return Promise.resolve(lobbies[0]);
@@ -85,6 +98,34 @@ async function findAllFreeLobbies() {
     WHERE busy = FALSE 
     ORDER BY "Lobbies"."createdAt" DESC;
   `, [])
+  .catch((err) => Promise.reject(err));
+}
+
+async function findLobbiesBySimilarName(name) {
+  return db.query(`
+    SELECT "Lobbies".id, name, "playerCapacity", "Lobbies"."createdAt", (
+    CASE 
+      WHEN "Lobbies".password IS NULL 
+      THEN 'public' 
+      ELSE 'private' 
+    END) AS type, (
+    CASE 
+      WHEN count IS NULL 
+      THEN 0 
+      ELSE CAST(count AS INTEGER)
+    END) AS "guestLength", username AS "hostName" 
+    FROM "Lobbies" 
+    INNER JOIN "Users" 
+    ON "Users".id = "hostId" 
+    FULL JOIN (
+      SELECT count(*), "lobbyId" 
+      FROM "LobbyGuests" 
+      GROUP BY "lobbyId"
+    ) AS lobbyguests 
+    ON "Lobbies".id = "lobbyId" 
+    WHERE name LIKE $1 AND busy = FALSE
+    ORDER BY "Lobbies"."createdAt" DESC;
+  `, [`%${name}%`])
   .catch((err) => Promise.reject(err));
 }
 
@@ -224,6 +265,7 @@ module.exports = {
   createPublic, 
   deleteLobby,
   findLobby,
+  findLobbiesBySimilarName,
   findAllMembers,
   findAllFreeLobbies,
   setBusy,

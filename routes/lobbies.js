@@ -45,6 +45,18 @@ router.post('/', authenticate, async (req, res) => {
   }
 });
 
+/* Get searched lobbies */
+router.get('/search', async (req, res) => {
+  const { name } = req.query;
+  try {
+    const results = await LobbyDao.findLobbiesBySimilarName(name);
+    res.json({ results });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'An unexpected error occured' });
+  }
+});
+
 /* Get specific lobby */
 router.get('/:lobbyId(\\d+)', authenticate, async (req, res) => {
   const { lobbyId } = req.params;
@@ -52,13 +64,13 @@ router.get('/:lobbyId(\\d+)', authenticate, async (req, res) => {
   try {
     const lobby = await LobbyDao.findLobby(lobbyId);
     if (!lobby) return res.status(404).json({ message: 'Lobby not found' });
-
     res.json({
       id: lobby.id,
       name: lobby.name,
       hostId: lobby.hostId,
       createdAt: lobby.createdAt,
       playerCapacity: lobby.playerCapacity,
+      numPlayers: lobby.guestLength,
       type: lobby.password ? 'private' : 'public'
     });
   } catch (err) {
@@ -196,6 +208,7 @@ router.delete('/:lobbyId(\\d+)/users', authenticate, async (req, res) => {
   const { lobbyId } = req.params;
   try {
     const lobby = await LobbyDao.findLobby(lobbyId);
+
     if (!lobby) return res.status(404).json({ message: 'Lobby not found' });
 
     const userSockets = getSocketsFromUserSockets(req.user.id);
