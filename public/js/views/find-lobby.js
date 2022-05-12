@@ -216,8 +216,10 @@ async function joinLobby(lobbyId) {
   }
   if(lobbyInfo.type == "private") {
     const joinLobbyFormModal = document.getElementById("joinPrivateLobbyModal");
+    const error = document.getElementById('lobby-password-error');
     const lobbyName = document.getElementById("form-lobby-name");
-
+    error.innerHTML = "";
+    error.style = "style:none";
     lobbyName.innerHTML = lobbyInfo.name;
     joinLobbyFormModal.style.display = "block";
     joinPrivateLobbyForm.setAttribute('lobbyId', lobbyId);
