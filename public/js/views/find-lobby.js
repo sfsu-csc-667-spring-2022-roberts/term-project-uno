@@ -3,7 +3,8 @@ import serializeForm from '../lib/serializeForm.js';
 const socket = io();
 const baseURL = `${window.location.protocol}//${window.location.host}`;
 const refreshButton = document.getElementById("refresh");
-const closeModal = document.getElementById("close-modal");
+const privateLobbyClose = document.getElementById("join-private-close-modal");
+const fullLobbyClose = document.getElementById("lobby-full-modal");
 const searchLobbiesForm = document.getElementById("search-lobbies-form");
 const joinPrivateLobbyForm = document.getElementById("join-private-lobby-form");
 
@@ -75,7 +76,7 @@ refreshButton.addEventListener('click', ()=> {
     })
     .catch((err) => {
       console.error(err);
-    })
+    });
   }
   else {
     fetch('/api/lobbies/', {
@@ -90,17 +91,22 @@ refreshButton.addEventListener('click', ()=> {
     })
     .catch((err) => {
       console.error(err);
-    })
+    });
   }
 })
 
-closeModal.addEventListener('click', () => {
+privateLobbyClose.addEventListener('click', () => {
   const joinLobbyFormModal = document.getElementById("join-private-lobby-modal");
   const passwordInput = document.getElementById("password");
   joinPrivateLobbyForm.removeEventListener('submit', joinPrivateLobby);
   joinPrivateLobbyForm.removeAttribute('lobbyId');
   passwordInput.value = "";
   joinLobbyFormModal.style.display = "none";
+});
+
+fullLobbyClose.addEventListener('click', () => {
+  const lobbyFullModal = document.getElementById("lobby-full-modal");
+  lobbyFullModal.style.display = "none";
 });
 
 async function displayLobbies(data) {
@@ -199,7 +205,7 @@ async function joinPrivateLobby(event) {
       if (res.status === 401) {
         const error = document.getElementById('lobby-password-error');
         error.innerHTML = data.message;
-        error.style = "display:block";
+        error.style.display = "block";
       } else console.log(data);
     }
   })
@@ -213,6 +219,12 @@ async function joinLobby(lobbyId) {
   if(isGuest) {
     return document.location.href=url+`/lobbies/${lobbyId}`;
   }
+
+  if(lobbyInfo.numPlayers + 1 >= lobbyInfo.playerCapacity) {
+    const lobbyFullModal = document.getElementById("lobby-full-modal");
+    return lobbyFullModal.style.display = "block";
+  }
+
   if(lobbyInfo.type == "private") {
     const joinLobbyFormModal = document.getElementById("join-private-lobby-modal");
     const error = document.getElementById('lobby-password-error');

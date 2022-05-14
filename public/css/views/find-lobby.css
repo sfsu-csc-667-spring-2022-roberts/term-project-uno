@@ -60,13 +60,12 @@ main {
   justify-content: center;
 }
 
-#join-private-lobby-form-content {
-  margin-top: 300px;
-  display: flex;
-  height:fit-content;
-  width: fit-content;
-  flex-direction: column;
+.modal-content {
+  margin: 15% auto; /* 15% from the top and centered */
   background-color: white;
+  padding: 5px;
+  border: 1px solid black;
+  width:fit-content
 }
 
 .close-modal {
