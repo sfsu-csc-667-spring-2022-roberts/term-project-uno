@@ -3,8 +3,8 @@ import serializeForm from '../lib/serializeForm.js';
 const socket = io();
 const baseURL = `${window.location.protocol}//${window.location.host}`;
 const refreshButton = document.getElementById("refresh");
-const privateLobbyClose = document.getElementById("join-private-close-modal");
-const fullLobbyClose = document.getElementById("lobby-full-modal");
+const privateLobbyClose = document.getElementById("join-private-modal-close");
+const fullLobbyClose = document.getElementById("lobby-full-modal-close");
 const searchLobbiesForm = document.getElementById("search-lobbies-form");
 const joinPrivateLobbyForm = document.getElementById("join-private-lobby-form");
 
@@ -49,7 +49,7 @@ searchLobbiesForm.addEventListener('submit', (event) => {
   })
   .then(async (res) => {
     const data = await res.json();
-    document.getElementById("lobbyListContainer").innerHTML = '';
+    document.getElementById("lobby-list-container").innerHTML = '';
     displayLobbies(data);
   })
   .catch((err) => {
@@ -58,7 +58,7 @@ searchLobbiesForm.addEventListener('submit', (event) => {
 })
 
 refreshButton.addEventListener('click', ()=> {
-  document.getElementById("lobbyListContainer").innerHTML = '';
+  document.getElementById("lobby-list-container").innerHTML = '';
 
   const searchInput = document.getElementById("lobby-search-input").value;
 
@@ -71,7 +71,7 @@ refreshButton.addEventListener('click', ()=> {
     })
     .then(async (res) => {
       const data = await res.json();
-      document.getElementById("lobbyListContainer").innerHTML = '';
+      document.getElementById("lobby-list-container").innerHTML = '';
       displayLobbies(data);
     })
     .catch((err) => {
