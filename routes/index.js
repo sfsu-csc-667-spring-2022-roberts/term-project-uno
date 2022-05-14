@@ -89,7 +89,7 @@ router.get('/search', verifyToken, async (req, res, next) => {
     const { q } = req.query;
     const title = q ? `Search "${q}"` : `Search`;
     const asyncTasks = await Promise.all([
-      UserDao.findUsersBySimilarName(q),
+      q != '' ? UserDao.findUsersBySimilarName(q) : null,
       req.user ? (checkUserHasInvitations(req.user.id)) : false
     ]);
     const results = asyncTasks[0];
@@ -180,11 +180,11 @@ router.get('/lobbies/:lobbyId(\\d+)', authenticate, async (req, res, next) => {
       ]);
       const lobbyMembers = results[0];
       const guestsReady = results[1];
-      const { leftList, rightList } = splitLobbyMembers(lobbyMembers, lobby.playerCapacity);
+      const list = splitLobbyMembers(lobbyMembers, lobby.playerCapacity);
 
       res.render('lobby', {
         layout: false, title:  `Uno Lobby #${lobbyId}`, lobbyId, maxPlayers: lobby.playerCapacity,
-        lobbyName: lobby.name, leftList, rightList, guestsReady, isHost: req.user.id === lobby.hostId,
+        lobbyName: lobby.name, list, guestsReady, isHost: req.user.id === lobby.hostId,
         isPrivate: lobby.password != null, user: req.user, notifications: results[2]
       });
     } 
