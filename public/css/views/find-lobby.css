@@ -44,7 +44,7 @@ main {
   padding-left: 100px;
 }
 
-#joinPrivateLobbyModal {
+.modal {
   display: none; /* Hidden by default */
   position: fixed; /* Stay in place */
   z-index: 1; /* Sit on top */
@@ -55,12 +55,12 @@ main {
   background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
 }
 
-#joinPrivateLobbyForm {
+#join-private-lobby-form {
   display: flex;
   justify-content: center;
 }
 
-#formContent {
+#join-private-lobby-form-content {
   margin-top: 300px;
   display: flex;
   height:fit-content;
@@ -69,7 +69,7 @@ main {
   background-color: white;
 }
 
-.closeModal {
+.close-modal {
   margin-left: auto;
   color: #aaa;
   float: right;

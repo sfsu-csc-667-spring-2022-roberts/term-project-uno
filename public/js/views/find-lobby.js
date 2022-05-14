@@ -3,9 +3,9 @@ import serializeForm from '../lib/serializeForm.js';
 const socket = io();
 const baseURL = `${window.location.protocol}//${window.location.host}`;
 const refreshButton = document.getElementById("refresh");
-const closeModal = document.getElementById("closeModal");
-const searchLobbiesForm = document.getElementById("searchLobbiesForm");
-const joinPrivateLobbyForm = document.getElementById("joinPrivateLobbyForm");
+const closeModal = document.getElementById("close-modal");
+const searchLobbiesForm = document.getElementById("search-lobbies-form");
+const joinPrivateLobbyForm = document.getElementById("join-private-lobby-form");
 
 if (socket) {
   socket.on('redirect', (message) => {
@@ -95,7 +95,7 @@ refreshButton.addEventListener('click', ()=> {
 })
 
 closeModal.addEventListener('click', () => {
-  const joinLobbyFormModal = document.getElementById("joinPrivateLobbyModal");
+  const joinLobbyFormModal = document.getElementById("join-private-lobby-modal");
   const passwordInput = document.getElementById("password");
   joinPrivateLobbyForm.removeEventListener('submit', joinPrivateLobby);
   joinPrivateLobbyForm.removeAttribute('lobbyId');
@@ -130,7 +130,7 @@ async function displayLobbies(data) {
       newLobby.appendChild(playerCount)
       newLobby.append(joinButton)
 
-      document.getElementById("lobbyListContainer").appendChild(newLobby);
+      document.getElementById("lobby-list-container").appendChild(newLobby);
     });
 }
 
@@ -210,12 +210,11 @@ async function joinLobby(lobbyId) {
   const url = window.location.protocol + '//' + window.location.host;
   const isGuest = await isLobbyGuest(lobbyId);
   const lobbyInfo = await getLobbyInfo(lobbyId);
-
   if(isGuest) {
     return document.location.href=url+`/lobbies/${lobbyId}`;
   }
   if(lobbyInfo.type == "private") {
-    const joinLobbyFormModal = document.getElementById("joinPrivateLobbyModal");
+    const joinLobbyFormModal = document.getElementById("join-private-lobby-modal");
     const error = document.getElementById('lobby-password-error');
     const lobbyName = document.getElementById("form-lobby-name");
     error.innerHTML = "";

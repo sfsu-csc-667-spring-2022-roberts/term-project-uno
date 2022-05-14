@@ -13,7 +13,7 @@
     {{> navbar}}
     <main>
       <div class="search-container">
-        <form id="searchLobbiesForm">
+        <form id="search-lobbies-form">
           <input id="lobby-search-input" type="text" placeholder="Search" id="lobby-search-input" name="lobby-search">
           <button id="search" type="submit">Search</button>
         </form>
@@ -25,12 +25,12 @@
         <div>Type</div>
         <div class="player-count-header">Players</div>
       </div>
-      <div class="lobby-list-container" id="lobbyListContainer">
+      <div id="lobby-list-container" class="lobby-list-container" >
       </div>
-      <div id="joinPrivateLobbyModal">
-        <form id="joinPrivateLobbyForm">
-          <div id="formContent">
-            <span id="closeModal" class="closeModal">&times;</span>
+      <div id="join-private-lobby-modal" class="modal">
+        <form id="join-private-lobby-form">
+          <div id="join-private-lobby-form-content">
+            <span id="close-modal" class="close-modal">&times;</span>
             <div>
               <p id="form-lobby-name"></p>
               <p id="lobby-password-error" class="error-message"></p>
