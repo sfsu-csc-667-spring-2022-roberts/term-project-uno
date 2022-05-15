@@ -16,6 +16,7 @@ async function findTopOfPlayedCards(gameId) {
     FROM "PlayedCards" 
     WHERE "gameId" = $1 
     ORDER BY "createdAt" ASC
+    OFFSET ((SELECT COUNT(*) FROM "PlayedCards" WHERE "gameId" = $1) - 1)
     LIMIT 1
   `, [gameId])
   .then((results) => {
