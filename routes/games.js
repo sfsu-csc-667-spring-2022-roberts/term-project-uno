@@ -246,9 +246,11 @@ router.patch('/:id/playCard', authenticate, async (req, res) => {
 
     // if it is not the player's turn, or (the current color is not equal to the card's color, and 
     // the card value is not the same as the one at the top of the played cards, and the card is not a wild card) --> return
+
     if (game.turnIndex !== players[0].turnIndex || (game.currentColor !== card.color && card.value !== topOfPlayedCards.value && card.color !== "wild")) {
       throw new GameError("Bad request: wrong move", 400);
     }
+
     players[0].username = user.username;
 
     emitBasedOnCardType(game, players[0], card, io, chosenColor, player2username);

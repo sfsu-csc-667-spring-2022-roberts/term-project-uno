@@ -125,7 +125,7 @@ async function updateReversed(playerOrderReversed, gameId) {
     WHERE "id" = $2
   `, [playerOrderReversed, gameId])
   .then((results) => {
-    if (results && results.length == 1) return Promise.resolve(true);
+    if (results) return Promise.resolve(true);
     else return Promise.resolve(false);
   })
   .catch((err) => Promise.reject(err));

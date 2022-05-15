@@ -49,7 +49,7 @@ async function deleteLobby(lobbyId) {
 
 async function findLobby(lobbyId) {
   return db.query(`
-    SELECT "Lobbies".id, "Lobbies".password, name, "playerCapacity", "Lobbies"."createdAt", "Lobbies"."hostId", (
+    SELECT "Lobbies".id, "Lobbies".password, name, busy, "playerCapacity", "Lobbies"."createdAt", "Lobbies"."hostId", (
     CASE 
       WHEN count IS NULL 
       THEN 0 
