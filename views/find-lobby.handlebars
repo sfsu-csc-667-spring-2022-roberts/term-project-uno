@@ -12,33 +12,50 @@
   <body id="body">
     {{> navbar}}
     <main>
+      <header>
+        <h2>
+          Find Lobbies
+        </h2>
+      </header>
       <div class="search-container">
-        <form id="searchLobbiesForm">
-          <input id="lobby-search-input" type="text" placeholder="Search" id="lobby-search-input" name="lobby-search">
-          <button id="search" type="submit">Search</button>
+        <form id="search-lobbies-form">
+          <input id="lobby-search-input" type="text" placeholder="Search Lobbies" class="lobby-search-input" name="lobby-search">
         </form>
-        <button id="refresh" type="button">Refresh</button>
+        <button id="refresh" class="refresh-button" type="button">Refresh</button>
+        <a href="/create-lobby" class="create-lobby">Create Lobby</a>
       </div>
-      <div class="header-container">
-        <div class="lobby-name-header">Lobby Name</div>
-        <div>Host</div>
-        <div>Type</div>
-        <div class="player-count-header">Players</div>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr class="table-header">
+              <th class="lobby-name-header">Lobby Name</th>
+              <th class="host-header">Host</th>
+              <th class="type-header">Type</th>
+              <th class="players-header">Players</th>
+              <th class="join-header"></th>
+            </tr>
+          </thead>
+          <tbody id="lobby-list-container">
+          </tbody>
+        </table>
       </div>
-      <div class="lobby-list-container" id="lobbyListContainer">
-      </div>
-      <div id="joinPrivateLobbyModal">
-        <form id="joinPrivateLobbyForm">
-          <div id="formContent">
-            <span id="closeModal" class="closeModal">&times;</span>
-            <div>
-              <p id="form-lobby-name"></p>
+      <div id="join-private-lobby-modal" class="modal">
+        <div class="modal-content">
+          <form id="join-private-lobby-form">
+            <div id="join-private-lobby-form-content">
+              <span id="join-private-modal-close" class="close-modal">&times;</span>
+              <p id="form-lobby-name" class="modal-lobby-name"></p>
               <p id="lobby-password-error" class="error-message"></p>
-              <input id="password" name="password" type="password" placeholder="Password" required>
-              <button id="submit" type="submit">Enter</button>
+              <input id="password" class= "lobby-password" name="password" type="password" placeholder="Enter Lobby Password" required>
             </div>
-          </div>
-        </form>
+          </form>
+        </div>
+      </div>
+      <div id="lobby-full-modal" class="modal">
+        <div class="modal-content">
+          <span id="lobby-full-modal-close" class="close-modal">&times;</span>
+          <p class="lobby-full-message">The lobby you tried to join is full.</p>
+        </div>
       </div>
     </main>
     <script src="/socket.io/socket.io.js"></script>

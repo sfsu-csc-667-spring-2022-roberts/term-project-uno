@@ -3,9 +3,10 @@ import serializeForm from '../lib/serializeForm.js';
 const socket = io();
 const baseURL = `${window.location.protocol}//${window.location.host}`;
 const refreshButton = document.getElementById("refresh");
-const closeModal = document.getElementById("closeModal");
-const searchLobbiesForm = document.getElementById("searchLobbiesForm");
-const joinPrivateLobbyForm = document.getElementById("joinPrivateLobbyForm");
+const privateLobbyClose = document.getElementById("join-private-modal-close");
+const fullLobbyClose = document.getElementById("lobby-full-modal-close");
+const searchLobbiesForm = document.getElementById("search-lobbies-form");
+const joinPrivateLobbyForm = document.getElementById("join-private-lobby-form");
 
 if (socket) {
   socket.on('redirect', (message) => {
@@ -48,7 +49,7 @@ searchLobbiesForm.addEventListener('submit', (event) => {
   })
   .then(async (res) => {
     const data = await res.json();
-    document.getElementById("lobbyListContainer").innerHTML = '';
+    document.getElementById("lobby-list-container").innerHTML = '';
     displayLobbies(data);
   })
   .catch((err) => {
@@ -57,7 +58,7 @@ searchLobbiesForm.addEventListener('submit', (event) => {
 })
 
 refreshButton.addEventListener('click', ()=> {
-  document.getElementById("lobbyListContainer").innerHTML = '';
+  document.getElementById("lobby-list-container").innerHTML = '';
 
   const searchInput = document.getElementById("lobby-search-input").value;
 
@@ -70,12 +71,12 @@ refreshButton.addEventListener('click', ()=> {
     })
     .then(async (res) => {
       const data = await res.json();
-      document.getElementById("lobbyListContainer").innerHTML = '';
+      document.getElementById("lobby-list-container").innerHTML = '';
       displayLobbies(data);
     })
     .catch((err) => {
       console.error(err);
-    })
+    });
   }
   else {
     fetch('/api/lobbies/', {
@@ -90,12 +91,12 @@ refreshButton.addEventListener('click', ()=> {
     })
     .catch((err) => {
       console.error(err);
-    })
+    });
   }
 })
 
-closeModal.addEventListener('click', () => {
-  const joinLobbyFormModal = document.getElementById("joinPrivateLobbyModal");
+privateLobbyClose.addEventListener('click', () => {
+  const joinLobbyFormModal = document.getElementById("join-private-lobby-modal");
   const passwordInput = document.getElementById("password");
   joinPrivateLobbyForm.removeEventListener('submit', joinPrivateLobby);
   joinPrivateLobbyForm.removeAttribute('lobbyId');
@@ -103,34 +104,49 @@ closeModal.addEventListener('click', () => {
   joinLobbyFormModal.style.display = "none";
 });
 
+fullLobbyClose.addEventListener('click', () => {
+  const lobbyFullModal = document.getElementById("lobby-full-modal");
+  lobbyFullModal.style.display = "none";
+});
+
 async function displayLobbies(data) {
     data.results.forEach((lobby) => {
       const { id, hostName, name, playerCapacity, guestLength, type } = lobby;
-      const newLobby = document.createElement("div");
-      const lobbyName = document.createElement("div");
-      const playerCount = document.createElement("div");
-      const host = document.createElement("div");
+      const newLobby = document.createElement("tr");
+      const lobbyName = document.createElement("td");
+      const playerCount = document.createElement("td");
+      const host = document.createElement("td");
+      const lobbyType = document.createElement("td");
+      const buttonContainer = document.createElement("td");
       const joinButton = document.createElement("button");
-      const lobbyType = document.createElement("div");
 
-      newLobby.id = id;
       newLobby.className= "lobby-container"; 
       lobbyName.className = "lobby-name";
+      host.className = "lobby-host";
+      lobbyType.className = "lobby-type";
+      playerCount.className = "lobby-player-count";
+      buttonContainer.className = "lobby-button-container";
+      joinButton.className = "lobby-join-button";
+
+      newLobby.id = id;
+
       lobbyName.innerHTML = name;
-      playerCount.innerHTML = 1 + guestLength + "/" + playerCapacity;
-      joinButton.innerHTML = "Join";
       host.innerHTML = hostName;
       lobbyType.innerHTML = type;
+      playerCount.innerHTML = 1 + guestLength + "/" + playerCapacity;
+      joinButton.innerHTML = "Join";
       
-      joinButton.onclick = function () { joinLobby(id) }
+      joinButton.onclick = function () { joinLobby(id) };
 
-      newLobby.appendChild(lobbyName)
-      newLobby.appendChild(host)
-      newLobby.appendChild(lobbyType)
-      newLobby.appendChild(playerCount)
-      newLobby.append(joinButton)
 
-      document.getElementById("lobbyListContainer").appendChild(newLobby);
+      newLobby.appendChild(lobbyName);
+      newLobby.appendChild(host);
+      newLobby.appendChild(lobbyType);
+      newLobby.appendChild(playerCount);
+      buttonContainer.appendChild(joinButton);
+      newLobby.append(buttonContainer);
+
+      document.getElementById("lobby-list-container").appendChild(newLobby);
     });
 }
 
@@ -199,7 +215,7 @@ async function joinPrivateLobby(event) {
       if (res.status === 401) {
         const error = document.getElementById('lobby-password-error');
         error.innerHTML = data.message;
-        error.style = "display:block";
+        error.style.display = "block";
       } else console.log(data);
     }
   })
@@ -210,12 +226,17 @@ async function joinLobby(lobbyId) {
   const url = window.location.protocol + '//' + window.location.host;
   const isGuest = await isLobbyGuest(lobbyId);
   const lobbyInfo = await getLobbyInfo(lobbyId);
-
   if(isGuest) {
     return document.location.href=url+`/lobbies/${lobbyId}`;
   }
+
+  if(lobbyInfo.numPlayers + 1 >= lobbyInfo.playerCapacity) {
+    const lobbyFullModal = document.getElementById("lobby-full-modal");
+    return lobbyFullModal.style.display = "block";
+  }
+
   if(lobbyInfo.type == "private") {
-    const joinLobbyFormModal = document.getElementById("joinPrivateLobbyModal");
+    const joinLobbyFormModal = document.getElementById("join-private-lobby-modal");
     const error = document.getElementById('lobby-password-error');
     const lobbyName = document.getElementById("form-lobby-name");
     error.innerHTML = "";

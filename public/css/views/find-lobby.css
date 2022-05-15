@@ -10,71 +10,233 @@ body {
 
 main {
   margin-top: 5rem;
-  border: 1px solid black;
+  box-shadow: rgba(50, 50, 93, 0.25) 0px 13px 27px -5px, rgba(0, 0, 0, 0.3) 0px 8px 16px -8px;
   display: flex;
   flex-direction: column;
-  width: 80%;
-  height: 80%;
+  width: 70rem;
+  height: 50rem;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+header {
+  display: flex;
+  flex-direction: column;
+  color: white;
+  background: #ee161f;
+  margin: 0;
+  height: 4rem;
+  justify-content: center;
+  align-items: center;
+  border-bottom: 0.2rem solid #d6151d;
 }
 
 .search-container {
+  padding: 1rem;
+  background:#0063B3;
   display: flex;
-  justify-content: center;
+  align-items: center;
+  justify-content: space-between;
 }
 
-.lobby-list-container {
+#lobby-list-container :last-child {
+  margin-bottom: 0.5rem;
+}
+
+#search-lobbies-form {
+  width: 54rem;
+  padding-right: 1.2475rem;
+}
+
+.lobby-search-input {
+  width: 100%;
+  outline: none;
+  padding: 0.5rem;
+}
+
+.refresh-button {
+  display: block;
+  cursor: pointer;
+  font-weight: bold;
+  text-decoration: none;
+  padding: 0.5rem;
+  border-radius: .5rem;
+  border: none;
+  background: #ee161f;
+  color: white;
+  box-shadow: rgba(50, 50, 93, 0.25) 0px 50px 100px -20px, rgba(0, 0, 0, 0.3) 0px 30px 60px -30px, rgba(10, 37, 64, 0.35) 0px -2px 6px 0px inset;
+  transition: all 0.15s ease-in-out;
+}
+
+.create-lobby {
+  display: block;
+  cursor: pointer;
+  white-space: nowrap;
+  text-align: center;
+  font-weight: bold;
+  text-decoration: none;
+  padding: 0.5rem;
+  border-radius: .5rem;
+  border: none;
+  background: #ee161f;
+  color: white;
+  box-shadow: rgba(50, 50, 93, 0.25) 0px 50px 100px -20px, rgba(0, 0, 0, 0.3) 0px 30px 60px -30px, rgba(10, 37, 64, 0.35) 0px -2px 6px 0px inset;
+  transition: all 0.15s ease-in-out;
+}
+
+.table-container {
   overflow-y: auto;
-  display: flex;
-  flex-direction: column;
 }
 
-.header-container, .lobby-container {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-evenly;
-  border: 1px solid black;
+table {
+  width: 100%;
+  text-align: center;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+thead {
+  top: 0;
+  height: 50px;
+  position: sticky;
+}
+
+.table-header {
+  background: #0063B3;
+  color: white;
+}
+
+th {
+  font-size: 1rem;
+}
+
+.host-header {
+  width: 9.375rem;
+} 
+
+.players-header, .type-header {
+  width: 6.25rem;
+}
+
+.join-header {
+  width: 6rem;
 }
 
 .lobby-container {
-  min-height: 50px;
-  align-items: center;
-}
-.lobby-name-header, .lobby-name {
-  width: 70%;
-  padding-left: 100px;
+  height: 3.125rem;
+  border-bottom: 1px solid #dedede;
 }
 
-#joinPrivateLobbyModal {
-  display: none; /* Hidden by default */
-  position: fixed; /* Stay in place */
-  z-index: 1; /* Sit on top */
+.lobby-container:hover {
+  background-color: rgb(233, 233, 233);
+}
+
+td {
+  font-size: 1rem;
+}
+
+.lobby-name, .lobby-host {
+  padding-left: 40px;
+  padding-right: 40px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lobby-name {
+  font-style: italic;
+}
+
+.lobby-host {
+  padding-left: 10px;
+  padding-right: 10px;
+  font-weight: 600;
+}
+
+.lobby-type {
+  text-transform: capitalize;
+}
+
+.lobby-join-button {
+  display: block;
+  cursor: pointer;
+  font-weight: bold;
+  text-decoration: none;
+  padding: 0.5rem;
+  border-radius: .5rem;
+  margin: 0.5rem auto 0 auto;
+  border: none;
+  background: #ee161f;
+  color: white;
+  box-shadow: rgba(50, 50, 93, 0.25) 0px 50px 100px -20px, rgba(0, 0, 0, 0.3) 0px 30px 60px -30px, rgba(10, 37, 64, 0.35) 0px -2px 6px 0px inset;
+  transition: all 0.15s ease-in-out;
+}
+
+.refresh-button:hover, .create-lobby:hover, .lobby-join-button:hover {
+  transform: scale(1.15);
+  -webkit-transform: scale(1.15);
+  -moz-transform: scale(1.15);
+  -o-transform: scale(1.15);
+}
+
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1;
   top: 0;
   left: 0;
   width: 100%; 
   height: 100%;
-  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+  background-color: rgba(0,0,0,0.4);
 }
 
-#joinPrivateLobbyForm {
+.modal-content {
+  margin: 15% auto;
+  background-color: white;
+  width: 18.75rem;
+  min-height: 5.3rem;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+#join-private-lobby-form-content {
+  width: 100%;
+  height: 100%;
   display: flex;
+  flex-direction: column;
   justify-content: center;
 }
 
-#formContent {
-  margin-top: 300px;
-  display: flex;
-  height:fit-content;
-  width: fit-content;
-  flex-direction: column;
-  background-color: white;
-}
-
-.closeModal {
+.close-modal {
   margin-left: auto;
-  color: #aaa;
+  color: white;
   float: right;
   font-size: 20px;
   font-weight: bold;
+  background: #ee161f;
+  cursor: pointer;
+  width: 100%;
+  text-align: right;
+  padding-right: 0.5rem;
+}
+
+.modal-lobby-name {
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 1.25rem;
+  font-weight: bold;
+  margin: 0 0 0.5rem 0;
+  background: #ee161f;
+  padding: 1rem;
+  color: white;
+}
+
+.lobby-password {
+  outline: none;
+  border: 1px solid #e5e5e5;
+  box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 3px, rgba(0, 0, 0, 0.24) 0px 1px 2px;
+  padding: 0.5rem;
+  margin: 0.5rem;
 }
 
 .error-message {
@@ -83,4 +245,14 @@ main {
   margin: 0;
   padding: 0.25rem;
   display: none;
+  text-align: center;
+  font-size: 16px;
+}
+
+.lobby-full-message {
+  padding: 0.5rem;
+  font-size: 1.5rem;
+  text-align: center;
+  margin: auto;
+  color: black;
 }
