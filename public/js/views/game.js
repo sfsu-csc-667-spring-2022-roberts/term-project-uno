@@ -368,7 +368,7 @@ const createCard = (card, type, currentColor) => {
                 case "swap": {
                     return (
                         `<div style="width: 87px;" class="card ${card.value} ${card.color} draw-play-deck-item" >
-                            <span class="inner">
+                            <span class="inner" style="background-color: ${card.hex};">
                                 <img class="wild-choose-img" src="/images/uno-swap.png" alt="swap"/>
                             </span>
                             <img class="wild-img-small wild-img-small-top" src="/images/uno-wild.png" alt="swap"/>
@@ -571,21 +571,19 @@ const playCard = (element, chosenColor, uname) => {
             body.chosenColor = chosenColor;
             body.player2 = uname;
         }
-
         fetch(`/api${window.location.pathname}/playCard`, {
             method: 'PATCH',
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(body)
         })
             .then(response => response.json())
-            .then(data => (data.status !== 200) ? window.location.reload() : null)
-            .catch(err => window.location.reload());
+            .catch(err => console.log(err));
     }
 }
 
 const handlePlay = (data) => {
     try {
-        if (data.swap || data.refreshDrawCards) window.location.reload();
+        if (data.swap) window.location.reload();
         if (document.getElementById(`player-${data.playerIndex}`).className.match("main-deck-container")) {
             mainDeckDiv.removeChild(document.getElementById(`${data.card.id}`))
         } else {
@@ -600,9 +598,14 @@ const handlePlay = (data) => {
             popUpDiv.innerHTML = `<div id='popup-div'><header><h2>${data.winner} won the game!</h2></header><h5>Do you want to play again?</h5><div id='leave-btns-container'><button id='leave-btn-cancel'>Play Again</button><button id='leave-btn-confirm'>Leave</button></div></div>`;
             document.body.appendChild(popUpDiv);
             document.getElementById("leave-btn-cancel").onclick = (e) => window.location.replace(`/lobbies/${data.lobbyId}`);
-            document.getElementById("leave-btn-confirm").onclick = (e) => window.location.replace("/");
-            popUpDiv.onclick = (e) => {
-                if (popUpDiv === e.target) document.body.removeChild(popUpDiv);
+            document.getElementById("leave-btn-confirm").onclick = (e) => {
+                fetch(`/api/lobbies/${data.lobbyId}/users`, {
+                    method: 'DELETE',
+                    headers: {'Content-Type': 'application/json',}
+                })
+                  .then(res => res.json())
+                  .catch((err) => console.error(err))
+                  .finally(() => window.location.replace("/"));
             }
         } else if (Number.isInteger(data.playerThatDrawsIndex)) handleDraw(data);
         else getNextTurn(data.playerIndex, data.newTurnIndex);
@@ -616,15 +619,14 @@ const drawCard = () => {
         fetch(`/api${window.location.pathname}/drawCard`, { method: 'PATCH' })
             .then(response => response.json())
             .then(data => (data.status !== 200) ? window.location.reload() : null)
-            .catch(err => window.location.reload());
+            .catch(err => console.log(err));
     }
 }
 
 const handleDraw = async (data) => {
     try {
-        if (data.refreshDrawCards) window.location.reload();
+        if (data.refreshDrawCards) await getDrawDeck(data.drawDeckCount);
         if (document.getElementById(`player-${data.playerThatDrawsIndex}`).className.match("main-deck-container")) {
-
             fetch(`/api${window.location.pathname}/getCards`)
                 .then(response => response.json())
                 .then(respData => {
