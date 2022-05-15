@@ -249,13 +249,22 @@ async function updateLobby(lobbyId, lobbyName, maxPlayers) {
 }
 
 async function updateLobbyAndPassword(lobbyId, lobbyName, maxPlayers, password) {
-  return bcrypt.hash(password, 8)
-  .then((hashedPassword) => db.one(`
+  if (password) {
+    return bcrypt.hash(password, 8)
+    .then((hashedPassword) => db.one(`
+      UPDATE "Lobbies"
+      SET name = $2, "playerCapacity" = $3, password = $4
+      WHERE id = $1
+      RETURNING *
+    `, [lobbyId, lobbyName, maxPlayers, hashedPassword]))
+    .catch((err) => Promise.reject(err));
+  } 
+  return db.one(`
     UPDATE "Lobbies"
     SET name = $2, "playerCapacity" = $3, password = $4
     WHERE id = $1
     RETURNING *
-  `, [lobbyId, lobbyName, maxPlayers, hashedPassword]))
+  `, [lobbyId, lobbyName, maxPlayers, null])
   .catch((err) => Promise.reject(err));
 }
 
