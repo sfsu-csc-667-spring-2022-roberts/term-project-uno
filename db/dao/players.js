@@ -25,6 +25,14 @@ async function findPlayersWithFullInfo(gameId) {
   .catch((err) => Promise.reject(err));
 }
 
+async function findPlayer(userId, gameId) {
+  return db.one(`
+    SELECT * FROM "Players"
+    WHERE "userId" = $1 AND "gameId" = $2
+  `, [userId, gameId])
+  .catch((err) => Promise.reject(err));
+}
+
 async function findPlayers(userId) {
   return db.query(`
     SELECT *
@@ -157,5 +165,6 @@ module.exports = {
   findPlayersByGameId,
   remove,
   findPlayerByTurnIndex,
-  findPlayersWithFullInfo
+  findPlayersWithFullInfo,
+  findPlayer
 }

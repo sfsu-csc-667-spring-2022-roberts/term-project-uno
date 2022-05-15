@@ -232,10 +232,10 @@ router.patch('/:id/playCard', authenticate, async (req, res) => {
 
     if (!user || !(await PlayerDao.verifyUserInGame(gameId, user.id))) throw new GameError("Unauthorized: you are not in this game", 401);
 
-    const players = await PlayerDao.findPlayers(user.id);
+    const player = await PlayerDao.findPlayer(user.id);
 
     // if findPlayers does not return 1, or the player does not actually have the card, --> return
-    if (players.length !== 1 || !(await PlayerCardDao.verifyPlayerCard(cardId, players[0].id))) throw new GameError("Bad request", 400);
+    if (!player || !(await PlayerCardDao.verifyPlayerCard(cardId,player.id))) throw new GameError("Bad request", 400);
 
     const card = await CardDao.getCard(cardId);
     const topOfPlayedCardsResult = await PlayedCardDao.findTopOfPlayedCards(gameId);
@@ -247,13 +247,13 @@ router.patch('/:id/playCard', authenticate, async (req, res) => {
     // if it is not the player's turn, or (the current color is not equal to the card's color, and 
     // the card value is not the same as the one at the top of the played cards, and the card is not a wild card) --> return
 
-    if (game.turnIndex !== players[0].turnIndex || (game.currentColor !== card.color && card.value !== topOfPlayedCards.value && card.color !== "wild")) {
+    if (game.turnIndex !==player.turnIndex || (game.currentColor !== card.color && card.value !== topOfPlayedCards.value && card.color !== "wild")) {
       throw new GameError("Bad request: wrong move", 400);
     }
 
-    players[0].username = user.username;
+    player.username = user.username;
 
-    emitBasedOnCardType(game, players[0], card, io, chosenColor, player2username);
+    emitBasedOnCardType(game,player, card, io, chosenColor, player2username);
 
     res.json({ message: "Processing play card action", status: 200 });
   } catch (err) {
@@ -271,12 +271,12 @@ router.patch('/:id/drawCard', authenticate, async (req, res) => {
 
     if (!user || !(await PlayerDao.verifyUserInGame(gameId, user.id))) throw new GameError("Unauthorized: you are not in this game", 401);
 
-    const players = await PlayerDao.findPlayers(user.id);
+    const player = await PlayerDao.findPlayer(user.id);
     const game = await GameDao.findGame(gameId);
 
-    if (players.length !== 1 || !game || game.turnIndex !== players[0].turnIndex) throw new GameError("Bad request: wrong move", 400);
+    if (!player || !game || game.turnIndex !== player.turnIndex) throw new GameError("Bad request: wrong move", 400);
     
-    emitDrawCards(game, players[0], io);
+    emitDrawCards(game, player, io);
 
     res.json({ message: "Processing card draw action", status: 200 });
   } catch (err) {
@@ -294,10 +294,10 @@ router.get('/:id/getCards', authenticate, async (req, res) => {
 
     if (!user || !(await PlayerDao.verifyUserInGame(gameId, user.id))) throw new GameError("Unauthorized: you are not in this game", 401);
 
-    const players = await PlayerDao.findPlayers(user.id);
-    const cards = await PlayerCardDao.findPlayerCards(players[0].id);
+    const player = await PlayerDao.findPlayer(user.id);
+    const cards = await PlayerCardDao.findPlayerCards(player.id);
 
-    if (players.length !== 1 || !cards) throw new GameError("Bad request", 400);
+    if (!player || !cards) throw new GameError("Bad request", 400);
     
     res.json({ cards });
 
