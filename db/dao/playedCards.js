@@ -15,7 +15,7 @@ async function findTopOfPlayedCards(gameId) {
     SELECT * 
     FROM "PlayedCards" 
     WHERE "gameId" = $1 
-    ORDER BY "createdAt" ASC
+    ORDER BY "createdAt" DESC
     LIMIT 1
   `, [gameId])
   .then((results) => {
@@ -55,7 +55,7 @@ async function findAllPlayedCards(gameId) {
     INNER JOIN "Cards"
     ON "cardId" = id
     WHERE "gameId" = $1
-    ORDER BY "createdAt" ASC
+    ORDER BY "createdAt"
   `, [gameId])
   .catch(err => Promise.reject(err));
 }
