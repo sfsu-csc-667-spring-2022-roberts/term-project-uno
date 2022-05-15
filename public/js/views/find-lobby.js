@@ -112,29 +112,39 @@ fullLobbyClose.addEventListener('click', () => {
 async function displayLobbies(data) {
     data.results.forEach((lobby) => {
       const { id, hostName, name, playerCapacity, guestLength, type } = lobby;
-      const newLobby = document.createElement("div");
-      const lobbyName = document.createElement("div");
-      const playerCount = document.createElement("div");
-      const host = document.createElement("div");
+      const newLobby = document.createElement("tr");
+      const lobbyName = document.createElement("td");
+      const playerCount = document.createElement("td");
+      const host = document.createElement("td");
+      const lobbyType = document.createElement("td");
+      const buttonContainer = document.createElement("td");
       const joinButton = document.createElement("button");
-      const lobbyType = document.createElement("div");
 
-      newLobby.id = id;
       newLobby.className= "lobby-container"; 
       lobbyName.className = "lobby-name";
+      host.className = "lobby-host";
+      lobbyType.className = "lobby-type";
+      playerCount.className = "lobby-player-count";
+      buttonContainer.className = "lobby-button-container";
+      joinButton.className = "lobby-join-button";
+
+      newLobby.id = id;
+
       lobbyName.innerHTML = name;
-      playerCount.innerHTML = 1 + guestLength + "/" + playerCapacity;
-      joinButton.innerHTML = "Join";
       host.innerHTML = hostName;
       lobbyType.innerHTML = type;
+      playerCount.innerHTML = 1 + guestLength + "/" + playerCapacity;
+      joinButton.innerHTML = "Join";
       
-      joinButton.onclick = function () { joinLobby(id) }
+      joinButton.onclick = function () { joinLobby(id) };
 
-      newLobby.appendChild(lobbyName)
-      newLobby.appendChild(host)
-      newLobby.appendChild(lobbyType)
-      newLobby.appendChild(playerCount)
-      newLobby.append(joinButton)
+
+      newLobby.appendChild(lobbyName);
+      newLobby.appendChild(host);
+      newLobby.appendChild(lobbyType);
+      newLobby.appendChild(playerCount);
+      buttonContainer.appendChild(joinButton);
+      newLobby.append(buttonContainer);
 
       document.getElementById("lobby-list-container").appendChild(newLobby);
     });
