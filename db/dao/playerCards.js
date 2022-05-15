@@ -1,10 +1,36 @@
 const db = require('../index');
 
+async function findPlayerCardsByUserId(userId, gameId) {
+  return db.query(`
+    SELECT id, color, value, special 
+    FROM (
+      SELECT "cardId" 
+      FROM (
+        SELECT id AS player_id 
+        FROM "Players" 
+        WHERE "userId" = $1 AND "gameId" = $2
+      ) 
+      AS players 
+      INNER JOIN (
+        SELECT * FROM "PlayerCards"
+      ) 
+      AS p_cards 
+      ON player_id = "playerId"
+    ) 
+    AS player_cards 
+    INNER JOIN "Cards" 
+    ON "Cards".id = "cardId"
+    ORDER BY color
+  `, [userId, gameId])
+  .catch(err => Promise.reject(err));
+}
+
 async function createPlayerCard(cardId, playerId) {
   return db.any(`
-  INSERT INTO $1:name($2:name, $3:name)
-  VALUES($4, $5)
-  RETURNING *`, ['PlayerCards', 'cardId', 'playerId', cardId, playerId])
+    INSERT INTO "PlayerCards"("cardId", "playerId")
+    VALUES($1, $2)
+    RETURNING *
+  `, [cardId, playerId])
   .then((result) => {
     if (result) {
       return Promise.resolve(result[0]);
@@ -15,9 +41,9 @@ async function createPlayerCard(cardId, playerId) {
 
 async function verifyPlayerCard(cardId, playerId) {
   return db.any(`
-  SELECT *
-  FROM "PlayerCards"
-  WHERE "playerId" = $1 AND "cardId" = $2
+    SELECT *
+    FROM "PlayerCards"
+    WHERE "playerId" = $1 AND "cardId" = $2
   `, [playerId, cardId])
   .then((results) => {
     if (results && results.length === 1) {
@@ -29,9 +55,9 @@ async function verifyPlayerCard(cardId, playerId) {
 
 async function removePlayerCard(cardId, playerId) {
   return db.any(`
-  DELETE
-  FROM "PlayerCards"
-  WHERE "playerId" = $1 AND "cardId" = $2
+    DELETE
+    FROM "PlayerCards"
+    WHERE "playerId" = $1 AND "cardId" = $2
   `, [playerId, cardId])
   .then((result) => {
     if (result) {
@@ -81,11 +107,23 @@ async function findPlayerCardIdsAndDelete(playerId) {
   .catch((err) => Promise.reject(null));
 }
 
+async function deleteAndGetCards(playerId) {
+  return db.query(`
+    DELETE 
+    FROM "PlayerCards"
+    WHERE "playerId" = $1
+    RETURNING *
+  `, [playerId])
+  .catch((err) => Promise.reject(err));
+}
+
 module.exports = {
+  findPlayerCardsByUserId,
   createPlayerCard,
   verifyPlayerCard,
   removePlayerCard,
   findCardCount,
   findPlayerCards,
-  findPlayerCardIdsAndDelete
+  findPlayerCardIdsAndDelete,
+  deleteAndGetCards
 };

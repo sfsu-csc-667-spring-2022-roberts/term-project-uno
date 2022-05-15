@@ -1,6 +1,6 @@
 const socketIo = require('socket.io');
 const { joinSocketInvitationRoom } = require('./invitations');
-const {  joinSocketLobbyRoom } = require('./lobbies');
+const { joinSocketLobbyRoom } = require('./lobbies');
 const { initializeGameEndpoints } = require('./games');
 const { parseToken } = require('../lib/utils/token');
 const { parseCookies } = require('../lib/utils/cookies');

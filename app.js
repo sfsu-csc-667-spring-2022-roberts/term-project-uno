@@ -6,10 +6,8 @@ const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const { create } = require('express-handlebars');
 
-const IndexError = require('./helpers/error/IndexError');
 const { verifyToken } = require('./lib/utils/token');
-const AvatarDao = require('./db/dao/avatars');
-const testRouter = require('./routes/test');
+const IndexError = require('./helpers/error/IndexError');
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
 const lobbiesRouter = require('./routes/lobbies');
@@ -17,7 +15,6 @@ const gamesRouter = require('./routes/games');
 
 const app = express();
 
-// create hbs instance with options
 const hbs = create({
   helpers: {
     equals(a, b, options) {
@@ -53,7 +50,6 @@ const hbs = create({
   }
 })
 
-// view engine setup
 app.engine('handlebars', hbs.engine);
 app.set('view engine', 'handlebars');
 app.set('views', path.join(__dirname, 'views'));
@@ -64,7 +60,6 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, '/public')));
 
-app.use('/test', testRouter);
 app.use('/', indexRouter);
 app.use('/api/users', usersRouter);
 app.use('/api/lobbies', lobbiesRouter);
@@ -81,35 +76,23 @@ app.use(async (err, req, res, next) => {
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
-  
-  let portrait = true;
-  if (err.status === 404) {
-    try {
-      const avatar = req.user ? await AvatarDao.find(req.user.avatar) : null;
-      portrait = avatar ? avatar.height > avatar.width : true;
-    } catch (err) {
-      console.error(err);
-    }
-  }
 
   // render the error page
   res.status(err.status || 500);
-  if (err instanceof IndexError) {
+  if (err instanceof IndexError) {  // render error page with custom message
     res.render('error', { 
       layout: false, 
       status: err.status || 500,
       message: err.message,
       authenticated: req.user != undefined,
-      user: req.user,
-      portrait
+      user: req.user
     });
   } else {
     res.render('error', { 
       layout: false, 
       status: err.status || 500, 
       authenticated: req.user != undefined,
-      user: req.user,
-      portrait
+      user: req.user
     });
   }
 

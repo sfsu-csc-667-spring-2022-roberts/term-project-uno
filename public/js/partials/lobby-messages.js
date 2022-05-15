@@ -8,12 +8,11 @@ function sendMessage() {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ message: messageInput.value })
+      body: JSON.stringify({ message: messageInput.value.trim() })
     })
     .then(async (res) => {
       const data = await res.json();
       if (res.status != 201 && data.message) {
-        console.log(data.message);
       }
     })
     .catch((err) => console.error(err))

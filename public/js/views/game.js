@@ -99,10 +99,15 @@ const getGameState = async () => {
                 getPlayedDeck(data.gameState.playedDeck, data.gameState.currentColor);
             } else window.location.replace("/");
         })
-        .catch(err => console.log(err))
+        .catch(err => console.error(err))
 }
 
 const buildGameBoard = async (players, currentIndex, reversed) => {
+    // Clear out player containers
+    playersLeftContainer.innerHTML = '';
+    playersTopContainer.innerHTML = '';
+    playersRightContainer.innerHTML = '';
+
     switch (players.length) {
         case 2: {
             playersTopContainer.innerHTML = createPlayer(players[1], "top", currentIndex, reversed);

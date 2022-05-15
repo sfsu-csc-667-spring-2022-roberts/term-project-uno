@@ -2,14 +2,14 @@ const db = require('../index');
 
 async function createDrawCard(cardId, gameId) {
   return db.any(`
-  INSERT INTO $1:name($2:name, $3:name)
-  VALUES($4, $5)
-  RETURNING *`, ['DrawCards', 'cardId', 'gameId', cardId, gameId])
-    .then((result) => {
-      if (result) {
-        return Promise.resolve(result[0]);
-      } else return Promise.resolve(null);
-    })
+  INSERT INTO "DrawCards"("cardId", "gameId")
+  VALUES($1, $2)
+  RETURNING *`, [cardId, gameId])
+  .then((cards) => {
+    if (cards) {
+      return Promise.resolve(cards[0]);
+    } else return Promise.resolve(null);
+  })
 }
 async function removeDrawCard(cardId, gameId) {
   return db.any(`
@@ -81,11 +81,24 @@ async function resetDrawDeck(gameId) {
     });
 }
 
+async function findDrawCardsCount(gameId) {
+  return db.query(`
+    SELECT count(*) AS "count" 
+    FROM "DrawCards"
+    WHERE "gameId" = $1
+  `, [gameId])
+  .then((results) => {
+    if (results && results.length == 1) return Promise.resolve(results[0].count);
+    return Promise.resolve(0);
+  })
+  .catch((err) => Promise.reject(err));
+};
 
 module.exports = {
   createDrawCard,
   removeDrawCard,
   findTopOfDrawCards,
   findCardCount,
-  resetDrawDeck
+  resetDrawDeck,
+  findDrawCardsCount
 };

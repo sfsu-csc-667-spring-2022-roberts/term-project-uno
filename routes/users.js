@@ -3,7 +3,6 @@ const express = require('express');
 const fs = require('fs');
 const multer = require('multer');
 const aws = require('aws-sdk');
-const multerS3 = require('multer-s3');
 const sizeOf = require('image-size');
 const UserDao = require('../db/dao/users');
 const AvatarDao = require('../db/dao/avatars');
@@ -19,19 +18,34 @@ const s3 = new aws.S3({
     region: process.env.AWS_REGION
 });
 const uploadTemp = multer({ dest: './tmp/' }).single('file');
-const upload = multer({
-  storage: multerS3({
-    s3: s3,
-    contentType: multerS3.AUTO_CONTENT_TYPE,
-    bucket: process.env.AWS_BUCKET,
-    metadata: function (req, file, cb) {
-      cb(null, {fieldName: file.fieldname});
-    },
-    key: function (req, file, cb) {
-      cb(null, new Date().toISOString() + '-' + file.originalname)
-    }
+
+/* User registration */
+router.post('/', async (req, res) => {
+  const { error } = validateRegister(req.body);
+  if (error) return res.status(400).json({ message: error.details[0].message });
+
+  const { username, password, confirmPassword } = req.body;
+  UserDao.usernameExists(username).then((uniqueName) => {
+    if (uniqueName) {
+      if (password === confirmPassword) {
+        return UserDao.create(username, password); 
+      } else throw new UserError('Password and confirm password do not match', 400);
+    } 
+    else throw new UserError('Username is already taken', 409);
   })
-}).single('file');
+  .then((userId) => {
+    if (userId > 0) {
+      return res.redirect('/login');
+    } else throw new UserError('An error occured when creating the user', 500);
+  })
+  .catch((err) => {
+    if (err instanceof UserError) {
+      return res.status(err.getStatus()).json({ message: err.getMessage() });
+    } 
+    console.error(err);
+    return res.status(500).json({ message: 'An unexpected error occured' });
+  });
+});
 
 /* Change user information */
 router.patch('/', authenticate, async (req, res) => {
@@ -84,34 +98,6 @@ router.patch('/', authenticate, async (req, res) => {
   }
 });
 
-/* User registration */
-router.post('/', async (req, res) => {
-  const { error } = validateRegister(req.body);
-  if (error) return res.status(400).json({ message: error.details[0].message });
-
-  const { username, password, confirmPassword } = req.body;
-  UserDao.usernameExists(username).then((uniqueName) => {
-    if (uniqueName) {
-      if (password === confirmPassword) {
-        return UserDao.create(username, password); 
-      } else throw new UserError('Password and confirm password do not match', 400);
-    } 
-    else throw new UserError('Username is already taken', 409);
-  })
-  .then((userId) => {
-    if (userId > 0) {
-      return res.redirect('/login');
-    } else throw new UserError('An error occured when creating the user', 500);
-  })
-  .catch((err) => {
-    if (err instanceof UserError) {
-      return res.status(err.getStatus()).json({ message: err.getMessage() });
-    } 
-    console.error(err);
-    return res.status(500).json({ message: 'An unexpected error occured' });
-  });
-});
-
 router.post('/login', async (req, res) => {
   const { error } = validateLogin(req.body);
   if (error) return res.status(400).json({ message: error.details[0].message });
@@ -121,7 +107,11 @@ router.post('/login', async (req, res) => {
   .then((userId) => {
     if (userId > 0) {
       const token = generateToken(userId);
-      res.cookie('token', token, { httpOnly: true, maxAge: 365 * 24 * 60 * 60 * 1000 });
+      const cookieOptions = {
+        httpOnly: true,
+        maxAge: 6 * 60 * 60 * 1000, // 6 hours
+      };
+      res.cookie('token', token, cookieOptions);
       res.redirect('/');
     } else throw new UserError('Invalid username and/or password', 400);
   })
@@ -139,12 +129,12 @@ router.post('/logout', authenticate, async (req, res) => {
   return res.json();
 });
 
-/* Get authenticated user info */
+/* Get authenticated user profile */
 router.get('/me', authenticate, async (req, res) => {
   res.redirect(`/${req.user.username}`);
 });
 
-
+/* Upload profile picture */
 router.patch('/avatar', authenticate, uploadTemp, async (req, res) => {
   try {
     const { height, width } = sizeOf(req.file.path);
@@ -155,7 +145,7 @@ router.patch('/avatar', authenticate, uploadTemp, async (req, res) => {
     await fs.unlink(req.file.path, (e) => { if (e) console.error(e) });
 
     if ((!height || isNaN(height)) || (!width || isNaN(width))) {
-      return res.status(400).json({ message: 'Could not calculate avatar dimensions' });
+      return res.status(400).json({ message: 'Could not calculate avatar dimensions from uploaded file' });
     }
 
     const uploadedImage = await s3.upload({
@@ -169,11 +159,8 @@ router.patch('/avatar', authenticate, uploadTemp, async (req, res) => {
     }
 
     const user = await UserDao.findUserById(req.user.id);
-
-    Promise.all([
-      AvatarDao.create(uploadedImage.Location, height, width),
-      UserDao.changeAvatar(uploadedImage.Location, req.user.id)
-    ]);
+    await AvatarDao.removeByUserId(req.user.id);
+    await AvatarDao.create(uploadedImage.Location, height, width, req.user.id);
 
     if (user.avatar) {
       const url = new URL(user.avatar);
@@ -191,7 +178,7 @@ router.patch('/avatar', authenticate, uploadTemp, async (req, res) => {
         return res.status(500).json({ message: 'Failed to delete old avatar' });
       } catch (e) {
         if (e.code === 'NoSuchKey') {
-          return res.json({ message: 'Successfully uploaded new avatar' });
+          return res.json({ message: 'Successfully replaced avatar' });
         }
         console.error(e);
         return res.status(500).json({ message: 'An unexpected error occured' });

@@ -17,7 +17,7 @@
           <form id="changePicture" enctype="multipart/form-data">
               <div id="profile-pic">
                 {{#if user.avatar}}
-                  {{#if portrait}}
+                  {{#if user.portrait}}
                   <img id="profileImage" class="profile-pic-portrait" src="{{user.avatar}}">
                   {{else}}
                   <img id="profileImage" class="profile-pic-landscape" src="{{user.avatar}}">

@@ -14,6 +14,14 @@ main {
   margin-top: 3rem;
 }
 
+.lobby-name {
+  width: 16rem;
+  margin: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
 .empty-invitation {
   background: rgb(0,49,88);
   background: linear-gradient(0deg, rgb(0, 70, 128) 0%, rgba(0,99,179,1) 75%);
@@ -31,6 +39,8 @@ main {
   color: rgb(230, 230, 230);
   padding: 1rem 0.5rem 0.5rem 1rem;
   margin: 0 1rem 1rem 1rem;
+  line-height: 1.5rem;
+  overflow: hidden;
 }
 
 .invitation div {

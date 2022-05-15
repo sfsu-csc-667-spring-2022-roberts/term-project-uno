@@ -7,8 +7,13 @@ const messageIcon = document.getElementById("message-icon");
 
 
 // ------ socket events
-socket.on('game-message-send', (data) => {
-    appendMessage(data);
+socket.on('game-message-send', (message) => {
+    try {
+        const data = JSON.parse(message);
+        appendMessage(data);
+    } catch (err) {
+        console.error(err);
+    }
 });
 
 // ------ message events
