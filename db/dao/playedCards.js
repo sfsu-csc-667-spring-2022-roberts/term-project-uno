@@ -6,11 +6,7 @@ async function createPlayedCard(cardId, gameId) {
     VALUES($1, $2)
     RETURNING *
   `, [cardId, gameId])
-  .then((result) => {
-    if (result) {
-      return Promise.resolve(result[0]);
-    } else return Promise.resolve(null);
-  })
+  .then((result) => Promise.resolve(result))
   .catch((err) => Promise.reject(err));
 }
 
@@ -19,7 +15,8 @@ async function findTopOfPlayedCards(gameId) {
     SELECT * 
     FROM "PlayedCards" 
     WHERE "gameId" = $1 
-    OFFSET ((SELECT COUNT(*) FROM "PlayedCards" WHERE "gameId" = $1)-1)
+    ORDER BY "createdAt" ASC
+    LIMIT 1
   `, [gameId])
   .then((results) => {
     if (results && results.length === 1) {
@@ -50,17 +47,7 @@ async function removePlayedCard(gameId, cardId) {
   })
   .catch((err) => Promise.reject(null));
 }
-/*
-async function findAllPlayedCards(gameId) {
-  return db.any(`
-     SELECT * FROM "PlayedCards" WHERE "gameId" = $1
-  `, [gameId])
-  .then((results) => {
-    if (results && results.length > 0) return Promise.resolve(results);
-    else return Promise.resolve(null);
-  })
-  .catch((err) => Promise.reject(null));
-*/
+
 async function findAllPlayedCards(gameId) {
   return db.query(`
     SELECT id, color, value, special
@@ -68,6 +55,7 @@ async function findAllPlayedCards(gameId) {
     INNER JOIN "Cards"
     ON "cardId" = id
     WHERE "gameId" = $1
+    ORDER BY "createdAt" ASC
   `, [gameId])
   .catch(err => Promise.reject(err));
 }

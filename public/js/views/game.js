@@ -18,6 +18,26 @@ let mainIndex;
 
 socket.on('play-card', (data) => handlePlay(data));
 socket.on('draw-card', (data) => handleDraw(data));
+socket.on('leave', (message) => {
+    try {
+        const data = JSON.parse(message);
+        getDrawDeck(data.drawDeckCount);
+        buildGameBoard(data.players, data.turnIndex, data.playerOrderReversed);
+    } catch (err) {
+        console.error(err);
+    }
+});
+socket.on('redirect', (message) => {
+    try {
+        const data = JSON.parse(message);
+        if (data.pathname) {
+            const baseURL = `${window.location.protocol}//${window.location.host}`;
+            window.location.href = baseURL + data.pathname;
+        }
+    } catch (err) {
+        console.error(err);
+    }
+});
 
 leaveBtn.onclick = (e) => {
     popUpDiv.setAttribute("id", "popup-div-container");
