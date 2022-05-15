@@ -135,6 +135,20 @@ async function findPlayersByGameId(gameId) {
   .catch((err) => Promise.reject(err));
 }
 
+async function findPlayerByTurnIndex(gameId, turnIndex) {
+  return db.any(`
+  SELECT * 
+  FROM "Players" 
+  WHERE "gameId" = $1 AND "turnIndex" = $2
+  `, [gameId, turnIndex])
+  .then((results) => {
+    if (results && results.length === 1) {
+      return Promise.resolve(results[0]);
+    } else return Promise.resolve(false);
+  })
+  .catch((err) => Promise.reject(err));
+}
+
 module.exports = {
   findPlayers,
   createPlayer,
@@ -142,5 +156,6 @@ module.exports = {
   findPlayersCount,
   findPlayersByGameId,
   remove,
+  findPlayerByTurnIndex,
   findPlayersWithFullInfo
 }

@@ -29,6 +29,38 @@ async function findTopOfPlayedCards(gameId) {
   .catch((err) => Promise.reject(err));
 }
 
+async function removePlayedCards(gameId) {
+  return db.any(`
+     DELETE FROM "PlayedCards" WHERE "gameId" = $1
+  `, [gameId])
+  .then((results) => {
+    if (results) return Promise.resolve(true);
+    else return Promise.resolve(false);
+  })
+  .catch((err) => Promise.reject(null));
+}
+
+async function removePlayedCard(gameId, cardId) {
+  return db.any(`
+     DELETE FROM "PlayedCards" WHERE "gameId" = $1 AND "cardId" = $2
+  `, [gameId, cardId])
+  .then((results) => {
+    if (results) return Promise.resolve(true);
+    else return Promise.resolve(false);
+  })
+  .catch((err) => Promise.reject(null));
+}
+/*
+async function findAllPlayedCards(gameId) {
+  return db.any(`
+     SELECT * FROM "PlayedCards" WHERE "gameId" = $1
+  `, [gameId])
+  .then((results) => {
+    if (results && results.length > 0) return Promise.resolve(results);
+    else return Promise.resolve(null);
+  })
+  .catch((err) => Promise.reject(null));
+*/
 async function findAllPlayedCards(gameId) {
   return db.query(`
     SELECT id, color, value, special
@@ -43,5 +75,7 @@ async function findAllPlayedCards(gameId) {
 module.exports = {
   createPlayedCard,
   findTopOfPlayedCards,
+  removePlayedCards,
+  removePlayedCard,
   findAllPlayedCards
 };
