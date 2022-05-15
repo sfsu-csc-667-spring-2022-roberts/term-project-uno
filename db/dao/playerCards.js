@@ -33,16 +33,59 @@ async function removePlayerCard(cardId, playerId) {
   FROM "PlayerCards"
   WHERE "playerId" = $1 AND "cardId" = $2
   `, [playerId, cardId])
-  .then((results) => {
-    if (results && results.length === 1) {
-      return Promise.resolve(result[0]);
+  .then((result) => {
+    if (result) {
+      return Promise.resolve(true);
     } else return Promise.resolve(null);
   })
   .catch((err) => Promise.reject(err));
 }
 
+async function findCardCount(playerId) {
+  return db.query(`
+    SELECT COUNT(*) FROM "PlayerCards"
+    WHERE "playerId" = $1
+  `, [playerId])
+  .then((result) => {
+    if (result) return Promise.resolve(parseInt(result[0].count));
+    else return Promise.resolve(-1);
+  })
+  .catch((err) => Promise.reject(err));
+}
+
+async function findPlayerCards(playerId) {
+  return db.query(`
+    SELECT * FROM "Cards"
+    WHERE "id"
+    IN (SELECT "cardId"
+        FROM "PlayerCards"
+        WHERE "playerId" = $1)
+  `, [playerId])
+  .then((results) => {
+    if (results && results.length > 1) return Promise.resolve(results);
+    else return Promise.resolve(null);
+  })
+  .catch((err) => Promise.reject(null));
+}
+
+async function findPlayerCardIdsAndDelete(playerId) {
+  return db.query(`
+    DELETE FROM "PlayerCards" WHERE "cardId" IN
+    (SELECT "cardId" FROM "PlayerCards" WHERE "playerId" = $1)
+    RETURNING "cardId"
+  `, [playerId])
+  .then((results) => {
+    if (results && results.length > 0) return Promise.resolve(results);
+    else return Promise.resolve(null);
+  })
+  .catch((err) => Promise.reject(null));
+}
+
 module.exports = {
   createPlayerCard,
   verifyPlayerCard,
-  removePlayerCard
+  removePlayerCard,
+  findCardCount,
+  findPlayerCards,
+  findPlayerCardIdsAndDelete
 };

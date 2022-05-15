@@ -269,6 +269,18 @@ async function deleteGame(gameId) {
   .catch((err) => Promise.reject(err));
 }
 
+async function findUsernamesInGame(gameId) {
+  return db.any(`
+  SELECT "username" FROM "Users" WHERE "id" IN
+  (SELECT "userId" FROM "Players" WHERE "gameId" = $1 )
+  `, [gameId])
+  .then((results) => {
+    if (results && results.length > 0) return Promise.resolve(results);
+    else return Promise.resolve(null);
+  })
+  .catch((err) => Promise.reject(null));
+}
+
 module.exports = {
   findGameState,
   findGame,
@@ -278,5 +290,6 @@ module.exports = {
   updateColor,
   updateTurn,
   updateReversed,
-  deleteGame
+  deleteGame,
+  findUsernamesInGame
 }
