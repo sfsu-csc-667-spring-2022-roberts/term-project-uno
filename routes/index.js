@@ -13,8 +13,13 @@ const { splitLobbyMembers } = require('../lib/utils/socket');
 
 const router = express.Router();
 
-router.get('/leaderboard', verifyToken, (req, res) => {
-  res.render('leaderboard', {layout: false, title: 'Leaderboard'})
+router.get('/leaderboard', verifyToken, async (req, res) => {
+  res.render('leaderboard', {
+    layout: false, 
+    title: 'Leaderboard',
+    user: req.user,
+    notifications: (req.user ? (await checkUserHasInvitations(req.user.id)) : false)
+  });
 });
 
 router.get('/leaderboardData', verifyToken, async (req, res) => {
