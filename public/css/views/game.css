@@ -470,7 +470,9 @@ body {
   width: 15px;
   height: 15px;
   border: 8px solid;
-  border-color: #1980ff80 transparent transparent #1980ff80;
+  /* border-color: #1980ff80 transparent transparent #1980ff80; */
+  border-color: #1980ff transparent transparent #1980ff;
+
   transform: rotate(-45deg);
 }
 

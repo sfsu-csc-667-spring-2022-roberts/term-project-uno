@@ -187,7 +187,6 @@ const createPlayer = (player, placement, currentIndex, reversed) => {
     const defaultAvatar = "/images/default-profile-pic.png";
     let cardsString = "";
     for (let i = 0; i < player.cards; i++) {
-        if (i > 27) break;
         cardsString += createCard({}, "player", null);
     }
     switch (placement) {
@@ -588,7 +587,7 @@ const handlePlay = async (data) => {
         if (document.getElementById(`player-${data.playerIndex}`).className.match("main-deck-container")) {
             mainDeckDiv.removeChild(document.getElementById(`${data.card.id}`))
         } else {
-            document.getElementById(`player-${data.playerIndex}-cards`).lastChild.remove();
+            document.getElementById(`player-${data.playerIndex}-cards`).lastChild.remove()
             document.getElementById(`player-${data.playerIndex}-cardcount`).innerText = parseInt(document.getElementById(`player-${data.playerIndex}-cardcount`).innerText) - 1;
         }
         playedDeckDiv.innerHTML = playedDeckDiv.innerHTML + createCard(data.card, "played", data.currentColor);
@@ -644,7 +643,6 @@ const handleDraw = async (data) => {
             const newCardCount = parseInt(cardCount.innerText) + data.amount;
             cardCount.innerText = newCardCount;
             for (let i = 0; i < newCardCount; i++) {
-                if (i > 27) break;
                 cardsString += createCard({}, "player", null);
             }
             document.getElementById(`player-${data.playerThatDrawsIndex}-cards`).innerHTML = cardsString;
@@ -659,6 +657,7 @@ const getNextTurn = (currentIndex, newCurrentIndex) => {
     try {
         let currentElementChildren = document.getElementById(`player-${currentIndex}`).children;
         let nextElementChildren = document.getElementById(`player-${newCurrentIndex}`).children;
+        if (!currentElementChildren || !nextElementChildren) window.location.reload();
         for (let i = 0; i < currentElementChildren.length; i++) {
             if (currentElementChildren[i].className.includes("arrow")) currentElementChildren[i].className = currentElementChildren[i].className + " hidden";
         }

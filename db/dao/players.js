@@ -21,6 +21,7 @@ async function findPlayersWithFullInfo(gameId) {
     ) AS playercards 
     ON "Players".id = "playerId"
     WHERE "Players"."gameId" = $1
+    ORDER BY "turnIndex"
   `, [gameId])
   .catch((err) => Promise.reject(err));
 }
