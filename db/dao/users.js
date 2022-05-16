@@ -229,14 +229,19 @@ async function findInvitations(userId) {
 
 async function getScores() {
   return db.query(`
-    SELECT id, "gamesPlayed", "gamesWon", ("gamesWon" - ("gamesPlayed" - "gamesWon")) AS score, username
+    SELECT id, "gamesPlayed", "gamesWon", ("gamesWon" - ("gamesPlayed" - "gamesWon")) AS score, username,
+    "createdAt", location AS avatar, (CASE
+      WHEN height <= width
+      THEN FALSE
+      ELSE TRUE
+    END) AS portrait
     FROM "Users" 
+    FULL JOIN "Avatars"
+    ON id = "userId"
     WHERE "gamesPlayed" > 0
     ORDER BY score DESC
     LIMIT 10`, [])
-  .then((results) => {
-    if (results && results.length < 12) return Promise.resolve(results);
-  })
+  .then((results) => Promise.resolve(results))
   .catch((e) => Promise.reject(e));
 }
 

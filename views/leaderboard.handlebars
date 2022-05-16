@@ -14,13 +14,36 @@
       <table class="entire-table">
         <thead class="header-list-container">
           <tr>
-            <th class="header-item-container">Player Name</th>
-            <th class="header-item-container">Score (Wins - Losses)</th>
+            <th>Player Name</th>
+            <th>Score (Wins - Losses)</th>
           </tr>
         </thead>
-        <tbody id="PlayerListContainer" class="item-list-container"/>
+        <tbody id="PlayerListContainer" class="item-list-container">
+          {{#each users}}
+            <tr class="item-container">
+              <td class="leaderboard-name">
+                <div class="leaderboard-name">
+                  <div class="leaderboard-pic">
+                    {{#if this.avatar}}
+                      {{#if this.portrait}}
+                        <img class="img-portrait" src="{{this.avatar}}">
+                      {{else}}
+                        <img class="img-landscape" src="{{this.avatar}}">
+                      {{/if}}
+                    {{else}}
+                    <img class="img-portrait" src="/images/default-profile-pic.png">
+                    {{/if}}
+                  </div>
+                  {{this.username}}
+                </div>
+              </td>
+              <td>
+                {{this.score}}
+              </td>
+            </tr>
+          {{/each}}
+        </tbody>
       </table>
     </main>
   </body>
-  <script src="/js/views/leaderboard.js" type="module"></script>
 </html>

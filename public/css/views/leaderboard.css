@@ -10,41 +10,66 @@ body {
 
 main {
   margin-top: 5rem;
-  
-  /* display: flex;
-  flex-direction: column; */
-  width: 80%;
+  width: 100%;
   height: 80%;
 }
 
-input {
-  width: 90%
+th, td {
+  height: 3rem;
+}
+
+#user-pic-header {
+  width: 3rem;
 }
 
 .entire-table {
-  width: 100%;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.25);
+  width: 20rem;
+  box-shadow: rgba(50, 50, 93, 0.25) 0px 13px 27px -5px, rgba(0, 0, 0, 0.3) 0px 8px 16px -8px;
   background-color: #cfddea;
-  border-radius: 10%;
+  border-radius: 0.5rem;
   overflow: hidden;
+  margin: auto;
   /* table-layout:fixed; */
   align-items: center;
   text-align: center;
   /* display: flex; */
 }
 
-.item-list-container {
-
+.img-portrait {
+  position: absolute;
+  width: 100%;
+  height: auto;
+  left: -1000%;
+  right: -1000%;
+  top: -1000%;
+  bottom: -1000%;
+  margin: auto;
 }
 
-.item-container {
-
+.img-landscape {
+  position: absolute;
+  height: 100%;
+  width: auto;
+  left: -1000%;
+  right: -1000%;
+  top: -1000%;
+  bottom: -1000%;
+  margin: auto;
 }
 
-.header-list-container{
-
+.leaderboard-pic {
+  position: relative;
+  height: 2rem;
+  width: 2rem;
+  margin-right: 1rem;
+  background: white;
+  border-radius: 100%;
+  overflow: hidden;
+  box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
 }
 
-.header-item-container {
-
+.leaderboard-name {
+  display: flex;
+  align-items: center;
+  padding: 0 1rem 0 1rem;
 }
