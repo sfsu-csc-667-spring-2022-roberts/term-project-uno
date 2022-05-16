@@ -31,13 +31,48 @@ router.post('/', authenticate, async (req, res) => {
 
   const hostId = req.user.id;
   const { lobbyName, maxPlayers, password } = req.body;
+  let newLobby;
 
   try {
-    let newLobby;
     if (password != null && password != '') {
       newLobby = await LobbyDao.createPrivate(hostId, lobbyName, maxPlayers, password);
     } else newLobby = await LobbyDao.createPublic(hostId, lobbyName, maxPlayers);
+
     res.redirect(`/lobbies/${newLobby.id}`);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'An unexpected error occured' });
+  }
+});
+
+/* Get searched lobbies */
+router.get('/search', async (req, res) => {
+  const { name } = req.query;
+  try {
+    const results = await LobbyDao.findLobbiesBySimilarName(name);
+    res.json({ results });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'An unexpected error occured' });
+  }
+});
+
+/* Get specific lobby */
+router.get('/:lobbyId(\\d+)', authenticate, async (req, res) => {
+  const { lobbyId } = req.params;
+
+  try {
+    const lobby = await LobbyDao.findLobby(lobbyId);
+    if (!lobby) return res.status(404).json({ message: 'Lobby not found' });
+    res.json({
+      id: lobby.id,
+      name: lobby.name,
+      hostId: lobby.hostId,
+      createdAt: lobby.createdAt,
+      playerCapacity: lobby.playerCapacity,
+      numPlayers: lobby.guestLength,
+      type: lobby.password ? 'private' : 'public'
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'An unexpected error occured' });
@@ -51,16 +86,15 @@ router.patch('/:lobbyId(\\d+)', authenticate, async (req, res) => {
 
   const { lobbyId } = req.params;
   const { lobbyName, maxPlayers, password, updatePassword } = req.body;
+  let lobby;
 
   try {
-    let lobby;
-
     if (!(await LobbyDao.verifyHost(req.user.id, lobbyId))) {
       return res.status(401).json({ message: 'You must be the host to update lobby information' });
     }
 
     if ((await LobbyGuestsDao.findNumberOfGuests(lobbyId)) + 1 > parseInt(maxPlayers)) {
-      return res.status(401).json({ message: 'Cannot set maximum number of players to below the current number of players' });
+      return res.status(409).json({ message: 'Cannot set maximum number of players to below the current number of players' });
     }
 
     if (updatePassword) {
@@ -94,7 +128,7 @@ router.get('/:lobbyId(\\d+)/messages', authenticate, async (req, res) => {
   }
 });
 
-/* Send lobby messasge */
+/* Send lobby message */
 router.post('/:lobbyId(\\d+)/messages', authenticate, async (req, res) => {
   const { lobbyId } = req.params;
   const { message } = req.body;
@@ -103,11 +137,24 @@ router.post('/:lobbyId(\\d+)/messages', authenticate, async (req, res) => {
     if (!req.user || !(await LobbyDao.verifyHostOrGuest(req.user.id, lobbyId))) {
       return res.status(401).json({ message: 'You are not a member of the lobby' });
     }
-    const messageObj = await MessageDao.createLobbyMessage(message, req.user.id, lobbyId);
+    const messageObj = await MessageDao.createLobbyMessage(message.trim(), req.user.id, lobbyId);
 
     io.to(`lobby/${lobbyId}`).emit('lobby-message-send', JSON.stringify(messageObj));
 
     res.status(201).json({ message: 'Successfully created new lobby message' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Something went wrong' });
+  }
+});
+
+/* Check if user is in a lobby */
+router.get('/:lobbyId(\\d+)/users', authenticate, async (req, res) => {
+  try {
+    if (!(await LobbyDao.verifyHostOrGuest(req.user.id, req.params.lobbyId))) {
+      res.json({ isGuest: false});
+    }
+    else res.json({ isGuest: true});
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Something went wrong' });
@@ -121,7 +168,7 @@ router.post('/:lobbyId(\\d+)/users', authenticate, async (req, res) => {
     const lobby = await LobbyDao.findLobby(lobbyId);
     if (!lobby) return res.status(404).json({ message: 'Lobby does not exist' });
     if (lobby.busy) return res.status(409).json({ message: 'Lobby is busy' });
-
+    
     const lobbyGuests = await LobbyGuestsDao.findAllLobbyGuests(lobbyId);
 
     // Already a lobby member
@@ -139,6 +186,14 @@ router.post('/:lobbyId(\\d+)/users', authenticate, async (req, res) => {
       return res.status(409).json({ message: 'Lobby is full' });
     }
 
+    if(lobby.password) {
+      const { password } = req.body;
+      if (password == null) return res.status(400).json({ message: 'Missing password' });
+      if (!(await LobbyDao.authenticate(lobbyId, password))) {
+        return res.status(401).json({ message: 'Invalid Password' });
+      }
+    }
+
     await LobbyGuestsDao.addGuest(req.user.id, lobbyId);
     await broadcastLobbyMemberJoin(io, req.user.id, lobbyId);
     res.redirect(`/lobbies/${lobbyId}`);
@@ -153,6 +208,7 @@ router.delete('/:lobbyId(\\d+)/users', authenticate, async (req, res) => {
   const { lobbyId } = req.params;
   try {
     const lobby = await LobbyDao.findLobby(lobbyId);
+
     if (!lobby) return res.status(404).json({ message: 'Lobby not found' });
 
     const userSockets = getSocketsFromUserSockets(req.user.id);
@@ -202,6 +258,19 @@ router.delete('/:lobbyId(\\d+)/users', authenticate, async (req, res) => {
   }
 });
 
+/* Check if user is in a lobby */
+router.get('/:lobbyId(\\d+)/users', authenticate, async (req, res) => {
+  try {
+    if (!(await LobbyDao.verifyHostOrGuest(req.user.id, req.params.lobbyId))) {
+      res.json({ isGuest: false});
+    }
+    else res.json({ isGuest: true});
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Something went wrong' });
+  }
+
+});
 /* Kick user from lobby */
 router.delete('/:lobbyId(\\d+)/users/:userId(\\d+)', authenticate, async (req, res) => {
   const { lobbyId, userId } = req.params;

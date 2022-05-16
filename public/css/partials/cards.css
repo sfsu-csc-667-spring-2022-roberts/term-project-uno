@@ -212,11 +212,11 @@
   background:#18A849;
 }
 
-.card.red{
+.card.red {
   color:#ee161f;
 }
 
-.card.red .inner{
+.card.red .inner {
   background:#ee161f;
 }
 
@@ -234,6 +234,8 @@
 .card.wild .inner{
   background:black;
 }
+
+
 
 .card.num-0:before,
 .card.num-0:after{

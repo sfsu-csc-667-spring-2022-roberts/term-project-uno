@@ -227,6 +227,19 @@ async function findInvitations(userId) {
   .catch(err => Promise.reject(err));
 }
 
+async function getScores() {
+  return db.query(`
+    SELECT id, "gamesPlayed", "gamesWon", ("gamesWon" - ("gamesPlayed" - "gamesWon")) AS score, username
+    FROM "Users" 
+    WHERE "gamesPlayed" > 0
+    ORDER BY score DESC
+    LIMIT 10`, [])
+  .then((results) => {
+    if (results && results.length < 12) return Promise.resolve(results);
+  })
+  .catch((e) => Promise.reject(e));
+}
+
 module.exports = {
   usernameExists,
   create,
@@ -240,5 +253,6 @@ module.exports = {
   verifyUserExists,
   addWin,
   addLoss,
-  findInvitations
+  findInvitations,
+  getScores
 };

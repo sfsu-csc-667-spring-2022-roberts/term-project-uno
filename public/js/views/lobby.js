@@ -3,8 +3,6 @@ const lobbyTypeLogo = document.getElementById('lobby-type-icon');
 const popupContainer = document.getElementById('popup-container');
 const numPlayersLabel = document.getElementById('num-players-output');
 const numPlayersInput = document.getElementById('maxPlayers');
-const leftTableBody = document.getElementById('list-1');
-const rightTableBody = document.getElementById('list-2');
 const lobbyMenu = document.getElementById('lobby-menu');
 const readyButton = document.getElementById('ready-button');
 const settings = document.getElementById('settings');
@@ -54,7 +52,7 @@ function createGuestRow(guest) {
     );
   }
   return (
-    `<tr class="lobby-guest">
+    `<tr class="lobby-guest${userId == guest.id ? ' current-user' : ''}">
       <td class="lobby-guest-icon-col">
         <div class="lobby-guest-icon">
         <img class="${guest.portrait ? 'lobby-avatar-portrait' : 'lobby-avatar-landscape'}" src="${guest.avatar ? guest.avatar : '/images/default-profile-pic.png'}" />
@@ -91,7 +89,7 @@ function createGuestRowAsHost(guest) {
     );
   }
   return (
-    `<tr class="lobby-guest">
+    `<tr class="lobby-guest${userId == guest.id ? ' current-user' : ''}">
       <td class="lobby-guest-icon-col">
         <div class="lobby-guest-icon">
         <img class="${guest.portrait ? 'lobby-avatar-portrait' : 'lobby-avatar-landscape'}" src="${guest.avatar ? guest.avatar : '/images/default-profile-pic.png'}" />
@@ -106,12 +104,12 @@ function createGuestRowAsHost(guest) {
   );
 }
 
-function checkIfUserWasKicked(leftList, rightList) {
-  for (let i = 0; i < leftList.length; i++) {
-    if (userId == leftList[i].id) return false;
-  }
-  for (let i = 0; i < rightList.length; i++) {
-    if (userId == rightList[i].id) return false;
+function checkIfUserWasKicked(list) {
+  for (let i = 0; i < list.length; i++) {
+    const guests = list[i];
+    for (let j = 0; j < guests.length; j++) {
+      if (userId == guests[j].id) return false;
+    }
   }
   return true;
 }
@@ -122,18 +120,15 @@ function initLobby() {
       const data = JSON.parse(message);
 
       if (data.host && startButton) startButton.disabled = !data.guestsReady;
-
-      leftTableBody.innerHTML = '';
-      rightTableBody.innerHTML = '';
   
-      data.leftList.forEach((guest) => {
-        if (data.host) leftTableBody.innerHTML += createGuestRowAsHost(guest);
-        else leftTableBody.innerHTML += createGuestRow(guest);
-      });
-      data.rightList.forEach((guest) => {
-        if (data.host) rightTableBody.innerHTML += createGuestRowAsHost(guest);
-        else rightTableBody.innerHTML += createGuestRow(guest);
-      });
+      for (let i = 0; i < data.list.length; i++) {
+        const tbody = document.getElementById(`list-${i}`);
+        tbody.innerHTML = '';
+        data.list[i].forEach((guest) => {
+          if (data.host) tbody.innerHTML += createGuestRowAsHost(guest);
+          else tbody.innerHTML += createGuestRow(guest);
+        })
+      }
   
       addKickButtonListener();
     } catch (err) {
@@ -147,22 +142,20 @@ function initLobby() {
   
       if (data.host && startButton) {
         startButton.disabled = !data.guestsReady;
-      } else if (checkIfUserWasKicked(data.leftList, data.rightList)) {
+      } else if (checkIfUserWasKicked(data.list)) {
         window.location.href = `${baseURL}/find-lobby`;
         return;
       }
   
-      leftTableBody.innerHTML = '';
-      rightTableBody.innerHTML = '';
-  
-      data.leftList.forEach((guest) => {
-        if (data.host) leftTableBody.innerHTML += createGuestRowAsHost(guest);
-        else leftTableBody.innerHTML += createGuestRow(guest);
-      });
-      data.rightList.forEach((guest) => {
-        if (data.host) rightTableBody.innerHTML += createGuestRowAsHost(guest);
-        else rightTableBody.innerHTML += createGuestRow(guest);
-      });
+      for (let i = 0; i < data.list.length; i++) {
+        const tbody = document.getElementById(`list-${i}`);
+        tbody.innerHTML = '';
+
+        data.list[i].forEach((guest) => {
+          if (data.host) tbody.innerHTML += createGuestRowAsHost(guest);
+          else tbody.innerHTML += createGuestRow(guest);
+        })
+      }
   
       addKickButtonListener();
     } catch (err) {
@@ -173,8 +166,6 @@ function initLobby() {
   socket.on('lobby-update', (message) => {
     try {
       const data = JSON.parse(message);
-      const leftGuests = leftTableBody.children;
-      const rightGuests = rightTableBody.children;
       let count = 1;
 
       lobbyTitle.innerHTML = data.lobbyName;
@@ -183,24 +174,19 @@ function initLobby() {
       isPrivate = data.isPrivate;
       lobbyTypeLogo.setAttribute('src', isPrivate ? '/images/private.png' : '/images/public.png');
 
-      for (let i = 0; i < leftGuests.length; i++) {
-        const element = leftGuests[i];
-        if (count > maxPlayers) {
-          element.className = 'lobby-unavailable';
-        } else if (element.className = 'lobby-unavailable') {
-          element.className = 'lobby-guest'
-        }
-        count += 1;
-      }
+      for (let i = 0; i < 2; i++) {
+        const tbody = document.getElementById(`list-${i}`);
+        const guests = tbody.children;
 
-      for (let i = 0; i < rightGuests.length; i++) {
-        const element = rightGuests[i];
-        if (count > maxPlayers) {
-          element.className = 'lobby-unavailable';
-        } else if (element.className = 'unavailable') {
-          element.className = 'lobby-guest'
+        for (let j = 0; j < guests.length; j++) {
+          const guest = guests[j];
+          if (count > maxPlayers) {
+            guest.className = 'lobby-unavailable';
+          } else if (guest.className == 'lobby-unavailable') {
+            guest.className = 'lobby-guest'
+          }
+          count += 1;
         }
-        count += 1;
       }
     } catch (err) {
       console.error(err);
@@ -289,25 +275,18 @@ function initLobby() {
   
   if (startButton) {
     startButton.addEventListener('click', (e) => {
-      const leftGuests = leftTableBody.children;
-      const rightGuests = rightTableBody.children;
+      // verify all users are "Ready"
+      for (let i = 0; i < 2; i++) {
+        const tbody = document.getElementById(`list-${i}`);
+        const guests = tbody.children;
 
-      for (let i = 0; i < leftGuests.length; i++) {
-        const elements = leftGuests[i].getElementsByClassName('lobby-guest-status');
-        if (elements) {
-          const status = elements.item(0);
-          if (status && status.innerHTML.trim() != '' && status.innerHTML.trim().toLowerCase() != 'host') {
-            if (status.innerHTML.trim().toLowerCase() != 'ready') return;
-          }
-        }
-      }
-  
-      for (let i = 0; i < rightGuests.length; i++) {
-        const elements = rightGuests[i].getElementsByClassName('lobby-guest-status');
-        if (elements) {
-          const status = elements.item(0);
-          if (status && status.innerHTML.trim() != '' && status.innerHTML.trim().toLowerCase() != 'host') {
-            if (status.innerHTML.trim().toLowerCase() != 'ready') return;
+        for (let j = 0; j < guests.length; j++) {
+          const elements = guests[i].getElementsByClassName('lobby-guest-status');
+          if (elements) {
+            const status = elements.item(0);
+            if (status && status.innerHTML.trim() != '' && status.innerHTML.trim().toLowerCase() != 'host') {
+              if (status.innerHTML.trim().toLowerCase() != 'ready') return;
+            }
           }
         }
       }
@@ -381,13 +360,9 @@ function initLobby() {
 
   addKickButtonListener();
 
-  window.addEventListener('pageshow', () => {
-    const entries = performance.getEntriesByType('navigation');
-    if (entries && entries.length > 0) {
-      const navigationType = entries[0].type;
-      if (navigationType === 'back_forward' && socket.connected) {
-        window.location.reload();
-      }
+  window.addEventListener('pageshow', (event) => {
+    if (event.persisted) {
+      window.location.reload();
     }
   });
 }

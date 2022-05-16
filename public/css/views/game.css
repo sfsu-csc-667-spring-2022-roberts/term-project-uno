@@ -11,6 +11,29 @@ body {
   align-items: center;
 }
 
+.select-card-color-div {
+  margin-top: 100px !important;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  padding: 2%;
+  gap: 30px;
+  margin: auto;
+  cursor: pointer;
+}
+.select-username-div {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  padding: 2%;
+  gap: 30px;
+  margin: auto;
+}
+
 #draw-and-play-cards-container {
   display: flex;
   justify-content: center;

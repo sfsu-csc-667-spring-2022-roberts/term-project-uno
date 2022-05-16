@@ -1,15 +1,26 @@
 const db = require('../index');
 const bcrypt = require('bcrypt');
 
+async function authenticate(lobbyId, password) {
+  return db.query(`
+    SELECT *
+    FROM "Lobbies"
+    WHERE id = $1`, [lobbyId])
+  .then((results) => {
+    if (results && results.length === 1) {
+      return Promise.resolve(bcrypt.compare(password, results[0].password));
+    } else return Promise.resolve(-1);
+  })
+  .catch((e) => Promise.reject(e));
+}
+
 async function createPrivate(userId, name, playerCapacity, password) {
   return bcrypt.hash(password, 8)
-  .then((hashedPassword) => {
-    return db.one(`
-      INSERT INTO "Lobbies"("hostId", name, password, "playerCapacity")
-      VALUES($1, $2, $3, $4)
-      RETURNING *
-    `, [userId, name, hashedPassword, playerCapacity]);
-  })
+  .then((hashedPassword) => db.one(`
+    INSERT INTO "Lobbies"("hostId", name, password, "playerCapacity")
+    VALUES($1, $2, $3, $4)
+    RETURNING *
+  `, [userId, name, hashedPassword, playerCapacity]))
   .catch((err) => Promise.reject(err));
 }
 
@@ -38,9 +49,22 @@ async function deleteLobby(lobbyId) {
 
 async function findLobby(lobbyId) {
   return db.query(`
-    SELECT *
-    FROM "Lobbies"
-    WHERE id = $1
+    SELECT "Lobbies".id, "Lobbies".password, name, busy, "playerCapacity", "Lobbies"."createdAt", "Lobbies"."hostId", (
+    CASE 
+      WHEN count IS NULL 
+      THEN 0 
+      ELSE CAST(count AS INTEGER)
+    END) AS "guestLength", username AS "hostName" 
+    FROM "Lobbies" 
+    INNER JOIN "Users" 
+    ON "Users".id = "hostId" 
+    FULL JOIN (
+      SELECT count(*), "lobbyId" 
+      FROM "LobbyGuests" 
+      GROUP BY "lobbyId"
+    ) AS lobbyguests 
+    ON "Lobbies".id = "lobbyId" 
+    WHERE "Lobbies".id = $1
   `, [lobbyId])
   .then((lobbies) => {
     if (lobbies && lobbies.length === 1) return Promise.resolve(lobbies[0]);
@@ -74,6 +98,34 @@ async function findAllFreeLobbies() {
     WHERE busy = FALSE 
     ORDER BY "Lobbies"."createdAt" DESC;
   `, [])
+  .catch((err) => Promise.reject(err));
+}
+
+async function findLobbiesBySimilarName(name) {
+  return db.query(`
+    SELECT "Lobbies".id, name, "playerCapacity", "Lobbies"."createdAt", (
+    CASE 
+      WHEN "Lobbies".password IS NULL 
+      THEN 'public' 
+      ELSE 'private' 
+    END) AS type, (
+    CASE 
+      WHEN count IS NULL 
+      THEN 0 
+      ELSE CAST(count AS INTEGER)
+    END) AS "guestLength", username AS "hostName" 
+    FROM "Lobbies" 
+    INNER JOIN "Users" 
+    ON "Users".id = "hostId" 
+    FULL JOIN (
+      SELECT count(*), "lobbyId" 
+      FROM "LobbyGuests" 
+      GROUP BY "lobbyId"
+    ) AS lobbyguests 
+    ON "Lobbies".id = "lobbyId" 
+    WHERE name LIKE $1 AND busy = FALSE
+    ORDER BY "Lobbies"."createdAt" DESC;
+  `, [`%${name}%`])
   .catch((err) => Promise.reject(err));
 }
 
@@ -197,20 +249,32 @@ async function updateLobby(lobbyId, lobbyName, maxPlayers) {
 }
 
 async function updateLobbyAndPassword(lobbyId, lobbyName, maxPlayers, password) {
+  if (password) {
+    return bcrypt.hash(password, 8)
+    .then((hashedPassword) => db.one(`
+      UPDATE "Lobbies"
+      SET name = $2, "playerCapacity" = $3, password = $4
+      WHERE id = $1
+      RETURNING *
+    `, [lobbyId, lobbyName, maxPlayers, hashedPassword]))
+    .catch((err) => Promise.reject(err));
+  } 
   return db.one(`
     UPDATE "Lobbies"
     SET name = $2, "playerCapacity" = $3, password = $4
     WHERE id = $1
     RETURNING *
-  `, [lobbyId, lobbyName, maxPlayers, password])
+  `, [lobbyId, lobbyName, maxPlayers, null])
   .catch((err) => Promise.reject(err));
 }
 
 module.exports = {
+  authenticate,
   createPrivate,
   createPublic, 
   deleteLobby,
   findLobby,
+  findLobbiesBySimilarName,
   findAllMembers,
   findAllFreeLobbies,
   setBusy,

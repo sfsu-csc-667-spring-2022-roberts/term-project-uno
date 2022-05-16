@@ -56,7 +56,7 @@ document.getElementById('lobby-name-input').addEventListener('input', (event) =>
     nameError.innerHTML = 'Lobby name cannot be empty';
     nameError.className = 'error-message';
   } else {
-    nameError.className = 'error-hidden';
+    nameError.className = 'hidden';
   }
 })
 
@@ -70,6 +70,6 @@ document.getElementById('lobby-password-input').addEventListener('input', (event
     passwordError.innerHTML = 'Password cannot exceed 32 characters';
     passwordError.className = 'error-message';
   } else {
-    passwordError.className = 'error-hidden';
+    passwordError.className = 'hidden';
   }
 })

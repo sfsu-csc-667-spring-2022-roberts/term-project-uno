@@ -107,7 +107,11 @@ router.post('/login', async (req, res) => {
   .then((userId) => {
     if (userId > 0) {
       const token = generateToken(userId);
-      res.cookie('token', token, { httpOnly: true, maxAge: 365 * 24 * 60 * 60 * 1000 });
+      const cookieOptions = {
+        httpOnly: true,
+        maxAge: 6 * 60 * 60 * 1000, // 6 hours
+      };
+      res.cookie('token', token, cookieOptions);
       res.redirect('/');
     } else throw new UserError('Invalid username and/or password', 400);
   })
@@ -125,12 +129,12 @@ router.post('/logout', authenticate, async (req, res) => {
   return res.json();
 });
 
-/* Get authenticated user info */
+/* Get authenticated user profile */
 router.get('/me', authenticate, async (req, res) => {
   res.redirect(`/${req.user.username}`);
 });
 
-
+/* Upload profile picture */
 router.patch('/avatar', authenticate, uploadTemp, async (req, res) => {
   try {
     const { height, width } = sizeOf(req.file.path);

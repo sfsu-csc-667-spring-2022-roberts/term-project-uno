@@ -45,12 +45,3 @@ loginForm.addEventListener('submit', (event) => {
     });
   } 
 });
-
-const url = window.location.protocol + '//' + window.location.host;
-fetch(url + '/lobbies/2')
-.then((res) => {
-  console.log(res.status);
-})
-.catch((err) => {
-  console.error(err);
-});

@@ -20,137 +20,67 @@
       <div id="lobby-info-container">
         <div id="title-div">
           <h3 id="lobby-title">{{lobbyName}}</h3>
-          {{#if isPrivate}}
-            <img id="lobby-type-icon" src="/images/private.png">
-          {{else}}
-            <img id="lobby-type-icon" src="/images/public.png">
-          {{/if}}
+            <img id="lobby-type-icon" src="{{#if isPrivate}}/images/private.png{{else}}/images/public.png{{/if}}">
         </div>
-        {{#if isHost}}
-          <div id="settings">
-            <img id="settings-icon" src="/images/gear.png">
-          </div>
-        {{else}}
-          <div id="settings" class="hidden">
-            <img id="settings-icon" src="/images/gear.png">
-          </div>
-        {{/if}}
+        <div id="settings" class="{{#if isHost}}{{else}}hidden{{/if}}">
+          <img id="settings-icon" src="/images/gear.png">
+        </div>
       </div>
       <div id="content-container">
         <div id="lobby-container">
           <div id="lobby-members-list">
-            <table>
-              <tbody id="list-1">
-                {{#each leftList}}
-                  {{#if empty}}
-                    <tr class="lobby-guest">
-                      <td class="lobby-guest-icon-col"></td>
-                      <td class="lobby-guest-name"></td>
-                      <td class="lobby-guest-status"></td>
-                      <td></td>
-                    </tr>
-                  {{else if unavailable}}
-                    <tr class="lobby-unavailable">
-                      <td class="lobby-guest-icon-col"></td>
-                      <td class="lobby-guest-name"></td>
-                      <td class="lobby-guest-status"></td>
-                      <td></td>
-                    </tr>
-                  {{else}}
-                  <tr class="lobby-guest">
-                    <td class="lobby-guest-icon-col">
-                      <div class="lobby-guest-icon">
-                        {{#if this.avatar}}
-                          {{#if this.portrait}}
-                          <img class="lobby-avatar-portrait" src="{{this.avatar}}">
+            {{#each list}}
+              <table>
+                <tbody id="list-{{@index}}">
+                  {{#each this}}
+                    {{#if empty}}
+                      <tr class="lobby-guest">
+                        <td class="lobby-guest-icon-col"></td>
+                        <td class="lobby-guest-name"></td>
+                        <td class="lobby-guest-status"></td>
+                        <td></td>
+                      </tr>
+                    {{else if unavailable}}
+                      <tr class="lobby-unavailable">
+                        <td class="lobby-guest-icon-col"></td>
+                        <td class="lobby-guest-name"></td>
+                        <td class="lobby-guest-status"></td>
+                        <td></td>
+                      </tr>
+                    {{else}}
+                    <tr id="user-{{this.id}}" class="lobby-guest{{#equals ../../user.id this.id }} current-user{{/equals}}">
+                      <td class="lobby-guest-icon-col">
+                        <div class="lobby-guest-icon">
+                          {{#if this.avatar}}
+                            <img class="{{#if this.portrait}}lobby-avatar-portrait{{else}}lobby-avatar-landscape{{/if}}" src="{{this.avatar}}">
                           {{else}}
-                          <img class="lobby-avatar-landscape" src="{{this.avatar}}">
+                            <img class="lobby-avatar-portrait" src="/images/default-profile-pic.png">
                           {{/if}}
-                        {{else}}
-                          <img class="lobby-avatar-portrait" src="/images/default-profile-pic.png">
-                        {{/if}}
-                      </div>
-                    </td>
-                    <td class="lobby-guest-name">{{this.username}}</td>
-                    {{#if this.host}}
-                     <td class="lobby-guest-status">Host</td>
-                    {{else}}
-                      {{#if this.ready}}
-                        <td class="lobby-guest-status">Ready</td>
+                        </div>
+                      </td>
+                      <td class="lobby-guest-name">{{this.username}}</td>
+                      {{#if this.host}}
+                        <td class="lobby-guest-status">Host</td>
                       {{else}}
-                        <td class="lobby-guest-status">Not Ready</td>
+                        <td class="lobby-guest-status">{{#if this.ready}}Ready{{else}}Not Ready{{/if}}</td>
                       {{/if}}
-                    {{/if}}
-                    {{#if this.host}}
-                      <td></td>
-                    {{else}}
-                      {{#varEquals "isHost" true}}
-                        <td class="lobby-guest-kick">
-                          <button id="{{this.id}}" class="lobby-button kick">Kick</button>
-                        </td>
-                      {{else}}
+                      {{#if this.host}}
                         <td></td>
-                      {{/varEquals}}
-                    {{/if}}
-                  </tr>
-                  {{/if}}
-                {{/each}}
-              </tbody>
-            </table>
-            <table>
-              <tbody id="list-2">
-                {{#each rightList}}
-                  {{#if empty}}
-                    <tr class="lobby-guest">
-                      <td class="lobby-guest-icon-col"></td>
-                      <td class="lobby-guest-name"></td>
-                      <td class="lobby-guest-status"></td>
-                      <td></td>
-                  </tr>
-                  {{else if unavailable}}
-                    <tr class="lobby-unavailable">
-                      <td class="lobby-guest-icon-col"></td>
-                      <td class="lobby-guest-name"></td>
-                      <td class="lobby-guest-status"></td>
-                      <td></td>
+                      {{else}}
+                        {{#varEquals "isHost" true}}
+                          <td class="lobby-guest-kick">
+                            <button id="{{this.id}}" class="lobby-button kick">Kick</button>
+                          </td>
+                        {{else}}
+                          <td></td>
+                        {{/varEquals}}
+                      {{/if}}
                     </tr>
-                  {{else}}
-                  <tr class="lobby-guest">
-                    <td class="lobby-guest-icon-col">
-                      <div class="lobby-guest-icon">
-                        {{#if this.avatar}}
-                          <img src="https://csc665-term-project-uno.s3.us-west-1.amazonaws.com/{{this.avatar}}">
-                        {{else}}
-                          <img src="/images/default-profile-pic.png">
-                        {{/if}}
-                      </div>
-                    </td>
-                    <td class="lobby-guest-name">{{this.username}}</td>
-                    {{#if this.host}}
-                     <td class="lobby-guest-status">Host</td>
-                    {{else}}
-                      {{#if this.ready}}
-                        <td class="lobby-guest-status">Ready</td>
-                      {{else}}
-                        <td class="lobby-guest-status">Not Ready</td>
-                      {{/if}}
                     {{/if}}
-                    {{#if this.host}}
-                      <td></td>
-                    {{else}}
-                      {{#varEquals "isHost" true}}
-                        <td class="lobby-guest-kick">
-                          <button id="{{this.id}}" class="lobby-button kick">Kick</button>
-                        </td>
-                      {{else}}
-                        <td></td>
-                      {{/varEquals}}
-                    {{/if}}
-                  </tr>
-                  {{/if}}
-                {{/each}}
-              </tbody>
-            </table>
+                  {{/each}}
+                </tbody>
+              </table>
+            {{/each}}
           </div>
           <div id="lobby-menu">
             <img id="uno-lobby-logo" src="/images/uno-logo.png">
@@ -162,17 +92,12 @@
                 <button id="invite-button" class="lobby-button">Invite</button>
               </form>
             </div>
-            {{else}}
             {{/if}}
             <div id="lobby-options">
               {{#if isHost}}
-                {{#if guestsReady}}
-                  <button id="start-button" class="lobby-button">Start</button>
-                {{else}}
-                  <button disabled id="start-button" class="lobby-button">Start</button>
-                {{/if}}
+                <button {{#if guestsReady}}{{else}}disabled{{/if}} id="start-button" class="lobby-button">Start</button>
               {{else}}
-              <button id="ready-button" class="lobby-button">Ready</button>
+                <button id="ready-button" class="lobby-button">Ready</button>
               {{/if}}
               <button id='leave-button' class="lobby-button">Leave Lobby</button>
             </div>
