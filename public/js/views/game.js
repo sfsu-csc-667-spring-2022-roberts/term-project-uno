@@ -581,9 +581,10 @@ const playCard = (element, chosenColor, uname) => {
     }
 }
 
-const handlePlay = (data) => {
+const handlePlay = async (data) => {
     try {
         if (data.swap) window.location.reload();
+        if (data.refreshDrawCards) await getDrawDeck(data.drawDeckCount);
         if (document.getElementById(`player-${data.playerIndex}`).className.match("main-deck-container")) {
             mainDeckDiv.removeChild(document.getElementById(`${data.card.id}`))
         } else {

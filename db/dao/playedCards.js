@@ -34,7 +34,7 @@ async function removePlayedCards(gameId) {
     if (results) return Promise.resolve(true);
     else return Promise.resolve(false);
   })
-  .catch((err) => Promise.reject(null));
+  .catch((err) => Promise.reject(err));
 }
 
 async function removePlayedCard(gameId, cardId) {
@@ -45,7 +45,7 @@ async function removePlayedCard(gameId, cardId) {
     if (results) return Promise.resolve(true);
     else return Promise.resolve(false);
   })
-  .catch((err) => Promise.reject(null));
+  .catch((err) => Promise.reject(err));
 }
 
 async function findAllPlayedCards(gameId) {
@@ -60,10 +60,23 @@ async function findAllPlayedCards(gameId) {
   .catch(err => Promise.reject(err));
 }
 
+async function findCardCount(gameId) {
+  return db.query(`
+    SELECT COUNT(*) FROM "PlayedCards"
+    WHERE "gameId" = $1
+  `, [gameId])
+  .then((result) => {
+    if (result) return Promise.resolve(parseInt(result[0].count));
+    else return Promise.resolve(-1);
+  })
+  .catch((err) => Promise.reject(err));
+}
+
 module.exports = {
   createPlayedCard,
   findTopOfPlayedCards,
   removePlayedCards,
   removePlayedCard,
-  findAllPlayedCards
+  findAllPlayedCards,
+  findCardCount
 };

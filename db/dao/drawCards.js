@@ -32,12 +32,12 @@ async function findTopOfDrawCards(gameId) {
   WHERE "gameId" = $1 
   OFFSET ((SELECT COUNT(*) FROM "DrawCards" WHERE "gameId" = $1)-1)
   `, [gameId])
-    .then((results) => {
-      if (results && results.length === 1) {
-        return Promise.resolve(results[0]);
-      } else return Promise.resolve(false);
-    })
-    .catch((err) => Promise.reject(err));
+  .then((results) => {
+    if (results && results.length === 1) {
+      return Promise.resolve(results[0]);
+    } else return Promise.resolve(false);
+  })
+  .catch(() => Promise.resolve(false));
 }
 
 async function findCardCount(gameId) {
