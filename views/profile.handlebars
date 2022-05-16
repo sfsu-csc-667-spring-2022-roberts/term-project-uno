@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="/css/views/profile.css" />
+    <link rel="stylesheet" type="text/css" href="/css/partials/navbar.css" />
+    <title>{{title}}</title>
+  </head>
+  <body>
+    {{> navbar}}
+    <main>
+      <summary>
+        <header>
+          <h2>{{requestedUser.username}}</h2>
+        </header>
+        <section>
+          <div id="profile-pic">
+            {{#if requestedUser.pictureUrl}}
+            <img src="{{requestedUser.pictureUrl}}">
+            {{else}}
+            <img src="/images/default-profile-pic.png">
+            {{/if}}
+          </div>
+          <div id="profile-info">
+            <div id="stats">
+              <div>
+                <label>Games Played</label>
+                <p>{{requestedUser.gamesPlayed}}</p>
+              </div>
+              <div>
+                <label>Games Won</label>
+                <p>{{requestedUser.gamesWon}}</p>
+              </div>
+              <div>
+                <label>Win Rate</label>
+                <p>{{requestedUser.winRate}}%</p>
+              </div>
+            </div>
+            <span>Joined <time id="joined">{{requestedUser.createdAt}}</time></span>
+          </div>
+        </section>
+      </summary>
+    </main>
+  </body>
+  <script defer src="/js/views/profile.js" type="module"></script>
+</html>

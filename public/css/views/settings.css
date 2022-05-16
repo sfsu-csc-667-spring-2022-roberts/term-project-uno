@@ -1,0 +1,146 @@
+body {
+  font: 14px 'Lucida Grande', Helvetica, Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+}
+
+main {
+  width: 100%;
+  height: 100%;
+}
+
+.hidden {
+  display: none !important;
+  margin: 0 !important;
+}
+
+.input {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1rem;
+}
+
+.error-message {
+  background-color: #fee;
+  color: #c33;
+  margin: 0;
+  padding: 0.25rem;
+}
+
+.success-message {
+  background-color: rgb(175, 255, 159);
+  color: rgb(33, 88, 22);
+  margin: 0;
+  padding: 0.25rem;
+}
+
+#settings {
+  display: flex;
+  width: 100%;
+}
+
+#settingsForm {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding-bottom: 1rem;
+  width: 40rem;
+  margin: 5rem auto 0 auto;
+  border-radius: 0.5rem;
+  box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
+  overflow: hidden;
+}
+
+#settingsForm button {
+  background: #ee161f;
+  color: white;
+  font-weight: bold;
+  border: none;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 3px, rgba(0, 0, 0, 0.24) 0px 1px 2px;
+  transition: all 0.15s ease-in-out;
+}
+
+#settingsForm button:hover {
+  transform: scale(1.15);
+  -webkit-transform: scale(1.15);
+  -moz-transform: scale(1.15);
+  -o-transform: scale(1.15);
+}
+
+#settingsForm header {
+  display: flex;
+  background: #ee161f;
+  height: 4rem;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+  border-bottom: 0.2rem solid #d6151d;
+  color: white;
+}
+
+#settingsForm input[type=text], input[type=password] {
+  outline: none;
+  border: 1px solid #e5e5e5;
+  box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 3px, rgba(0, 0, 0, 0.24) 0px 1px 2px;
+  padding: 0.5rem;
+}
+
+#pictureForm {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 0 4rem;
+}
+
+#profile-info-container {
+  padding-right: 1rem;
+  width: 100%;
+}
+
+#profile-pic {
+  height: 10rem;
+  width: 10rem;
+  background: white;
+  border-radius: 100%;
+  overflow: hidden;
+  box-shadow: rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px;
+  margin-bottom: 1rem;
+}
+
+#profile-pic img {
+  width: 100%;
+  height: auto;
+}
+
+#upload-pic {
+  background: #ee161f;
+  color: white;
+  font-weight: bold;
+  text-align: center;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 3px, rgba(0, 0, 0, 0.24) 0px 1px 2px;
+  transition: all 0.15s ease-in-out;
+}
+
+#upload-pic:hover {
+  transform: scale(1.15);
+  -webkit-transform: scale(1.15);
+  -moz-transform: scale(1.15);
+  -o-transform: scale(1.15);
+}
+
+#upload-pic input[type=file] {
+  display: none;
+}

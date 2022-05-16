@@ -1,0 +1,60 @@
+<nav id="nav-container">
+  <a href="/">
+    <img id="logo" src="/images/uno-logo.png">
+  </a>
+  <ul id="nav-links">
+    <li>
+      <a href="/" class="nav-link">Home</a>
+    </li>
+    <li>
+      <a href="/find-lobby" class="nav-link">Lobbies</a>
+    </li>
+    <li>
+      <a href="/leaderboard" class="nav-link">Leaderboard</a>
+    </li>
+  </ul>
+  <form id="search-form">
+    <input id="search-input" type="text" placeholder="Search Users">
+    <input id="hidden-search-submit" type="submit">
+  </form>
+  {{#if user}}
+  <a href="/notifications" class="nav-icon" id="nav-notifications">
+    {{#if notifications}}
+      <img id="notifications-icon" src="/images/notifications-signal.png">
+    {{else}}
+      <img id="notifications-icon" src="/images/notifications.png">
+    {{/if}}
+  </a>
+  <div>
+    <div class="nav-icon" id="nav-profile-pic">
+      {{#if user.pictureUrl}}
+      <img src="{{user.pictureUrl}}">
+      {{else}}
+      <img src="/images/default-profile-pic.png">
+      {{/if}}
+    </div>
+    <ul id="profile-dropdown" class="dropdown-menu">
+      <li>
+        <a href="/api/users/me" class="menu-item">Profile</a>
+      </li>
+      <li>
+        <a href="/settings" class="menu-item">Settings</a>
+      </li>
+      <li>
+        <a href="#" id="logout" class="menu-item">Logout</a>
+      </li>
+    </ul>
+  </div>
+  {{else}}
+  <ul id="unauthenticated-links">
+    <li>
+      <a href="/login" class="nav-link">Login</a>
+    </li>
+    <li>
+      <a href="/register" class="nav-link">Sign Up</a>
+    </li>
+  </ul>
+  {{/if}}
+  <script src="/socket.io/socket.io.js"></script>
+  <script defer type="text/javascript" src="/js/partials/navbar.js"></script>
+</nav>

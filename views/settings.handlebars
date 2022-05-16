@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="/css/views/settings.css" />
+    <link rel="stylesheet" type="text/css" href="/css/partials/navbar.css" />
+    <title>{{title}}</title>
+  </head>
+  <body>
+    {{> navbar}}
+    <main>
+      <div id="settingsForm">
+        <header><h2>Settings</h2></header>
+        <section id="settings">
+          <form id="pictureForm">
+              <div id="profile-pic">
+                {{#if user.pictureUrl}}
+                <img src="{{user.pictureUrl}}">
+                {{else}}
+                <img src="/images/default-profile-pic.png">
+                {{/if}}
+              </div>
+              <label id="upload-pic">
+                <input type="file" accept="image/*" id="fileUpload">
+                Upload Profile Picture
+              </label>
+          </form>
+          <div id="profile-info-container">
+              <form id="changeUsername">
+                <h3>Username</h3>
+                <p class="error-message hidden" id="username-change-feedback"></p>
+                <div class="input">
+                  <input type="text" id="username" name="username" placeholder="{{user.username}}" required>
+                </div>
+                <div class="input">
+                  <input type="password" id="password" name="password" placeholder="Password" required>
+                </div>
+                <button type="submit">Change Username</button>
+              </form>
+              <form id="changePassword">
+                <h3>Password</h3>
+                <p class="error-message hidden" id="change-password-feedback"></p>
+                <div class="input">
+                  <input id="oldPassword" name="oldPassword" type="password" placeholder="Old Password" required>
+                </div>
+                <div class="input">
+                  <input id="newPassword" name="newPassword" type="password" placeholder="New Password" required>
+                  <p class="error-message hidden" id="new-password-error"></p>
+                </div>
+                <div class="input">
+                  <input id="confirmNewPassword" name="confirmNewPassword" type="password" placeholder="Confirm New Password" required>
+                  <p class="error-message hidden" id="confirm-password-error"></p>
+                </div>  
+                <button type="submit">Change Password</button>
+              </form>
+          </div>
+        </section>
+      </div>
+    </main>
+  </body>
+  <script defer src="/js/views/settings.js" type="module"></script>
+</html>

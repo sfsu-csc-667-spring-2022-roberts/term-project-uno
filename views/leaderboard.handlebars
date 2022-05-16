@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="/css/views/leaderboard.css" />
+    <link rel="stylesheet" type="text/css" href="/css/partials/navbar.css" />
+    <title>{{title}}</title>
+  </head>
+  <body id="body">
+    {{> navbar}}
+    <main>
+
+        <table class="entire-table">
+          <thead class="header-list-container">
+            <tr>
+              <th class="header-item-container">Player Name</th>
+              <th class="header-item-container">Score (Wins - Losses)</th>
+            </tr>
+          </thead>
+        <tbody id="PlayerListContainer" class="item-list-container"/>
+        </table>
+
+    </main>
+  </body>
+  <script src="/js/views/leaderboard.js" type="module"></script>
+</html>

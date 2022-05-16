@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {{!-- <link rel="stylesheet" type="text/css" href="/css/views/find-lobby.css" /> --}}
+    <link rel="stylesheet" type="text/css" href="/css/partials/navbar.css" />
+    <link rel="stylesheet" type="text/css" href="/css/views/leaderboard.css" />
+    <script defer src="/js/views/find-lobby.js" type="module"></script>
+    <title>{{title}}</title>
+  </head>
+  <body id="body">
+    {{> navbar}}
+    {{!-- <main>
+        <div class="search-container">
+          <input type="text" placeholder="Search" id="lobby-search-input" name="lobby-search" required>
+          <button type="submit">Search</button>
+          <button type="button">Refresh</button>
+        </div>
+        <div class="header-container">
+          <div class="lobby-name-header">Lobby Name</div>
+          <div>Host</div>
+          <div>Type</div>
+          <div class="player-count-header">Players</div>
+        </div>
+        <div class="lobby-list-container" id="lobbyListContainer">
+        </div>
+    </main> --}}
+
+  <main>
+
+        <table class="entire-table">
+          <thead class="header-list-container">
+            <tr>
+              <th class="header-item-container">Lobby Name</th>
+              <th class="header-item-container">Host</th>
+              <th class="header-item-container">Type</th>
+              <th class="header-item-container">Players</th>
+            </tr>
+          </thead>
+        <tbody id="PlayerListContainer" class="item-list-container"/>
+        </table>
+
+    </main>
+
+    <script src="/socket.io/socket.io.js"></script>
+  </body>
+</html>

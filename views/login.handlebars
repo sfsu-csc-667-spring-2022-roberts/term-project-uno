@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="/css/views/login.css" />
+    <link rel="stylesheet" type="text/css" href="/css/partials/navbar.css" />
+    <title>{{title}}</title>
+  </head>
+  <body>
+    {{> navbar}}
+    <main>
+      <form id="loginForm">
+        <header>
+          <h2>Login</h2>
+        </header>
+        <section class="input">
+          <p class="error-message hidden" id="error">Invalid username and/or password</p>
+        </section>
+        <section class="input">
+          <input 
+            type="text" 
+            placeholder="Username" 
+            id="username" 
+            name="username"
+            required>
+        </section>
+        <section class="input">
+          <input 
+            type="password" 
+            placeholder="Password" 
+            id="password" 
+            name="password"
+            required>
+        </section>
+        <button type="submit">Login</button>
+        <span>
+          Not registered? <a href="/register">Sign up here</a>
+        </span>
+      </form>
+    </main>
+  </body>
+  <script defer src="/js/views/login.js" type="module"></script>
+</html>

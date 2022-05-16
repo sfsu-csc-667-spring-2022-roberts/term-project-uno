@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="/css/scrollbar.css" />
+    <link rel="stylesheet" type="text/css" href="/css/views/home.css" />
+    <link rel="stylesheet" type="text/css" href="/css/partials/navbar.css" />
+    <title>{{title}}</title>
+  </head>
+  <body>
+    {{> navbar}}
+    <main>
+      {{#if user}}
+      <form id="menu">
+        <header>
+          <h2>Play Now</h2>
+        </header>
+        <div id="menu-container">
+          <div id="menu-options">
+            <a href="/create-lobby" class="button">Create New Lobby</a>
+            <a href="/find-lobby" class="button">Find New Lobby</a>
+          </div>
+          <div id="menu-lists">
+            <div id="user-lobby-list">
+              <h3>My Lobbies</h3>
+              <div id="list-container">
+                <table>
+                  <thead>
+                    <tr id="lobby-header">
+                      <th>Status</th>
+                      <th>Host</th>
+                      <th>Name</th>
+                      <th>Players</th>
+                    </tr>
+                  </thead>
+                  {{#each lobbies}}
+                  <tr class="lobby">
+                    {{#equals this.busy true}}
+                    <td class="lobby-busy">
+                      <a href="/lobbies/{{this.id}}">In-Game</a>
+                    </td>
+                    {{else}}
+                    <td class="lobby-waiting">
+                      <a href="/lobbies/{{this.id}}">Waiting</a>
+                    </td>
+                    {{/equals}}
+                    <td class="lobby-hostname">
+                      <a href="/lobbies/{{this.id}}">{{this.hostName}}</a>
+                    </td>
+                    <td class="lobby-name">
+                      <a href="/lobbies/{{this.id}}">{{this.name}}</a>
+                    </td>
+                    <td class="lobby-capacity">
+                      <a href="/lobbies/{{this.id}}">{{inc this.guestLength}}/{{this.playerCapacity}}</a>
+                    </td>
+                  </tr>
+                  {{/each}}
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+      {{else}}
+      <form id="menu" style="width: 20rem !important;">
+        <header>
+          <h2>Play Now</h2>
+        </header>
+        <div id="menu-container">
+          <div>
+            <a href="/login" class="button">Create New Lobby</a>
+            <a href="/login" class="button">Find New Lobby</a>
+          </div>
+        </div>  
+      </form>
+      {{/if}}
+    </main>
+  </body>
+</html>

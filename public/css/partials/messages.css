@@ -1,0 +1,129 @@
+#message-icon, #game-settings-icon {
+    position: absolute;
+    top: 40px;
+    background: #ee161f;
+    z-index: 5;
+    border-radius: 10px;
+    width: 30px;
+    height: 30px;
+    padding: 5px;
+    cursor: pointer;
+    box-shadow: rgba(50, 50, 93, 0.25) 0px 50px 100px -20px, rgba(0, 0, 0, 0.3) 0px 30px 60px -30px, rgba(10, 37, 64, 0.35) 0px -2px 6px 0px inset;
+    transition: all 0.15s ease-in-out;
+}
+
+#message-icon {
+    left: 40px;
+    stroke: white;
+}
+
+#game-settings-icon {
+    left: 100px;
+    fill: white;
+}
+
+#message-icon:hover, #game-settings-icon:hover {
+    transform: scale(1.15);
+    -webkit-transform: scale(1.15);
+    -moz-transform: scale(1.15);
+    -o-transform: scale(1.15);
+  }
+
+.hidden {
+    display: none !important;
+}
+
+#messages-container {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    background-color: white;
+    box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 3px, rgba(0, 0, 0, 0.24) 0px 1px 2px;
+    border-radius: 8px;
+    width: 320px;
+    height: 50vh;
+    top: 100px;
+    left: 10px;
+    z-index: 6;
+    overflow: hidden;
+}
+
+#messages {
+    margin-bottom: auto;
+    height: 100%;
+    padding: 2%;
+    overflow-y: scroll;
+}
+
+#messages:hover {
+    overflow-y: scroll;
+}
+
+#message-input {
+    height: 20px;
+    box-shadow:0 0 10px #00000054;
+    border-style: hidden;
+    resize: none;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+    margin-bottom: 1px;
+    font-family: inherit;
+    padding-right: 45px !important;
+    padding: 10px;
+}
+
+#message-input:focus {
+    outline: none;
+}
+
+#message-send-btn {
+    fill: #ee161f;
+    padding: 2px;
+    border-radius: 8px;
+    position: absolute;
+    bottom: calc(0% + 5px);
+    right: calc(0% + 15px);
+    cursor: pointer;
+}
+
+#message-send-btn:hover {
+    background-color: #ee161f;
+    fill: white;
+}
+
+.message-container {
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 3px, rgba(0, 0, 0, 0.24) 0px 1px 2px;
+    padding: 3% 1% 1% 1%;
+    margin-bottom: 2%;
+}
+
+.message-sender {
+    margin-bottom: 5px;
+    margin-left: 1%;
+}
+
+.message-time {
+    margin-left: auto;
+}
+
+.message {
+    flex: .95;
+    margin-left: 1%;
+    margin-right: 1%;
+    resize: none;
+    font-family: inherit;
+    border-style: hidden;
+    background-color: transparent;
+    margin-top: auto;
+    margin-bottom: auto;
+}
+
+.message-sender, .message, .message-time {
+    font-size: 12px;
+}
+.message-time {
+    font-size: 10px;
+}

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="/css/views/lobby.css" />
+    <link rel="stylesheet" type="text/css" href="/css/partials/navbar.css" />
+    <link rel="stylesheet" type="text/css" href="/css/partials/lobby-messages.css">
+    <link rel="stylesheet" type="text/css" href="/css/scrollbar.css">
+    <script defer type="text/javascript" src="/js/views/lobby.js"></script>
+    <script defer type="text/javascript" src="/js/partials/lobby-messages.js"></script>
+    <title>{{title}}</title>
+    {{assign "isHost" isHost}}
+  </head>
+  <body onload="{initMessages(); initLobby();}">
+    {{> navbar}}
+    <main>
+      <div id="content-container">
+        <div id="lobby-container">
+          <div id="lobby-members-list">
+            <table>
+              <tbody id="list-1">
+                {{#each leftList}}
+                  {{#if empty}}
+                    <tr class="lobby-guest">
+                      <td class="lobby-guest-icon-col"></td>
+                      <td class="lobby-guest-name"></td>
+                      <td class="lobby-guest-status"></td>
+                      <td></td>
+                  </tr>
+                  {{else}}
+                  <tr class="lobby-guest">
+                    <td class="lobby-guest-icon-col">
+                      <div class="lobby-guest-icon">
+                        {{#if this.avatar}}
+                          <img src="{{this.avatar}}">
+                        {{else}}
+                          <img src="/images/default-profile-pic.png">
+                        {{/if}}
+                      </div>
+                    </td>
+                    <td class="lobby-guest-name">{{this.username}}</td>
+                    {{#if this.host}}
+                     <td class="lobby-guest-status">Host</td>
+                    {{else}}
+                      {{#if this.ready}}
+                        <td class="lobby-guest-status">Ready</td>
+                      {{else}}
+                        <td class="lobby-guest-status">Not Ready</td>
+                      {{/if}}
+                    {{/if}}
+                    {{#if this.host}}
+                      <td></td>
+                    {{else}}
+                      {{#varEquals "isHost" true}}
+                        <td class="lobby-guest-kick">
+                          <button id="{{this.id}}" class="lobby-button kick">Kick</button>
+                        </td>
+                      {{else}}
+                        <td></td>
+                      {{/varEquals}}
+                    {{/if}}
+                  </tr>
+                  {{/if}}
+                {{/each}}
+              </tbody>
+            </table>
+            <table>
+              <tbody id="list-2">
+                {{#each rightList}}
+                  {{#if empty}}
+                    <tr class="lobby-guest">
+                      <td class="lobby-guest-icon-col"></td>
+                      <td class="lobby-guest-name"></td>
+                      <td class="lobby-guest-status"></td>
+                      <td></td>
+                  </tr>
+                  {{else}}
+                  <tr class="lobby-guest">
+                    <td class="lobby-guest-icon-col">
+                      <div class="lobby-guest-icon">
+                        {{#if this.avatar}}
+                          <img src="{{this.avatar}}">
+                        {{else}}
+                          <img src="/images/default-profile-pic.png">
+                        {{/if}}
+                      </div>
+                    </td>
+                    <td class="lobby-guest-name">{{this.username}}</td>
+                    {{#if this.host}}
+                     <td class="lobby-guest-status">Host</td>
+                    {{else}}
+                      {{#if this.ready}}
+                        <td class="lobby-guest-status">Ready</td>
+                      {{else}}
+                        <td class="lobby-guest-status">Not Ready</td>
+                      {{/if}}
+                    {{/if}}
+                    {{#if this.host}}
+                      <td></td>
+                    {{else}}
+                      {{#varEquals "isHost" true}}
+                        <td class="lobby-guest-kick">
+                          <button id="{{this.id}}" class="lobby-button kick">Kick</button>
+                        </td>
+                      {{else}}
+                        <td></td>
+                      {{/varEquals}}
+                    {{/if}}
+                  </tr>
+                  {{/if}}
+                {{/each}}
+              </tbody>
+            </table>
+          </div>
+          <div id="lobby-menu">
+            <h3 id="lobby-title">{{lobbyName}}</h3>
+            {{#if isHost}}
+            <div id="invitation-container">
+              <span id="invite-error" class="invite-error hidden"></span>
+              <form>
+                <input type="text" placeholder="Username" id="username" name="username">
+                <button id="invite-button" class="lobby-button">Invite</button>
+              </form>
+            </div>
+            {{else}}
+            {{/if}}
+            <div id="lobby-options">
+              {{#if isHost}}
+                {{#if guestsReady}}
+                  <button id="start-button" class="lobby-button">Start</button>
+                {{else}}
+                  <button disabled id="start-button" class="lobby-button">Start</button>
+                {{/if}}
+              {{else}}
+              <button id="ready-button" class="lobby-button">Ready</button>
+              {{/if}}
+              <button id='leave-button' class="lobby-button">Leave Lobby</button>
+            </div>
+          </div>
+        </div>
+        {{> lobby-messages}}
+      </div>
+    </main>
+    <script>
+      const userId = "{{user.id}}"
+      const lobbyName = "{{lobbyName}}"
+      const lobbyId = "{{lobbyId}}"
+    </script>
+  </body>
+</html>
